@@ -51,7 +51,7 @@
             }
         },
         "final_class": true,
-        "final_internal_class": true,
+        "final_internal_class": false,
         "final_public_method_for_abstract_class": false,
         "no_alternative_syntax": true,
         "no_extra_blank_lines": true,

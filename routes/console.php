@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Artisan;
 */
 
 Artisan::command('inspire', function (): void {
+    // $this is bound to the Command instance by Laravel's Artisan::command()
     /** @phpstan-ignore variable.undefined */
     $this->comment('Simplicity is the ultimate sophistication. - Leonardo da Vinci');
 })->purpose('Display an inspiring quote');
