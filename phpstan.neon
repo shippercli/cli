@@ -1,0 +1,48 @@
+parameters:
+    paths:
+        - app
+        - config
+        - routes
+        - bootstrap
+        - tests
+    
+    # Use maximum level for strictness
+    level: 9
+    
+    # Report unmatched ignored errors
+    reportUnmatchedIgnoredErrors: false
+    
+    # Strict rules
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+    checkMissingCallableSignature: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    checkDynamicProperties: true
+    
+    # No mixed types allowed
+    checkExplicitMixed: true
+    
+    # Type coverage
+    reportMaybesInMethodSignatures: true
+    reportStaticMethodSignatures: true
+    
+    # Treat PHP as 8.3
+    phpVersion: 80300
+    
+    # Bootstrap for Laravel Zero
+    bootstrapFiles:
+        - vendor/autoload.php
+    
+    excludePaths:
+        - vendor
+        - tests/Pest.php
+        - tests/Feature
+    
+    # Ignore Laravel framework internals
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\.*#'
+        - '#Access to an undefined property Illuminate\\.*#'
+        - '#Property .*::\$signature has no type specified#'
+        - '#Property .*::\$description has no type specified#'
+
