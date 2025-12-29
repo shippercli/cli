@@ -16,7 +16,7 @@ final class ProviderFactory
     public function create(string $providerName): DeploymentProviderInterface
     {
         $config = $this->providersConfig[$providerName] ?? [];
-        
+
         if (! \is_array($config)) {
             $config = [];
         }

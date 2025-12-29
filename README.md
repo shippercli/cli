@@ -1,10 +1,20 @@
 # Deployer
 
-A Laravel Zero application built with strict type checking and code quality standards.
+A Laravel Zero application for declarative, config-driven deployments with strict type checking and code quality standards.
+
+## Overview
+
+Deployer is a CLI tool that reads a repository-level config file (`deployer.yml`) and performs plan/apply style deployments through a pluggable provider system. It follows the same philosophy as Infrastructure as Code tools like Terraform, but for application deployments.
 
 ## Features
 
-This project implements strict coding standards inspired by Nuno Maduro's strict Laravel approach:
+### Deployment Features
+- ✅ Declarative YAML configuration (`deployer.yml`)
+- ✅ Multiple projects and deployment profiles (production, staging, preview)
+- ✅ Pluggable provider system (currently supports Ploi)
+- ✅ Plan/apply workflow for safe deployments
+- ✅ Configuration validation
+- ✅ GitHub Actions workflows for CI/CD
 
 ### Strict Type Enforcement
 - ✅ `declare(strict_types=1)` in all PHP files
@@ -48,13 +58,102 @@ cp .env.example .env
 
 ## Usage
 
+### Configuration
+
+Create a `deployer.yml` file in your repository root:
+
+```yaml
+providers:
+  ploi:
+    api_key: "${PLOI_API_KEY}"
+    api_url: "https://ploi.io/api"
+
+projects:
+  api:
+    provider: ploi
+    path: ./examples/api
+    profiles:
+      production:
+        branch: main
+        server_id: "${PLOI_SERVER_ID_PROD}"
+        site_id: "${PLOI_SITE_ID_API_PROD}"
+      staging:
+        branch: develop
+        server_id: "${PLOI_SERVER_ID_STAGE}"
+        site_id: "${PLOI_SITE_ID_API_STAGE}"
+```
+
+### CLI Commands
+
 ```bash
-# Run the deploy command
-./deployer deploy
+# Validate configuration
+./deployer validate
+
+# Plan a deployment (dry-run)
+./deployer plan api --profile=production
+
+# Execute a deployment
+./deployer apply api --profile=production
+
+# Execute with force (skip confirmation)
+./deployer apply api --profile=production --force
 
 # List all commands
 ./deployer list
 ```
+
+### Provider System
+
+The deployer uses a pluggable provider system. Currently supported:
+
+- **Ploi**: Deploy to servers managed by Ploi.io
+
+To add a new provider, implement the `DeploymentProviderInterface` and register it in `ProviderFactory`.
+
+## Project Structure
+
+```
+deployer/
+├── app/
+│   ├── Commands/           # CLI commands
+│   │   ├── ValidateCommand.php
+│   │   ├── PlanCommand.php
+│   │   └── ApplyCommand.php
+│   ├── Config/             # Configuration classes
+│   │   ├── ConfigLoader.php
+│   │   ├── DeployerConfig.php
+│   │   ├── ProjectConfig.php
+│   │   └── ProfileConfig.php
+│   └── Providers/
+│       └── Deployment/     # Deployment providers
+│           ├── DeploymentProviderInterface.php
+│           ├── AbstractDeploymentProvider.php
+│           ├── PloiProvider.php
+│           └── ProviderFactory.php
+├── examples/               # Example deployable projects
+│   ├── api/
+│   └── frontend/
+├── .github/workflows/      # CI/CD workflows
+│   ├── ci.yml              # Code quality checks
+│   ├── deploy-production.yml
+│   ├── deploy-staging.yml
+│   └── deploy-preview.yml
+├── deployer.yml            # Main configuration file
+└── deployer                # CLI entry point
+```
+
+## GitHub Actions
+
+Three deployment workflows are included:
+
+### Production (main branch)
+Deploys all projects to production when code is pushed to `main`.
+
+### Staging (develop branch)
+Deploys all projects to staging when code is pushed to `develop`.
+
+### Preview (pull requests)
+Deploys preview environments for pull requests and comments on the PR with deployment status.
 
 ## Development
 

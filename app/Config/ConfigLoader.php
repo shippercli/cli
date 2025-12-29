@@ -36,7 +36,7 @@ final class ConfigLoader
     {
         $projects = [];
         $providers = $data['providers'] ?? [];
-        
+
         if (! \is_array($providers)) {
             $providers = [];
         }
