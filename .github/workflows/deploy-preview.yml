@@ -1,0 +1,73 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        project: [api, frontend]
+    
+    name: Deploy ${{ matrix.project }} Preview
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, yaml
+          coverage: none
+      
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-dev
+      
+      - name: Validate configuration
+        run: ./deployer validate
+      
+      - name: Plan deployment
+        run: ./deployer plan ${{ matrix.project }} --profile=preview
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PLOI_SERVER_ID_PREVIEW: ${{ secrets.PLOI_SERVER_ID_PREVIEW }}
+          PLOI_SITE_ID_API_PREVIEW: ${{ secrets.PLOI_SITE_ID_API_PREVIEW }}
+          PLOI_SITE_ID_FRONTEND_PREVIEW: ${{ secrets.PLOI_SITE_ID_FRONTEND_PREVIEW }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+      
+      - name: Deploy preview
+        run: ./deployer apply ${{ matrix.project }} --profile=preview --force
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PLOI_SERVER_ID_PREVIEW: ${{ secrets.PLOI_SERVER_ID_PREVIEW }}
+          PLOI_SITE_ID_API_PREVIEW: ${{ secrets.PLOI_SITE_ID_API_PREVIEW }}
+          PLOI_SITE_ID_FRONTEND_PREVIEW: ${{ secrets.PLOI_SITE_ID_FRONTEND_PREVIEW }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+      
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 Preview deployed for **${{ matrix.project }}**!\n\nBranch: `${{ github.head_ref }}`\nProfile: `preview`'
+            })

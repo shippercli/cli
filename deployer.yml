@@ -1,0 +1,52 @@
+# Deployer Configuration
+# This file defines deployable projects and their deployment profiles
+
+# Provider configurations (credentials, API keys, etc.)
+providers:
+  ploi:
+    api_key: "${PLOI_API_KEY}" # Set via environment variable
+    api_url: "https://ploi.io/api"
+
+# Projects to deploy
+projects:
+  # Example Laravel API
+  api:
+    provider: ploi
+    path: ./examples/api
+    profiles:
+      production:
+        branch: main
+        server_id: "${PLOI_SERVER_ID_PROD}"
+        site_id: "${PLOI_SITE_ID_API_PROD}"
+        domain: api.example.com
+      staging:
+        branch: develop
+        server_id: "${PLOI_SERVER_ID_STAGE}"
+        site_id: "${PLOI_SITE_ID_API_STAGE}"
+        domain: api-staging.example.com
+      preview:
+        branch: "${GITHUB_HEAD_REF}" # PR branch
+        server_id: "${PLOI_SERVER_ID_PREVIEW}"
+        site_id: "${PLOI_SITE_ID_API_PREVIEW}"
+        domain: "api-pr-${GITHUB_PR_NUMBER}.example.com"
+
+  # Example Frontend App
+  frontend:
+    provider: ploi
+    path: ./examples/frontend
+    profiles:
+      production:
+        branch: main
+        server_id: "${PLOI_SERVER_ID_PROD}"
+        site_id: "${PLOI_SITE_ID_FRONTEND_PROD}"
+        domain: www.example.com
+      staging:
+        branch: develop
+        server_id: "${PLOI_SERVER_ID_STAGE}"
+        site_id: "${PLOI_SITE_ID_FRONTEND_STAGE}"
+        domain: staging.example.com
+      preview:
+        branch: "${GITHUB_HEAD_REF}"
+        server_id: "${PLOI_SERVER_ID_PREVIEW}"
+        site_id: "${PLOI_SITE_ID_FRONTEND_PREVIEW}"
+        domain: "pr-${GITHUB_PR_NUMBER}.example.com"

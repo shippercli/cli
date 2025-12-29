@@ -1,0 +1,57 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        project: [api, frontend]
+    
+    name: Deploy ${{ matrix.project }} to Production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, yaml
+          coverage: none
+      
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-dev
+      
+      - name: Validate configuration
+        run: ./deployer validate
+      
+      - name: Plan deployment
+        run: ./deployer plan ${{ matrix.project }} --profile=production
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PLOI_SERVER_ID_PROD: ${{ secrets.PLOI_SERVER_ID_PROD }}
+          PLOI_SITE_ID_API_PROD: ${{ secrets.PLOI_SITE_ID_API_PROD }}
+          PLOI_SITE_ID_FRONTEND_PROD: ${{ secrets.PLOI_SITE_ID_FRONTEND_PROD }}
+      
+      - name: Deploy to production
+        run: ./deployer apply ${{ matrix.project }} --profile=production --force
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PLOI_SERVER_ID_PROD: ${{ secrets.PLOI_SERVER_ID_PROD }}
+          PLOI_SITE_ID_API_PROD: ${{ secrets.PLOI_SITE_ID_API_PROD }}
+          PLOI_SITE_ID_FRONTEND_PROD: ${{ secrets.PLOI_SITE_ID_FRONTEND_PROD }}
