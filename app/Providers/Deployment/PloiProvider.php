@@ -162,6 +162,16 @@ final class PloiProvider extends AbstractDeploymentProvider
                     return false;
                 }
                 $siteId = (int) $existingSite->id;
+
+                // Install/update repository for existing site
+                $site = $server->sites($siteId);
+                try {
+                    $site->repository()->install($repoProvider, $branch, $repoName);
+                } catch (\Exception $e) {
+                    $this->lastError = "Failed to install repository: {$e->getMessage()}";
+
+                    return false;
+                }
             }
 
             // Deploy the site
