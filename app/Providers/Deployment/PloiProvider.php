@@ -203,6 +203,28 @@ final class PloiProvider extends AbstractDeploymentProvider
 
                 // If not deploying anymore, deployment has completed
                 if (! $isDeploying) {
+                    // Check if deployment failed based on site status
+                    // Ploi may provide deployment status fields
+                    $deploymentStatus = \property_exists($siteInfo, 'deployment_status') ? $siteInfo->deployment_status : null;
+                    $lastDeploymentStatus = \property_exists($siteInfo, 'last_deployment_status') ? $siteInfo->last_deployment_status : null;
+
+                    // Check for explicit failure status
+                    if ($deploymentStatus === 'failed' || $lastDeploymentStatus === 'failed') {
+                        $this->lastError = 'Deployment failed on Ploi server (deployment status: failed)';
+
+                        // Wait a moment and fetch logs to provide details
+                        \sleep(5);
+                        $logs = $this->getDeploymentLogs($serverId, $siteId);
+                        if ($logs !== []) {
+                            $this->lastError .= "\nRecent logs:\n".\implode("\n", \array_slice($logs, 0, 10));
+                        }
+
+                        return false;
+                    }
+
+                    // Wait a few seconds after deployment completes to ensure logs are fully written
+                    \sleep(5);
+
                     // Deployment completed, check logs for success/failure
                     $logs = $this->getDeploymentLogs($serverId, $siteId);
 
@@ -210,8 +232,10 @@ final class PloiProvider extends AbstractDeploymentProvider
                     foreach ($logs as $log) {
                         $logLower = \strtolower($log);
                         if (\str_contains($logLower, 'deployment failed') ||
-                            \str_contains($logLower, 'error') ||
-                            \str_contains($logLower, 'failed')) {
+                            \str_contains($logLower, 'deployment failure') ||
+                            \str_contains($logLower, 'deploy failed') ||
+                            \str_contains($logLower, 'fatal error') ||
+                            \str_contains($logLower, 'critical error')) {
                             $this->lastError = 'Deployment failed on Ploi server (detected in logs)';
 
                             return false;
