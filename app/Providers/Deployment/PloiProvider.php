@@ -249,6 +249,89 @@ final class PloiProvider extends AbstractDeploymentProvider
         }
     }
 
+    public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
+    {
+        $this->lastError = '';
+        $serverId = 0;
+        $domain = '';
+
+        try {
+            $client = $this->getClient();
+            $serverId = (int) $this->getServerId();
+            $domainValue = $profile->get('domain');
+            $domain = \is_string($domainValue) ? $domainValue : '';
+
+            if ($domain === '') {
+                $this->lastError = 'Domain is empty or invalid';
+
+                return false;
+            }
+
+            // Get the server
+            $server = $client->server($serverId);
+
+            // Find site by domain
+            $sites = $server->sites()->get();
+            $existingSite = null;
+
+            $siteData = $sites->getJson()->data ?? null;
+            if ($siteData !== null && \is_array($siteData)) {
+                foreach ($siteData as $site) {
+                    if (\is_object($site) && \property_exists($site, 'domain') && $site->domain === $domain) {
+                        $existingSite = $site;
+                        break;
+                    }
+                }
+            }
+
+            // If site doesn't exist, consider it already destroyed
+            if ($existingSite === null) {
+                return true;
+            }
+
+            // Get site ID
+            if (! \property_exists($existingSite, 'id')) {
+                $this->lastError = 'Site found but has no ID';
+
+                return false;
+            }
+            $siteId = (int) $existingSite->id;
+
+            // Delete the site
+            $site = $server->sites($siteId);
+            $deleteResponse = $site->delete();
+
+            // Check if deletion was successful
+            $deleteData = $deleteResponse->getJson();
+            if (isset($deleteData->message) && \is_string($deleteData->message)) {
+                // Check if message indicates success or failure
+                $messageLower = \strtolower($deleteData->message);
+                if (\str_contains($messageLower, 'error') || \str_contains($messageLower, 'failed')) {
+                    $this->lastError = "Failed to delete site: {$deleteData->message}";
+
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (\Ploi\Exceptions\Http\Unauthenticated $e) {
+            $this->lastError = "Authentication failed: Invalid Ploi API key. {$e->getMessage()}";
+
+            return false;
+        } catch (\Ploi\Exceptions\Http\NotFound $e) {
+            // If site is not found, consider it already destroyed
+            return true;
+        } catch (\Ploi\Exceptions\Http\NotValid $e) {
+            $this->lastError = "Validation error: {$e->getMessage()}";
+
+            return false;
+        } catch (\Exception $e) {
+            $this->lastError = "Destroy error: {$e->getMessage()} (Type: ".\get_class($e).')';
+
+            return false;
+        }
+    }
+
     private function getClient(): Ploi
     {
         if ($this->client === null) {

@@ -1,0 +1,65 @@
+name: Cleanup Preview
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        project: [api, frontend]
+    
+    name: Cleanup ${{ matrix.project }} Preview
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, yaml
+          coverage: none
+      
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-dev
+      
+      - name: Destroy preview site
+        run: ./deployer destroy ${{ matrix.project }} --profile=preview --force
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+      
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const domain = '${{ matrix.project }}' === 'api' 
+              ? 'api-preview-${{ github.event.pull_request.number }}.ulties.dev'
+              : 'preview-${{ github.event.pull_request.number }}.ulties.dev';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🧹 Preview site cleaned up for **${{ matrix.project }}**!\n\n**Domain:** ${domain}\n**Profile:** preview`
+            })
