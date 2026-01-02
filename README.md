@@ -1,64 +1,45 @@
 # Deployer
 
-A Laravel Zero application for declarative, config-driven deployments with strict type checking and code quality standards.
+A Laravel Zero CLI application for declarative, configuration-driven deployments with strict type checking and code quality standards.
 
 ## Overview
 
-Deployer is a CLI tool that reads a repository-level config file (`deployer.yml`) and performs plan/apply style deployments through a pluggable provider system. It follows the same philosophy as Infrastructure as Code tools like Terraform, but for application deployments.
+Deployer is a CLI tool that reads a repository-level config file (`deployer.yml`) and performs plan/apply style deployments through a pluggable provider system. It follows Infrastructure as Code principles similar to Terraform, but for application deployments.
 
-## Features
+## Key Features
 
-### Deployment Features
-- ✅ Declarative YAML configuration (`deployer.yml`)
-- ✅ Multiple projects and deployment profiles (production, staging, preview)
-- ✅ Pluggable provider system (currently supports Ploi)
-- ✅ Plan/apply workflow for safe deployments
-- ✅ Configuration validation
-- ✅ GitHub Actions workflows for CI/CD
+- ✅ **Declarative Configuration** - YAML-based deployment configuration
+- ✅ **Plan/Apply Workflow** - Preview changes before deploying
+- ✅ **Multiple Environments** - Production, staging, and preview profiles
+- ✅ **Pluggable Providers** - Extensible provider system (Ploi supported)
+- ✅ **Type Safety** - Strict PHP types throughout the codebase
+- ✅ **Code Quality** - PHPStan level 9, Laravel Pint, Pest tests
+- ✅ **CI/CD Ready** - GitHub Actions workflows included
 
-### Strict Type Enforcement
-- ✅ `declare(strict_types=1)` in all PHP files
-- ✅ Type hints on all method parameters and return types
-- ✅ Final classes by default (immutability)
-- ✅ No mixed types allowed
-- ✅ Strict comparison operators
+## Quick Start
 
-### Code Quality Tools
-
-#### PHPStan (Level 9)
-Configured with maximum strictness:
-- No mixed types
-- All properties must have type declarations
-- Checks for always-true conditions
-- Validates return types in protected and public methods
-- Reports uninitialized properties
-- Dynamic properties disabled
-
-#### Laravel Pint
-Code style enforcement with:
-- Strict type declarations
-- Strict comparison
-- Native function invocation optimization
-- Ordered imports
-- Final class enforcement
-- No superfluous PHPDoc tags
-
-#### Pest Testing
-Modern testing with:
-- Type-safe test cases
-- Feature and unit testing support
-- Integration with Laravel Zero
-
-## Installation
+### Installation
 
 ```bash
 composer install
 cp .env.example .env
+# Configure your PLOI_API_KEY in .env
 ```
 
-## Usage
+### Basic Usage
 
-### Configuration
+```bash
+# Validate your configuration
+./deployer validate
+
+# Preview a deployment (dry-run)
+./deployer plan api --profile=production
+
+# Execute a deployment
+./deployer apply api --profile=production
+```
+
+### Example Configuration
 
 Create a `deployer.yml` file in your repository root:
 
@@ -67,122 +48,41 @@ providers:
   ploi:
     api_key: "${PLOI_API_KEY}"
     api_url: "https://ploi.io/api"
-    server_id: "105556"  # Your Ploi server ID
+    server_id: "105556"
 
 projects:
   api:
     provider: ploi
     path: ./examples/api
-    # Repository configuration
     repository:
-      provider: github  # github, gitlab, bitbucket, or custom
-      name: ulties/deployer-wip  # username/repository
-    # Site configuration
-    web_directory: /public  # Default Laravel public directory
-    project_root: /  # Root of the project
+      provider: github
+      name: ulties/deployer-wip
     profiles:
       production:
         branch: main
-        domain: api-live.ulties.dev
+        domain: api.example.com
       staging:
         branch: develop
-        domain: api-test.ulties.dev
-      preview:
-        branch: "${GITHUB_HEAD_REF}"
-        domain: "api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: staging.example.com
 ```
 
-**Configuration Notes:**
-- The `server_id` is configured once at the provider level
-- Sites are automatically created/found by domain name
-- Repository is automatically installed from GitHub/GitLab/Bitbucket when a new site is created
-- `web_directory` defaults to `/public` (Laravel standard)
-- `project_root` defaults to `/` (project root)
-- No need to manually manage site IDs - the deployer handles this automatically
-- Domains use subdomains of ulties.dev for different environments
-- No need to manually manage site IDs - the deployer handles this automatically
-- Domains use subdomains of ulties.dev for different environments
+## Documentation
 
-### CLI Commands
+Comprehensive documentation is available in the [`docs/`](./docs) folder:
 
-```bash
-# Validate configuration
-./deployer validate
-
-# Plan a deployment (dry-run)
-./deployer plan api --profile=production
-
-# Execute a deployment
-./deployer apply api --profile=production
-
-# Execute with force (skip confirmation)
-./deployer apply api --profile=production --force
-
-# List all commands
-./deployer list
-```
-
-### Provider System
-
-The deployer uses a pluggable provider system. Currently supported:
-
-- **Ploi**: Deploy to servers managed by Ploi.io
-
-To add a new provider, implement the `DeploymentProviderInterface` and register it in `ProviderFactory`.
-
-## Project Structure
-
-```
-deployer/
-├── app/
-│   ├── Commands/           # CLI commands
-│   │   ├── ValidateCommand.php
-│   │   ├── PlanCommand.php
-│   │   └── ApplyCommand.php
-│   ├── Config/             # Configuration classes
-│   │   ├── ConfigLoader.php
-│   │   ├── DeployerConfig.php
-│   │   ├── ProjectConfig.php
-│   │   └── ProfileConfig.php
-│   └── Providers/
-│       └── Deployment/     # Deployment providers
-│           ├── DeploymentProviderInterface.php
-│           ├── AbstractDeploymentProvider.php
-│           ├── PloiProvider.php
-│           └── ProviderFactory.php
-├── examples/               # Example deployable projects
-│   ├── api/
-│   └── frontend/
-├── .github/workflows/      # CI/CD workflows
-│   ├── ci.yml              # Code quality checks
-│   ├── deploy-production.yml
-│   ├── deploy-staging.yml
-│   └── deploy-preview.yml
-├── deployer.yml            # Main configuration file
-└── deployer                # CLI entry point
-```
-
-## GitHub Actions
-
-Three deployment workflows are included:
-
-### Production (main branch)
-Deploys all projects to production when code is pushed to `main`.
-
-### Staging (develop branch)
-Deploys all projects to staging when code is pushed to `develop`.
-
-### Preview (pull requests)
-Deploys preview environments for pull requests and comments on the PR with deployment status.
+- **[Architecture](./docs/architecture.md)** - System design and components
+- **[Configuration](./docs/configuration.md)** - Complete configuration guide
+- **[Providers](./docs/providers.md)** - Provider system and creating custom providers
+- **[GitHub Actions](./docs/github-actions.md)** - CI/CD workflows and automation
+- **[Development](./docs/development.md)** - Contributing and development guide
+- **[Strict Standards](./docs/strict-standards.md)** - Coding standards and best practices
 
 ## Development
 
 ```bash
-# Run code style checks
-composer format:check
-
-# Fix code style
-composer format
+# Run code style checks and fixes
+composer format:check  # Check only
+composer format        # Fix automatically
 
 # Run static analysis
 composer analyse
@@ -191,24 +91,17 @@ composer analyse
 composer test
 ```
 
-## Continuous Integration
+All code must pass PHPStan level 9, Laravel Pint checks, and Pest tests before merging.
 
-GitHub Actions automatically runs:
-1. Code style validation (Pint)
-2. Static analysis (PHPStan level 9)
-3. Tests (Pest)
+## GitHub Actions
 
-All checks must pass before merging.
+Included workflows:
+- **CI** - Code style, static analysis, and tests on every push/PR
+- **Production** - Auto-deploy to production on `main` branch
+- **Staging** - Auto-deploy to staging on `develop` branch
+- **Preview** - Deploy preview environments for pull requests
 
-## Strict Rules Applied
-
-1. **Type Safety**: Every method has explicit parameter and return types
-2. **Immutability**: Classes are final by default
-3. **Strict Comparisons**: Using `===` and `!==` operators
-4. **No Mixed Types**: Explicit types required everywhere
-5. **Property Types**: All properties must declare types
-6. **PHPStan Level 9**: Maximum static analysis strictness
-7. **Code Style**: Enforced via Pint with strict rules
+See [GitHub Actions documentation](./docs/github-actions.md) for details.
 
 ## License
 
