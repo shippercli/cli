@@ -5,7 +5,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "laravel-zero/framework": "^12.0"
+        "laravel-zero/framework": "^12.0",
+        "ploi/ploi-php-sdk": "^1.9",
+        "symfony/yaml": "^7.0"
     },
     "require-dev": {
         "larastan/larastan": "^3.0",

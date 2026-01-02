@@ -1,0 +1,56 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        project: [api, frontend]
+    
+    name: Deploy ${{ matrix.project }} to Staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, yaml
+          coverage: none
+      
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-dev
+      
+      - name: Validate configuration
+        run: ./deployer validate
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+      
+      - name: Plan deployment
+        run: ./deployer plan ${{ matrix.project }} --profile=staging
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+      
+      - name: Deploy to staging
+        run: ./deployer apply ${{ matrix.project }} --profile=staging --force
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}

@@ -1,0 +1,55 @@
+# Deployer Configuration
+# This file defines deployable projects and their deployment profiles
+
+# Provider configurations (credentials, API keys, etc.)
+providers:
+  ploi:
+    api_key: "${PLOI_API_KEY}" # Set via environment variable
+    api_url: "https://ploi.io/api"
+    server_id: "105556" # Default server ID for all deployments
+
+# Projects to deploy
+projects:
+  # Example Laravel API
+  api:
+    provider: ploi
+    path: ./examples/api
+    # Repository configuration
+    repository:
+      provider: github # github, gitlab, bitbucket, or custom
+      name: ulties/deployer-wip # username/repository
+    # Site configuration
+    web_directory: /public # Default Laravel public directory
+    project_root: / # Root of the project
+    profiles:
+      production:
+        branch: main
+        domain: api-live.ulties.dev
+      staging:
+        branch: develop
+        domain: api-test.ulties.dev
+      preview:
+        branch: "${GITHUB_HEAD_REF}" # PR branch
+        domain: "api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+
+  # Example Frontend App
+  frontend:
+    provider: ploi
+    path: ./examples/frontend
+    # Repository configuration
+    repository:
+      provider: github
+      name: ulties/deployer-wip
+    # Site configuration  
+    web_directory: /public
+    project_root: /
+    profiles:
+      production:
+        branch: main
+        domain: live.ulties.dev
+      staging:
+        branch: develop
+        domain: test.ulties.dev
+      preview:
+        branch: "${GITHUB_HEAD_REF}"
+        domain: "preview-${GITHUB_PR_NUMBER}.ulties.dev"
