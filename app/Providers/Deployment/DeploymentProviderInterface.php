@@ -29,6 +29,11 @@ interface DeploymentProviderInterface
     public function apply(ProjectConfig $project, ProfileConfig $profile): bool;
 
     /**
+     * Destroy the deployment.
+     */
+    public function destroy(ProjectConfig $project, ProfileConfig $profile): bool;
+
+    /**
      * Get provider name.
      */
     public function getName(): string;
