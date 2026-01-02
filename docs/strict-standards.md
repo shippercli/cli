@@ -88,7 +88,7 @@ protected string $description = 'Deploy the application';
 // ❌ Bad
 if ($status == 0)
 
-// ✅ Good  
+// ✅ Good
 if ($status === 0)
 ```
 

@@ -335,7 +335,7 @@ public function method(string $param): int
 
 1. **Create the command class**:
 ```bash
-php application make:command YourCommand
+php artisan make:command YourCommand
 ```
 
 2. **Implement the command**:

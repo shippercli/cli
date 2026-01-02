@@ -327,7 +327,7 @@ Inject HTTP clients and other dependencies:
 ```php
 public function __construct(
     array $config,
-    private readonly HttpClientInterface $client = new HttpClient(),
+    private readonly HttpClientInterface $client,
 ) {
     parent::__construct($config);
 }
