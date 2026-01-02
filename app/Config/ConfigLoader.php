@@ -116,12 +116,18 @@ final class ConfigLoader
 
         $provider = $data['provider'] ?? '';
         $path = $data['path'] ?? '';
+        $repository = $data['repository'] ?? [];
+        $webDirectory = $data['web_directory'] ?? '/public';
+        $projectRoot = $data['project_root'] ?? '/';
 
         return new ProjectConfig(
             $name,
             \is_string($provider) ? $provider : '',
             \is_string($path) ? $path : '',
             $profiles,
+            \is_array($repository) ? $repository : [],
+            \is_string($webDirectory) ? $webDirectory : '/public',
+            \is_string($projectRoot) ? $projectRoot : '/',
         );
     }
 }

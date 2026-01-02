@@ -73,6 +73,13 @@ projects:
   api:
     provider: ploi
     path: ./examples/api
+    # Repository configuration
+    repository:
+      provider: github  # github, gitlab, bitbucket, or custom
+      name: ulties/deployer-wip  # username/repository
+    # Site configuration
+    web_directory: /public  # Default Laravel public directory
+    project_root: /  # Root of the project
     profiles:
       production:
         branch: main
@@ -88,6 +95,11 @@ projects:
 **Configuration Notes:**
 - The `server_id` is configured once at the provider level
 - Sites are automatically created/found by domain name
+- Repository is automatically installed from GitHub/GitLab/Bitbucket when a new site is created
+- `web_directory` defaults to `/public` (Laravel standard)
+- `project_root` defaults to `/` (project root)
+- No need to manually manage site IDs - the deployer handles this automatically
+- Domains use subdomains of ulties.dev for different environments
 - No need to manually manage site IDs - the deployer handles this automatically
 - Domains use subdomains of ulties.dev for different environments
 

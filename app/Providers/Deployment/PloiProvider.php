@@ -42,6 +42,19 @@ final class PloiProvider extends AbstractDeploymentProvider
             $errors[] = "Domain is required for profile: {$profile->name()}";
         }
 
+        // Validate repository configuration
+        $repository = $project->repository();
+        if (empty($repository)) {
+            $errors[] = 'Repository configuration is required';
+        } else {
+            if (! isset($repository['provider']) || $repository['provider'] === '') {
+                $errors[] = 'Repository provider is required (github, gitlab, bitbucket, or custom)';
+            }
+            if (! isset($repository['name']) || $repository['name'] === '') {
+                $errors[] = 'Repository name is required (e.g., username/repository)';
+            }
+        }
+
         return $errors;
     }
 
@@ -50,6 +63,11 @@ final class PloiProvider extends AbstractDeploymentProvider
         $serverId = $this->getServerId();
         $domainValue = $profile->get('domain');
         $domain = \is_string($domainValue) ? $domainValue : '';
+        $repository = $project->repository();
+        $repoProviderValue = $repository['provider'] ?? 'unknown';
+        $repoProvider = \is_string($repoProviderValue) ? $repoProviderValue : 'unknown';
+        $repoNameValue = $repository['name'] ?? 'unknown';
+        $repoName = \is_string($repoNameValue) ? $repoNameValue : 'unknown';
 
         return [
             'provider' => $this->getName(),
@@ -59,9 +77,12 @@ final class PloiProvider extends AbstractDeploymentProvider
             'path' => $project->path(),
             'server_id' => $serverId,
             'domain' => $domain,
+            'repository' => "{$repoProvider}:{$repoName}",
+            'web_directory' => $project->webDirectory(),
+            'project_root' => $project->projectRoot(),
             'actions' => [
                 "Create or find site for domain: {$domain}",
-                'Configure repository and branch',
+                "Install repository: {$repoProvider}:{$repoName} ({$profile->branch()})",
                 'Deploy site via Ploi API',
                 'Run deployment script',
             ],
@@ -90,6 +111,12 @@ final class PloiProvider extends AbstractDeploymentProvider
             // Get the server
             $server = $client->server($serverId);
 
+            // Get repository configuration
+            $repository = $project->repository();
+            $repoProvider = \is_string($repository['provider'] ?? null) ? $repository['provider'] : '';
+            $repoName = \is_string($repository['name'] ?? null) ? $repository['name'] : '';
+            $branch = $profile->branch();
+
             // Check if site already exists
             $sites = $server->sites()->get();
             $existingSite = null;
@@ -106,7 +133,11 @@ final class PloiProvider extends AbstractDeploymentProvider
 
             // Create site if it doesn't exist
             if ($existingSite === null) {
-                $response = $server->sites()->create($domain);
+                $response = $server->sites()->create(
+                    $domain,
+                    $project->webDirectory(),
+                    $project->projectRoot(),
+                );
                 $responseData = $response->getJson()->data ?? null;
                 if ($responseData === null || ! \property_exists($responseData, 'id')) {
                     $this->lastError = 'Failed to create site: Invalid response from Ploi API';
@@ -114,6 +145,16 @@ final class PloiProvider extends AbstractDeploymentProvider
                     return false;
                 }
                 $siteId = (int) $responseData->id;
+
+                // Install repository for new site
+                $site = $server->sites($siteId);
+                try {
+                    $site->repository()->install($repoProvider, $branch, $repoName);
+                } catch (\Exception $e) {
+                    $this->lastError = "Failed to install repository: {$e->getMessage()}";
+
+                    return false;
+                }
             } else {
                 if (! \property_exists($existingSite, 'id')) {
                     $this->lastError = 'Existing site found but has no ID';

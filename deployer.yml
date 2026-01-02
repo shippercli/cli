@@ -14,6 +14,13 @@ projects:
   api:
     provider: ploi
     path: ./examples/api
+    # Repository configuration
+    repository:
+      provider: github # github, gitlab, bitbucket, or custom
+      name: ulties/deployer-wip # username/repository
+    # Site configuration
+    web_directory: /public # Default Laravel public directory
+    project_root: / # Root of the project
     profiles:
       production:
         branch: main
@@ -29,6 +36,13 @@ projects:
   frontend:
     provider: ploi
     path: ./examples/frontend
+    # Repository configuration
+    repository:
+      provider: github
+      name: ulties/deployer-wip
+    # Site configuration  
+    web_directory: /public
+    project_root: /
     profiles:
       production:
         branch: main

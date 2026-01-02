@@ -92,8 +92,17 @@ final class PlanCommand extends Command
             if (isset($plan['server_id'])) {
                 $this->line('  Server:   '.$this->getPlanValue($plan, 'server_id'));
             }
-            if (isset($plan['site_id'])) {
-                $this->line('  Site:     '.$this->getPlanValue($plan, 'site_id'));
+            if (isset($plan['domain'])) {
+                $this->line('  Domain:   '.$this->getPlanValue($plan, 'domain'));
+            }
+            if (isset($plan['repository'])) {
+                $this->line('  Repository: '.$this->getPlanValue($plan, 'repository'));
+            }
+            if (isset($plan['web_directory'])) {
+                $this->line('  Web Dir:  '.$this->getPlanValue($plan, 'web_directory'));
+            }
+            if (isset($plan['project_root'])) {
+                $this->line('  Root:     '.$this->getPlanValue($plan, 'project_root'));
             }
 
             $this->line('');

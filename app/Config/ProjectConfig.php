@@ -8,12 +8,16 @@ final class ProjectConfig
 {
     /**
      * @param array<string, ProfileConfig> $profiles
+     * @param array<string, mixed> $repository
      */
     public function __construct(
         private readonly string $name,
         private readonly string $provider,
         private readonly string $path,
         private readonly array $profiles,
+        private readonly array $repository = [],
+        private readonly string $webDirectory = '/public',
+        private readonly string $projectRoot = '/',
     ) {}
 
     public function name(): string
@@ -42,5 +46,23 @@ final class ProjectConfig
     public function getProfile(string $name): ?ProfileConfig
     {
         return $this->profiles[$name] ?? null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function repository(): array
+    {
+        return $this->repository;
+    }
+
+    public function webDirectory(): string
+    {
+        return $this->webDirectory;
+    }
+
+    public function projectRoot(): string
+    {
+        return $this->projectRoot;
     }
 }
