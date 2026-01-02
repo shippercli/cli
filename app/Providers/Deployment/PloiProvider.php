@@ -201,8 +201,8 @@ final class PloiProvider extends AbstractDeploymentProvider
                 // Check if site is currently deploying
                 $isDeploying = \property_exists($siteInfo, 'deploying') ? (bool) $siteInfo->deploying : false;
 
-                // If not deploying anymore, check for errors in recent logs
-                if (! $isDeploying && $elapsed > 0) {
+                // If not deploying anymore, deployment has completed
+                if (! $isDeploying) {
                     // Deployment completed, check logs for success/failure
                     $logs = $this->getDeploymentLogs($serverId, $siteId);
 
