@@ -16,6 +16,11 @@ final class PloiProvider extends AbstractDeploymentProvider
      */
     private const LOG_FETCH_DELAY_SECONDS = 5;
 
+    /**
+     * Maximum number of log entries to include in error messages.
+     */
+    private const MAX_ERROR_LOG_ENTRIES = 10;
+
     private ?Ploi $client = null;
 
     private string $lastError = '';
@@ -222,7 +227,7 @@ final class PloiProvider extends AbstractDeploymentProvider
                         \sleep(self::LOG_FETCH_DELAY_SECONDS);
                         $logs = $this->getDeploymentLogs($serverId, $siteId);
                         if ($logs !== []) {
-                            $this->lastError .= "\nRecent logs:\n".\implode("\n", \array_slice($logs, 0, 10));
+                            $this->lastError .= "\nRecent logs:\n".\implode("\n", \array_slice($logs, 0, self::MAX_ERROR_LOG_ENTRIES));
                         }
 
                         return false;
