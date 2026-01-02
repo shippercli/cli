@@ -145,16 +145,6 @@ final class PloiProvider extends AbstractDeploymentProvider
                     return false;
                 }
                 $siteId = (int) $responseData->id;
-
-                // Install repository for new site
-                $site = $server->sites($siteId);
-                try {
-                    $site->repository()->install($repoProvider, $branch, $repoName);
-                } catch (\Exception $e) {
-                    $this->lastError = "Failed to install repository: {$e->getMessage()}";
-
-                    return false;
-                }
             } else {
                 if (! \property_exists($existingSite, 'id')) {
                     $this->lastError = 'Existing site found but has no ID';
@@ -162,20 +152,19 @@ final class PloiProvider extends AbstractDeploymentProvider
                     return false;
                 }
                 $siteId = (int) $existingSite->id;
+            }
 
-                // Install/update repository for existing site
-                $site = $server->sites($siteId);
-                try {
-                    $site->repository()->install($repoProvider, $branch, $repoName);
-                } catch (\Exception $e) {
-                    $this->lastError = "Failed to install repository: {$e->getMessage()}";
+            // Install/update repository
+            $site = $server->sites($siteId);
+            try {
+                $site->repository()->install($repoProvider, $branch, $repoName);
+            } catch (\Exception $e) {
+                $this->lastError = "Failed to install repository: {$e->getMessage()}";
 
-                    return false;
-                }
+                return false;
             }
 
             // Deploy the site
-            $site = $server->sites($siteId);
             $deployResponse = $site->deployment()->deploy();
 
             // Check if deployment was successful
