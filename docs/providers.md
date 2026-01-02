@@ -54,7 +54,7 @@ abstract class AbstractDeploymentProvider implements DeploymentProviderInterface
     /**
      * Get configuration value
      */
-    protected function getConfig(string $key, mixed $default = null): mixed
+    protected function getConfig(string $key, string|null $default = null): string|null
     {
         return $this->config[$key] ?? $default;
     }
