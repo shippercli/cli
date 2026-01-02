@@ -68,6 +68,7 @@ providers:
     api_key: "${PLOI_API_KEY}"
     api_url: "https://ploi.io/api"
     server_id: "105556"  # Your Ploi server ID
+    deployment_timeout: 60  # Maximum time (in seconds) to wait for deployment (default: 60)
 
 projects:
   api:
@@ -94,12 +95,12 @@ projects:
 
 **Configuration Notes:**
 - The `server_id` is configured once at the provider level
+- The `deployment_timeout` specifies how long to wait for deployment completion (default: 60 seconds)
+- Deployment status is polled every 5 seconds until completion or timeout
 - Sites are automatically created/found by domain name
 - Repository is automatically installed from GitHub/GitLab/Bitbucket when a new site is created
 - `web_directory` defaults to `/public` (Laravel standard)
 - `project_root` defaults to `/` (project root)
-- No need to manually manage site IDs - the deployer handles this automatically
-- Domains use subdomains of ulties.dev for different environments
 - No need to manually manage site IDs - the deployer handles this automatically
 - Domains use subdomains of ulties.dev for different environments
 

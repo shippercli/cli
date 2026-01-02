@@ -108,10 +108,18 @@ final class ApplyCommand extends Command
             $this->line('  Domain:    '.$this->getPlanValue($plan, 'domain'));
             $this->line('');
 
+            $this->comment('Triggering deployment and waiting for completion...');
+            $this->line('');
+
             $result = $provider->apply($project, $profile);
 
             if ($result) {
                 $this->info('✓ Deployment completed successfully!');
+
+                // Fetch and display deployment logs
+                if ($provider instanceof \App\Providers\Deployment\PloiProvider) {
+                    $this->displayDeploymentLogs($provider, $plan);
+                }
 
                 return self::SUCCESS;
             }
@@ -126,11 +134,49 @@ final class ApplyCommand extends Command
                 $this->line("  {$errorMessage}");
             }
 
+            // Fetch and display deployment logs on failure
+            if ($provider instanceof \App\Providers\Deployment\PloiProvider) {
+                $this->displayDeploymentLogs($provider, $plan);
+            }
+
             return self::FAILURE;
         } catch (\Exception $e) {
             $this->error("Deployment failed: {$e->getMessage()}");
 
             return self::FAILURE;
+        }
+    }
+
+    /**
+     * Display deployment logs from Ploi provider.
+     *
+     * @param array<string, mixed> $plan
+     */
+    private function displayDeploymentLogs(\App\Providers\Deployment\PloiProvider $provider, array $plan): void
+    {
+        $this->line('');
+        $this->info('Deployment Logs:');
+        $this->line('');
+
+        $serverId = (int) $this->getPlanValue($plan, 'server_id');
+        $siteId = $provider->getLastSiteId();
+
+        if ($siteId === 0) {
+            $this->warn('  No site ID available to fetch logs');
+
+            return;
+        }
+
+        $logs = $provider->getDeploymentLogs($serverId, $siteId);
+
+        if ($logs === []) {
+            $this->warn('  No deployment logs available');
+
+            return;
+        }
+
+        foreach ($logs as $log) {
+            $this->line("  {$log}");
         }
     }
 }

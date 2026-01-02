@@ -7,6 +7,7 @@ providers:
     api_key: "${PLOI_API_KEY}" # Set via environment variable
     api_url: "https://ploi.io/api"
     server_id: "105556" # Default server ID for all deployments
+    deployment_timeout: 60 # Maximum time (in seconds) to wait for deployment to complete
 
 # Projects to deploy
 projects:

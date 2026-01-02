@@ -14,6 +14,8 @@ final class PloiProvider extends AbstractDeploymentProvider
 
     private string $lastError = '';
 
+    private int $lastSiteId = 0;
+
     public function getName(): string
     {
         return 'ploi';
@@ -166,6 +168,7 @@ final class PloiProvider extends AbstractDeploymentProvider
 
             // Deploy the site
             $site = $server->sites($siteId);
+            $this->lastSiteId = $siteId;
             $deployResponse = $site->deployment()->deploy();
 
             // Check if deployment was successful
@@ -174,7 +177,58 @@ final class PloiProvider extends AbstractDeploymentProvider
                 $this->lastError = "Ploi API message: {$deployData->message}";
             }
 
-            return true;
+            // Wait for deployment to complete and check status
+            $timeout = $this->getDeploymentTimeout();
+            $pollInterval = 5; // Poll every 5 seconds
+            $elapsed = 0;
+            $initialCheck = true;
+
+            while ($elapsed < $timeout) {
+                if (! $initialCheck) {
+                    \sleep($pollInterval);
+                    $elapsed += $pollInterval;
+                }
+                $initialCheck = false;
+
+                // Get site status
+                $siteResponse = $server->sites($siteId)->get();
+                $siteInfo = $siteResponse->getJson()->data ?? null;
+
+                if ($siteInfo === null) {
+                    continue;
+                }
+
+                // Check if site is currently deploying
+                $isDeploying = \property_exists($siteInfo, 'deploying') ? (bool) $siteInfo->deploying : false;
+
+                // If not deploying anymore, deployment has completed
+                if (! $isDeploying) {
+                    // Deployment completed, check logs for success/failure
+                    $logs = $this->getDeploymentLogs($serverId, $siteId);
+
+                    // Check if any recent log indicates failure
+                    foreach ($logs as $log) {
+                        $logLower = \strtolower($log);
+                        if (\str_contains($logLower, 'deployment failed') ||
+                            \str_contains($logLower, 'error') ||
+                            \str_contains($logLower, 'failed')) {
+                            $this->lastError = 'Deployment failed on Ploi server (detected in logs)';
+
+                            return false;
+                        }
+                    }
+
+                    // No failures detected, deployment successful
+                    return true;
+                }
+
+                // Still deploying, continue polling
+            }
+
+            // Timeout reached - this could mean deployment is still running
+            $this->lastError = "Deployment timeout after {$timeout} seconds. Deployment may still be running on Ploi.";
+
+            return false;
         } catch (\Ploi\Exceptions\Http\Unauthenticated $e) {
             $this->lastError = "Authentication failed: Invalid Ploi API key. {$e->getMessage()}";
 
@@ -213,5 +267,52 @@ final class PloiProvider extends AbstractDeploymentProvider
         $serverId = $this->config['server_id'] ?? '';
 
         return \is_string($serverId) ? $serverId : '';
+    }
+
+    private function getDeploymentTimeout(): int
+    {
+        $timeout = $this->config['deployment_timeout'] ?? 60;
+
+        return \is_int($timeout) ? $timeout : 60;
+    }
+
+    /**
+     * Fetch deployment logs for a site.
+     *
+     * @return array<string>
+     */
+    public function getDeploymentLogs(int $serverId, int $siteId): array
+    {
+        try {
+            $client = $this->getClient();
+            $server = $client->server($serverId);
+            $site = $server->sites($siteId);
+
+            $logsResponse = $site->logs();
+            $logsData = $logsResponse->getData();
+
+            if (! \is_array($logsData)) {
+                return [];
+            }
+
+            $logs = [];
+            foreach ($logsData as $log) {
+                if (\is_object($log) && \property_exists($log, 'description')) {
+                    $logs[] = (string) $log->description;
+                }
+            }
+
+            return $logs;
+        } catch (\Exception $e) {
+            return ["Error fetching logs: {$e->getMessage()}"];
+        }
+    }
+
+    /**
+     * Get the last site ID that was deployed.
+     */
+    public function getLastSiteId(): int
+    {
+        return $this->lastSiteId;
     }
 }
