@@ -218,25 +218,39 @@ final class CleanupOrphanedCommand extends Command
                 ],
             ]);
 
-            $response = $client->get("/repos/{$repo}/pulls", [
-                'query' => [
-                    'state' => 'open',
-                    'per_page' => 100,
-                ],
-            ]);
-
-            $body = (string) $response->getBody();
-            $prs = \json_decode($body, true);
-
-            if (! \is_array($prs)) {
-                return [];
-            }
-
             $prNumbers = [];
-            foreach ($prs as $pr) {
-                if (\is_array($pr) && isset($pr['number']) && \is_int($pr['number'])) {
-                    $prNumbers[] = $pr['number'];
+            $page = 1;
+            $perPage = 100;
+
+            // Paginate through all open PRs
+            while (true) {
+                $response = $client->get("/repos/{$repo}/pulls", [
+                    'query' => [
+                        'state' => 'open',
+                        'per_page' => $perPage,
+                        'page' => $page,
+                    ],
+                ]);
+
+                $body = (string) $response->getBody();
+                $prs = \json_decode($body, true);
+
+                if (! \is_array($prs) || $prs === []) {
+                    break;
                 }
+
+                foreach ($prs as $pr) {
+                    if (\is_array($pr) && isset($pr['number']) && \is_int($pr['number'])) {
+                        $prNumbers[] = $pr['number'];
+                    }
+                }
+
+                // If we got less than perPage results, we've reached the last page
+                if (\count($prs) < $perPage) {
+                    break;
+                }
+
+                $page++;
             }
 
             return $prNumbers;
@@ -334,16 +348,12 @@ final class CleanupOrphanedCommand extends Command
 
             $server = $client->server($serverId);
             $site = $server->sites($siteId);
-            $deleteResponse = $site->delete();
+            $site->delete();
 
-            $deleteData = $deleteResponse->getJson();
-            if (isset($deleteData->message) && \is_string($deleteData->message)) {
-                $messageLower = \strtolower($deleteData->message);
-                if (\str_contains($messageLower, 'error') || \str_contains($messageLower, 'failed')) {
-                    return false;
-                }
-            }
-
+            // If no exception was thrown, deletion was successful
+            return true;
+        } catch (\Ploi\Exceptions\Http\NotFound $e) {
+            // Site not found - consider it already deleted
             return true;
         } catch (\Exception $e) {
             return false;
