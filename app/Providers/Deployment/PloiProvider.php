@@ -366,7 +366,7 @@ final class PloiProvider extends AbstractDeploymentProvider
         }
     }
 
-    private function getClient(): Ploi
+    public function getClient(): Ploi
     {
         if ($this->client === null) {
             $apiKey = $this->config['api_key'] ?? '';
@@ -379,7 +379,7 @@ final class PloiProvider extends AbstractDeploymentProvider
         return $this->client;
     }
 
-    private function getServerId(): string
+    public function getServerId(): string
     {
         $serverId = $this->config['server_id'] ?? '';
 
