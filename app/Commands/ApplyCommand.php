@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
+use App\Flows\ApplyDeploymentFlow;
 use Illuminate\Console\Command;
 
 final class ApplyCommand extends Command
@@ -47,7 +48,7 @@ final class ApplyCommand extends Command
         \assert(\is_bool($force));
 
         try {
-            $flow = new \App\Flows\ApplyDeploymentFlow;
+            $flow = new ApplyDeploymentFlow;
             $result = $flow->handle($configPath, $projectName, $profileName);
 
             if (! $result['success'] && $result['errors'] !== []) {

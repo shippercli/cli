@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
+use App\Flows\PlanDeploymentFlow;
 use Illuminate\Console\Command;
 
 final class PlanCommand extends Command
@@ -43,7 +44,7 @@ final class PlanCommand extends Command
         \assert(\is_string($profileName));
 
         try {
-            $flow = new \App\Flows\PlanDeploymentFlow;
+            $flow = new PlanDeploymentFlow;
             $result = $flow->handle($configPath, $projectName, $profileName);
 
             if (! $result['success']) {

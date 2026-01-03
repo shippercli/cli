@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
+use App\Flows\ValidateConfigurationFlow;
 use Illuminate\Console\Command;
 
 final class ValidateCommand extends Command
@@ -33,7 +34,7 @@ final class ValidateCommand extends Command
         $this->info("Validating configuration: {$configPath}");
 
         try {
-            $flow = new \App\Flows\ValidateConfigurationFlow;
+            $flow = new ValidateConfigurationFlow;
             $result = $flow->handle($configPath);
 
             foreach ($result['errors'] as $projectName => $projectErrors) {

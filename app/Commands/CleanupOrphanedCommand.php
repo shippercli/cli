@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
+use App\Flows\CleanupOrphanedSitesFlow;
 use Illuminate\Console\Command;
 
 final class CleanupOrphanedCommand extends Command
@@ -57,7 +58,7 @@ final class CleanupOrphanedCommand extends Command
             $this->info('Starting cleanup of orphaned preview sites...');
             $this->line('');
 
-            $flow = new \App\Flows\CleanupOrphanedSitesFlow;
+            $flow = new CleanupOrphanedSitesFlow;
 
             // First, run in dry-run mode to find orphaned sites
             $result = $flow->handle($configPath, $githubRepo, $githubToken, true);

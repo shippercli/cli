@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
+use App\Flows\DestroyDeploymentFlow;
 use Illuminate\Console\Command;
 
 final class DestroyCommand extends Command
@@ -47,7 +48,7 @@ final class DestroyCommand extends Command
         \assert(\is_bool($force));
 
         try {
-            $flow = new \App\Flows\DestroyDeploymentFlow;
+            $flow = new DestroyDeploymentFlow;
             $result = $flow->handle($configPath, $projectName, $profileName);
 
             if (! $result['success'] && $result['errors'] !== []) {
