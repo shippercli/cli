@@ -219,6 +219,7 @@ final class CleanupOrphanedCommand extends Command
 
             // Paginate through all open PRs
             while (true) {
+                // Note: 'query' is the correct parameter name for Guzzle 7.x
                 $response = $client->get("/repos/{$repo}/pulls", [
                     'query' => [
                         'state' => 'open',
@@ -373,9 +374,14 @@ final class CleanupOrphanedCommand extends Command
             // If no exception was thrown, deletion was successful
             return true;
         } catch (\Ploi\Exceptions\Http\NotFound $e) {
-            // Site not found - consider it already deleted
+            // Site not found - it was likely already deleted
+            // This is considered a successful outcome since the goal is to ensure the site doesn't exist
+            $this->line('  ℹ Site was already deleted or not found');
+
             return true;
         } catch (\Exception $e) {
+            $this->error('  Error: '.$e->getMessage());
+
             return false;
         }
     }
