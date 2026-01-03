@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
-use App\Config\ConfigLoader;
-use App\Providers\Deployment\ProviderFactory;
 use Illuminate\Console\Command;
 
 final class PlanCommand extends Command
@@ -45,42 +43,26 @@ final class PlanCommand extends Command
         \assert(\is_string($profileName));
 
         try {
-            $loader = new ConfigLoader($configPath);
-            $config = $loader->load();
+            $flow = new \App\Flows\PlanDeploymentFlow;
+            $result = $flow->handle($configPath, $projectName, $profileName);
 
-            $project = $config->getProject($projectName);
-            if ($project === null) {
-                $this->error("Project not found: {$projectName}");
-
-                return self::FAILURE;
-            }
-
-            $profile = $project->getProfile($profileName);
-            if ($profile === null) {
-                $this->error("Profile not found: {$profileName}");
-
-                return self::FAILURE;
-            }
-
-            $providerFactory = new ProviderFactory($config->providers());
-            $provider = $providerFactory->create($project->provider());
-
-            // First validate
-            $errors = $provider->validate($project, $profile);
-            if ($errors !== []) {
-                $this->error('Configuration validation failed:');
-                foreach ($errors as $error) {
-                    $this->error("  ✗ {$error}");
+            if (! $result['success']) {
+                if ($result['errors'] !== []) {
+                    $this->error('Configuration validation failed:');
+                    foreach ($result['errors'] as $error) {
+                        $this->error("  ✗ {$error}");
+                    }
+                } else {
+                    $this->error($result['error_message']);
                 }
 
                 return self::FAILURE;
             }
 
-            // Then plan
+            $plan = $result['plan'];
+
             $this->info("Planning deployment for {$projectName} ({$profileName})...");
             $this->line('');
-
-            $plan = $provider->plan($project, $profile);
 
             $this->info('Deployment Plan:');
             $this->line('  Provider: '.$this->getPlanValue($plan, 'provider'));

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
-use App\Config\ConfigLoader;
-use App\Providers\Deployment\ProviderFactory;
 use Illuminate\Console\Command;
 
 final class ApplyCommand extends Command
@@ -49,60 +47,50 @@ final class ApplyCommand extends Command
         \assert(\is_bool($force));
 
         try {
-            $loader = new ConfigLoader($configPath);
-            $config = $loader->load();
+            $flow = new \App\Flows\ApplyDeploymentFlow;
+            $result = $flow->handle($configPath, $projectName, $profileName);
 
-            $project = $config->getProject($projectName);
-            if ($project === null) {
-                $this->error("Project not found: {$projectName}");
-
-                return self::FAILURE;
-            }
-
-            $profile = $project->getProfile($profileName);
-            if ($profile === null) {
-                $this->error("Profile not found: {$profileName}");
-
-                return self::FAILURE;
-            }
-
-            $providerFactory = new ProviderFactory($config->providers());
-            $provider = $providerFactory->create($project->provider());
-
-            // Validate first
-            $errors = $provider->validate($project, $profile);
-            if ($errors !== []) {
+            if (! $result['success'] && $result['errors'] !== []) {
                 $this->error('Configuration validation failed:');
-                foreach ($errors as $error) {
+                foreach ($result['errors'] as $error) {
                     $this->error("  ✗ {$error}");
                 }
 
                 return self::FAILURE;
             }
 
-            // Show plan
+            if (! $result['success'] && $result['project'] === null) {
+                $this->error($result['error_message']);
+
+                return self::FAILURE;
+            }
+
+            if (! $result['success'] && $result['profile'] === null) {
+                $this->error($result['error_message']);
+
+                return self::FAILURE;
+            }
+
+            $plan = $result['plan'];
+
             $this->info("Deploying {$projectName} ({$profileName})...");
             $this->line('');
 
-            $plan = $provider->plan($project, $profile);
             $this->info('Deployment Configuration:');
             $this->line('  Provider: '.$this->getPlanValue($plan, 'provider'));
             $this->line('  Branch:   '.$this->getPlanValue($plan, 'branch'));
             $this->line('  Path:     '.$this->getPlanValue($plan, 'path'));
             $this->line('');
 
-            // Confirm
             if (! $force && ! $this->confirm('Do you want to continue?', false)) {
                 $this->warn('Deployment cancelled.');
 
                 return self::SUCCESS;
             }
 
-            // Apply
             $this->info('Executing deployment...');
             $this->line('');
 
-            // Add debug information
             $this->comment('Debug Information:');
             $this->line('  Server ID: '.$this->getPlanValue($plan, 'server_id'));
             $this->line('  Domain:    '.$this->getPlanValue($plan, 'domain'));
@@ -111,14 +99,16 @@ final class ApplyCommand extends Command
             $this->comment('Triggering deployment and waiting for completion...');
             $this->line('');
 
-            $result = $provider->apply($project, $profile);
-
-            if ($result) {
+            if ($result['success']) {
                 $this->info('✓ Deployment completed successfully!');
 
-                // Fetch and display deployment logs
-                if ($provider instanceof \App\Providers\Deployment\PloiProvider) {
-                    $this->displayDeploymentLogs($provider, $plan);
+                if ($result['logs'] !== []) {
+                    $this->line('');
+                    $this->info('Deployment Logs:');
+                    $this->line('');
+                    foreach ($result['logs'] as $log) {
+                        $this->line("  {$log}");
+                    }
                 }
 
                 return self::SUCCESS;
@@ -126,17 +116,19 @@ final class ApplyCommand extends Command
 
             $this->error('✗ Deployment failed!');
 
-            // Display error details if available
-            $errorMessage = $provider->getLastError();
-            if ($errorMessage !== '') {
+            if ($result['error_message'] !== '') {
                 $this->line('');
                 $this->error('Error Details:');
-                $this->line("  {$errorMessage}");
+                $this->line("  {$result['error_message']}");
             }
 
-            // Fetch and display deployment logs on failure
-            if ($provider instanceof \App\Providers\Deployment\PloiProvider) {
-                $this->displayDeploymentLogs($provider, $plan);
+            if ($result['logs'] !== []) {
+                $this->line('');
+                $this->info('Deployment Logs:');
+                $this->line('');
+                foreach ($result['logs'] as $log) {
+                    $this->line("  {$log}");
+                }
             }
 
             return self::FAILURE;
@@ -144,39 +136,6 @@ final class ApplyCommand extends Command
             $this->error("Deployment failed: {$e->getMessage()}");
 
             return self::FAILURE;
-        }
-    }
-
-    /**
-     * Display deployment logs from Ploi provider.
-     *
-     * @param array<string, mixed> $plan
-     */
-    private function displayDeploymentLogs(\App\Providers\Deployment\PloiProvider $provider, array $plan): void
-    {
-        $this->line('');
-        $this->info('Deployment Logs:');
-        $this->line('');
-
-        $serverId = (int) $this->getPlanValue($plan, 'server_id');
-        $siteId = $provider->getLastSiteId();
-
-        if ($siteId === 0) {
-            $this->warn('  No site ID available to fetch logs');
-
-            return;
-        }
-
-        $logs = $provider->getDeploymentLogs($serverId, $siteId);
-
-        if ($logs === []) {
-            $this->warn('  No deployment logs available');
-
-            return;
-        }
-
-        foreach ($logs as $log) {
-            $this->line("  {$log}");
         }
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
-use App\Config\ConfigLoader;
-use App\Providers\Deployment\ProviderFactory;
 use Illuminate\Console\Command;
 
 final class ValidateCommand extends Command
@@ -35,39 +33,27 @@ final class ValidateCommand extends Command
         $this->info("Validating configuration: {$configPath}");
 
         try {
-            $loader = new ConfigLoader($configPath);
-            $config = $loader->load();
+            $flow = new \App\Flows\ValidateConfigurationFlow;
+            $result = $flow->handle($configPath);
 
-            $hasErrors = false;
-            $providerFactory = new ProviderFactory($config->providers());
+            foreach ($result['errors'] as $projectName => $projectErrors) {
+                $this->line("  Checking project: {$projectName}");
 
-            foreach ($config->projects() as $project) {
-                $this->line("  Checking project: {$project->name()}");
-
-                try {
-                    $provider = $providerFactory->create($project->provider());
-
-                    foreach ($project->profiles() as $profile) {
-                        $this->line("    Profile: {$profile->name()}");
-
-                        $errors = $provider->validate($project, $profile);
-
-                        if ($errors !== []) {
-                            $hasErrors = true;
-                            foreach ($errors as $error) {
-                                $this->error("      ✗ {$error}");
-                            }
-                        } else {
-                            $this->info('      ✓ Valid');
+                foreach ($projectErrors as $profileName => $errors) {
+                    if ($profileName === '_provider') {
+                        foreach ($errors as $error) {
+                            $this->error("    ✗ {$error}");
+                        }
+                    } else {
+                        $this->line("    Profile: {$profileName}");
+                        foreach ($errors as $error) {
+                            $this->error("      ✗ {$error}");
                         }
                     }
-                } catch (\InvalidArgumentException $e) {
-                    $hasErrors = true;
-                    $this->error("    ✗ {$e->getMessage()}");
                 }
             }
 
-            if ($hasErrors) {
+            if (! $result['success']) {
                 $this->error('Configuration validation failed!');
 
                 return self::FAILURE;
