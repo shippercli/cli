@@ -12,13 +12,21 @@ final class GetAllSitesAction
      * Get all sites from Ploi server.
      *
      * @return array<int, array{site_id: int, domain: string}>
+     *
+     * @throws \InvalidArgumentException If server ID is invalid
      */
     public function handle(PloiProvider $provider): array
     {
-        $client = $provider->getClient();
-        $serverId = (int) $provider->getServerId();
+        $serverId = $provider->getServerId();
 
-        $server = $client->server($serverId);
+        if ($serverId === '' || ! \ctype_digit($serverId)) {
+            throw new \InvalidArgumentException('Invalid server ID: must be numeric');
+        }
+
+        $client = $provider->getClient();
+        $serverIdInt = (int) $serverId;
+
+        $server = $client->server($serverIdInt);
         $sitesResponse = $server->sites()->get();
 
         $siteData = $sitesResponse->getJson()->data ?? null;

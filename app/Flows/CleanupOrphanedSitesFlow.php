@@ -72,7 +72,20 @@ final class CleanupOrphanedSitesFlow
             ];
         }
 
-        $openPRs = $getOpenPRsAction->handle($githubRepo, $githubToken);
+        $prResult = $getOpenPRsAction->handle($githubRepo, $githubToken);
+
+        // Check if GitHub API call failed
+        if (! $prResult['success']) {
+            return [
+                'success' => false,
+                'orphaned_sites' => [],
+                'deleted' => 0,
+                'failed' => 0,
+                'error_message' => "Failed to fetch open PRs: {$prResult['error']}",
+            ];
+        }
+
+        $openPRs = $prResult['prs'];
         $orphanedSites = $findOrphanedAction->handle($allSites, $openPRs, $projects);
 
         if ($orphanedSites === [] || $dryRun) {
@@ -89,9 +102,11 @@ final class CleanupOrphanedSitesFlow
         $failed = 0;
 
         foreach ($orphanedSites as $site) {
-            if ($deleteSiteAction->handle($ploiProvider, $site['site_id'])) {
-                $deleted++;
-            } else {
+            try {
+                if ($deleteSiteAction->handle($ploiProvider, $site['site_id'])) {
+                    $deleted++;
+                }
+            } catch (\Exception $e) {
                 $failed++;
             }
         }

@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Log\LoggerInterface;
 
 final class GetOpenPullRequestsAction
 {
+    public function __construct(
+        private readonly ?LoggerInterface $logger = null,
+    ) {}
+
     /**
      * Get open pull requests from GitHub.
      *
-     * @return array<int>
+     * @return array{success: bool, prs: array<int>, error: string}
      */
     public function handle(string $repo, string $token): array
     {
@@ -23,6 +30,7 @@ final class GetOpenPullRequestsAction
                     'Accept' => 'application/vnd.github+json',
                     'User-Agent' => 'Deployer-Cleanup',
                 ],
+                'http_errors' => false, // Handle errors manually
             ]);
 
             $prNumbers = [];
@@ -40,8 +48,20 @@ final class GetOpenPullRequestsAction
 
                 $statusCode = $response->getStatusCode();
 
-                if ($statusCode === 401 || $statusCode === 403 || $statusCode === 429) {
-                    return [];
+                if ($statusCode === 401) {
+                    return ['success' => false, 'prs' => [], 'error' => 'GitHub API authentication failed'];
+                }
+
+                if ($statusCode === 403) {
+                    return ['success' => false, 'prs' => [], 'error' => 'GitHub API access forbidden or rate limited'];
+                }
+
+                if ($statusCode === 429) {
+                    return ['success' => false, 'prs' => [], 'error' => 'GitHub API rate limit exceeded'];
+                }
+
+                if ($statusCode !== 200) {
+                    return ['success' => false, 'prs' => [], 'error' => "GitHub API returned status {$statusCode}"];
                 }
 
                 $body = (string) $response->getBody();
@@ -64,9 +84,30 @@ final class GetOpenPullRequestsAction
                 $page++;
             }
 
-            return $prNumbers;
+            return ['success' => true, 'prs' => $prNumbers, 'error' => ''];
+        } catch (ClientException|RequestException $e) {
+            $statusCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 0;
+            $error = "GitHub API request failed (status {$statusCode}): {$e->getMessage()}";
+
+            if ($this->logger !== null) {
+                $this->logger->error('GitHub API request failed', [
+                    'repo' => $repo,
+                    'status_code' => $statusCode,
+                    'exception' => $e->getMessage(),
+                ]);
+            }
+
+            return ['success' => false, 'prs' => [], 'error' => $error];
         } catch (\Exception $e) {
-            return [];
+            if ($this->logger !== null) {
+                $this->logger->error('Unexpected error fetching GitHub PRs', [
+                    'repo' => $repo,
+                    'exception' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+
+            return ['success' => false, 'prs' => [], 'error' => "Unexpected error: {$e->getMessage()}"];
         }
     }
 }

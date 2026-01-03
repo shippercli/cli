@@ -48,6 +48,8 @@ final class PloiProvider extends AbstractDeploymentProvider
 
         if (! isset($this->config['server_id']) || $this->config['server_id'] === '') {
             $errors[] = 'Ploi server ID is required';
+        } elseif (! \ctype_digit((string) $this->config['server_id'])) {
+            $errors[] = 'Ploi server ID must contain only digits';
         }
 
         $domain = $profile->get('domain');
