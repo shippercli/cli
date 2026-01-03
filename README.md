@@ -84,13 +84,13 @@ projects:
     profiles:
       production:
         branch: main
-        domain: api-live.ulties.dev
+        domain: deployer-wip-api.ulties.dev
       staging:
         branch: develop
-        domain: api-test.ulties.dev
+        domain: deployer-wip-api-test.ulties.dev
       preview:
         branch: "${GITHUB_HEAD_REF}"
-        domain: "api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "deployer-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
 ```
 
 **Configuration Notes:**

@@ -68,8 +68,8 @@ jobs:
         with:
           script: |
             const domain = '${{ matrix.project }}' === 'api' 
-              ? 'api-preview-${{ github.event.pull_request.number }}.ulties.dev'
-              : 'preview-${{ github.event.pull_request.number }}.ulties.dev';
+              ? 'deployer-wip-api-preview-${{ github.event.pull_request.number }}.ulties.dev'
+              : 'deployer-wip-preview-${{ github.event.pull_request.number }}.ulties.dev';
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
