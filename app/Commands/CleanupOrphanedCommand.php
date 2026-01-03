@@ -337,7 +337,7 @@ final class CleanupOrphanedCommand extends Command
                 }
 
                 // Convert preview domain pattern to regex
-                // Example: "api-preview-${GITHUB_PR_NUMBER}.ulties.dev" -> "api-preview-(\d+)\.ulties\.dev"
+                // Example: "deployer-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev" -> "deployer-wip-api-preview-(\d+)\.ulties\.dev"
                 // Quote the pattern to escape special regex characters
                 $pattern = \preg_quote($previewDomain, '/');
 
