@@ -30,12 +30,8 @@ parameters:
     # Treat PHP as 8.3
     phpVersion: 80300
     
-    # Bootstrap for Laravel Zero
-    bootstrapFiles:
-        - vendor/autoload.php
-    
     excludePaths:
-        - vendor
+        - vendor (?)
         - tests/Pest.php
         - tests/Feature
     

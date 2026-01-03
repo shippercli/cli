@@ -82,7 +82,8 @@ final class ApplyDeploymentFlow
 
         $logs = [];
         if ($provider instanceof PloiProvider) {
-            $serverId = (int) ($plan['server_id'] ?? 0);
+            $serverIdValue = $plan['server_id'] ?? 0;
+            $serverId = \is_int($serverIdValue) ? $serverIdValue : (int) $serverIdValue;
             $siteId = $provider->getLastSiteId();
             $logs = $logsAction->handle($provider, $serverId, $siteId);
         }

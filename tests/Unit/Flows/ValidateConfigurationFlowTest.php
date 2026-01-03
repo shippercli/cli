@@ -15,5 +15,7 @@ use App\Flows\ValidateConfigurationFlow;
 
 \test('ValidateConfigurationFlow throws exception for missing file', function (): void {
     $flow = new ValidateConfigurationFlow;
-    $flow->handle('nonexistent.yml');
-})->throws(\RuntimeException::class);
+
+    \expect(fn () => $flow->handle('nonexistent.yml'))
+        ->toThrow(\RuntimeException::class);
+});

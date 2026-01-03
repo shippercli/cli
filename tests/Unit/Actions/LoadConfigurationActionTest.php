@@ -13,5 +13,7 @@ use App\Actions\LoadConfigurationAction;
 
 \test('LoadConfigurationAction throws exception for missing file', function (): void {
     $action = new LoadConfigurationAction;
-    $action->handle('nonexistent.yml');
-})->throws(\RuntimeException::class);
+
+    \expect(fn () => $action->handle('nonexistent.yml'))
+        ->toThrow(\RuntimeException::class);
+});
