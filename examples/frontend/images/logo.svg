@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main rocket shape -->
+  <g transform="translate(100, 100)">
+    <!-- Rocket body -->
+    <path d="M -15,-60 L -15,20 L -25,35 L -25,45 L 0,50 L 25,45 L 25,35 L 15,20 L 15,-60 Z" 
+          fill="url(#logoGradient)" stroke="#1e293b" stroke-width="2"/>
+    
+    <!-- Rocket window -->
+    <circle cx="0" cy="-20" r="12" fill="#f8fafc" stroke="#1e293b" stroke-width="2"/>
+    <circle cx="0" cy="-20" r="8" fill="#3b82f6" opacity="0.3"/>
+    
+    <!-- Rocket fins -->
+    <path d="M -15,10 L -35,30 L -15,25 Z" fill="#1e3a8a" stroke="#1e293b" stroke-width="2"/>
+    <path d="M 15,10 L 35,30 L 15,25 Z" fill="#1e3a8a" stroke="#1e293b" stroke-width="2"/>
+    
+    <!-- Flame -->
+    <g opacity="0.9">
+      <ellipse cx="0" cy="50" rx="20" ry="15" fill="#fbbf24"/>
+      <ellipse cx="0" cy="55" rx="15" ry="12" fill="#f59e0b"/>
+      <ellipse cx="0" cy="58" rx="10" ry="8" fill="#ef4444"/>
+    </g>
+    
+    <!-- Stars -->
+    <circle cx="-50" cy="-50" r="2" fill="#fbbf24"/>
+    <circle cx="45" cy="-55" r="1.5" fill="#fbbf24"/>
+    <circle cx="-60" cy="0" r="1" fill="#fbbf24"/>
+    <circle cx="55" cy="-20" r="1.5" fill="#fbbf24"/>
+    <circle cx="-40" cy="-70" r="1" fill="#fbbf24"/>
+    <circle cx="50" cy="-75" r="2" fill="#fbbf24"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="185" font-family="Arial, sans-serif" font-size="16" font-weight="bold" 
+        text-anchor="middle" fill="#1e293b">DEPLOYER</text>
+</svg>
