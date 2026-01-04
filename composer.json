@@ -30,7 +30,7 @@
     "scripts": {
         "test": [
             "@php -r \"file_exists('vendor/bin/pest') ? exit(0) : exit(1);\" || echo 'Dev dependencies required. Run: composer install'",
-            "@php -r \"file_exists('vendor/bin/pest') && passthru('vendor/bin/pest');\""
+            "@php -r \"if (file_exists('vendor/bin/pest')) { passthru('vendor/bin/pest', $exitCode); exit($exitCode); }\""
         ],
         "analyse": "php phpstan.phar analyse --memory-limit=1G",
         "format": "php pint.phar",
