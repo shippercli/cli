@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
-use App\Config\ConfigLoader;
-use App\Providers\Deployment\ProviderFactory;
+use App\Flows\DestroyDeploymentFlow;
 use Illuminate\Console\Command;
 
 final class DestroyCommand extends Command
@@ -49,62 +48,59 @@ final class DestroyCommand extends Command
         \assert(\is_bool($force));
 
         try {
-            $loader = new ConfigLoader($configPath);
-            $config = $loader->load();
+            $flow = new DestroyDeploymentFlow;
 
-            $project = $config->getProject($projectName);
-            if ($project === null) {
-                $this->error("Project not found: {$projectName}");
+            // First, plan the destruction (no execution yet)
+            $planResult = $flow->handle($configPath, $projectName, $profileName);
 
-                return self::FAILURE;
-            }
-
-            $profile = $project->getProfile($profileName);
-            if ($profile === null) {
-                $this->error("Profile not found: {$profileName}");
-
-                return self::FAILURE;
-            }
-
-            $providerFactory = new ProviderFactory($config->providers());
-            $provider = $providerFactory->create($project->provider());
-
-            // Validate first
-            $errors = $provider->validate($project, $profile);
-            if ($errors !== []) {
+            if (! $planResult['success'] && $planResult['errors'] !== []) {
                 $this->error('Configuration validation failed:');
-                foreach ($errors as $error) {
+                foreach ($planResult['errors'] as $error) {
                     $this->error("  ✗ {$error}");
                 }
 
                 return self::FAILURE;
             }
 
-            // Show what will be destroyed
+            if (! $planResult['success']) {
+                $this->error($planResult['error_message']);
+
+                return self::FAILURE;
+            }
+
+            $plan = $planResult['plan'];
+            $project = $planResult['project'];
+            $profile = $planResult['profile'];
+            $provider = $planResult['provider'];
+
+            // These should be set if success is true, but assert for type safety
+            \assert($project !== null);
+            \assert($profile !== null);
+            \assert($provider !== null);
+
             $this->info("Destroying {$projectName} ({$profileName})...");
             $this->line('');
 
-            $plan = $provider->plan($project, $profile);
             $this->info('Deployment Configuration:');
             $this->line('  Provider: '.$this->getPlanValue($plan, 'provider'));
             $this->line('  Domain:   '.$this->getPlanValue($plan, 'domain'));
             $this->line('  Branch:   '.$this->getPlanValue($plan, 'branch'));
             $this->line('');
 
-            // Confirm
+            // Get confirmation BEFORE destroying
             if (! $force && ! $this->confirm('Do you want to destroy this site?', false)) {
                 $this->warn('Destroy cancelled.');
 
                 return self::SUCCESS;
             }
 
-            // Destroy
             $this->info('Destroying site...');
             $this->line('');
 
-            $result = $provider->destroy($project, $profile);
+            // Now execute the destruction
+            $executeResult = $flow->execute($provider, $project, $profile);
 
-            if ($result) {
+            if ($executeResult['success']) {
                 $this->info('✓ Site destroyed successfully!');
 
                 return self::SUCCESS;
@@ -112,12 +108,10 @@ final class DestroyCommand extends Command
 
             $this->error('✗ Destroy failed!');
 
-            // Display error details if available
-            $errorMessage = $provider->getLastError();
-            if ($errorMessage !== '') {
+            if ($executeResult['error_message'] !== '') {
                 $this->line('');
                 $this->error('Error Details:');
-                $this->line("  {$errorMessage}");
+                $this->line("  {$executeResult['error_message']}");
             }
 
             return self::FAILURE;
