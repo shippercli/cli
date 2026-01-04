@@ -265,8 +265,30 @@ function logDeploymentInfo() {
 function showNotification(message, type) {
     console.log(`[${type.toUpperCase()}] ${message}`);
     
-    // In a real app, you might show a toast notification here
-    alert(message);
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 /**
@@ -292,13 +314,4 @@ function formatDate(date) {
         hour: '2-digit',
         minute: '2-digit'
     }).format(date);
-}
-
-// Export functions for testing (if needed)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        validateFormData,
-        formatDate,
-        getQueryParam
-    };
 }
