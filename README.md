@@ -86,8 +86,8 @@ projects:
     # Database configuration
     databases:
       main:
-        name: "${PROJECT_NAME}_${PROFILE}"
-        user: "${PROJECT_NAME}_${PROFILE}"
+        name: "${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        user: "${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
         type: mysql
     profiles:
       production:
@@ -117,10 +117,15 @@ projects:
 - Database names and users support variable interpolation:
   - `${PROJECT_NAME}` - The project name from config (e.g., "api")
   - `${PROFILE}` - The deployment profile (e.g., "production", "staging", "preview")
+  - Any environment variable (e.g., `${GITHUB_PR_NUMBER}` for PR-specific databases)
+- Environment variables that are not set will be treated as empty strings
+- Trailing underscores and multiple consecutive underscores are automatically cleaned up
 - Each database is created with a secure random password
 - Databases are linked to their respective sites
 - When a site is destroyed, its associated databases are also deleted
-- Example: For project "api" with profile "production", a database named "api_production" will be created
+- Examples:
+  - For project "api" with profile "production", using pattern `${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}`, the database name will be "api_production"
+  - For project "api" with profile "preview" and PR #123, the database name will be "api_preview_123"
 
 ### CLI Commands
 

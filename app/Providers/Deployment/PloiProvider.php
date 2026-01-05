@@ -527,11 +527,30 @@ final class PloiProvider extends AbstractDeploymentProvider
 
     /**
      * Interpolate database name with project and profile placeholders.
+     * Also interpolates any remaining environment variables.
      */
     private function interpolateDatabaseName(string $name, string $projectName, string $profileName): string
     {
         $name = \str_replace('${PROJECT_NAME}', $projectName, $name);
         $name = \str_replace('${PROFILE}', $profileName, $name);
+
+        // Interpolate any remaining environment variables
+        $name = \preg_replace_callback(
+            '/\$\{([A-Z_][A-Z0-9_]*)\}/',
+            function (array $matches): string {
+                $envVar = $matches[1];
+                $envValue = \getenv($envVar);
+
+                // If env var is not set, remove the placeholder (use empty string)
+                return $envValue !== false ? $envValue : '';
+            },
+            $name,
+        ) ?? $name;
+
+        // Clean up any trailing underscores or multiple consecutive underscores
+        // that may result from missing environment variables
+        $name = \preg_replace('/_+$/', '', $name); // Remove trailing underscores
+        $name = \preg_replace('/_+/', '_', $name); // Replace multiple underscores with single
 
         return $name;
     }
