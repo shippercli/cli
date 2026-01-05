@@ -1,15 +1,26 @@
-# Example API Project
+# Example Laravel API Project
 
-This is a placeholder for an example Laravel API project.
+This is a Laravel application used as an example for the Deployer project.
 
-## Structure
+## About
 
-In a real deployment, this directory would contain:
-- Laravel application files
-- `composer.json` for dependencies
-- `.env.example` for environment configuration
-- Database migrations
-- API routes and controllers
+This Laravel application is part of the deployer-wip repository and serves as an example API project for testing deployment workflows.
+
+## API Endpoints
+
+### GET /api/jokes
+
+Returns a random programming joke in JSON format.
+
+**Example Response:**
+```json
+{
+  "joke": "Why do programmers prefer dark mode? Because light attracts bugs!",
+  "type": "programming",
+  "setup": "Why do programmers prefer dark mode?",
+  "punchline": "Because light attracts bugs!"
+}
+```
 
 ## Deployment
 
@@ -36,3 +47,23 @@ This project is deployed using the `deployer` CLI with the configuration in `dep
 # Deploy to staging
 ./deployer apply api --profile=staging
 ```
+
+## Local Development
+
+```bash
+# Install dependencies
+composer install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+
+# Start development server
+php artisan serve
+```
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
