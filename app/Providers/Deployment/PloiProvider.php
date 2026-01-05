@@ -549,8 +549,8 @@ final class PloiProvider extends AbstractDeploymentProvider
 
         // Clean up any trailing underscores or multiple consecutive underscores
         // that may result from missing environment variables
-        $name = \preg_replace('/_+$/', '', $name); // Remove trailing underscores
-        $name = \preg_replace('/_+/', '_', $name); // Replace multiple underscores with single
+        $name = \preg_replace('/_+$/', '', $name) ?? $name; // Remove trailing underscores
+        $name = \preg_replace('/_+/', '_', $name) ?? $name; // Replace multiple underscores with single
 
         return $name;
     }
