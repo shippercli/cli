@@ -100,7 +100,8 @@ final class PloiProvider extends AbstractDeploymentProvider
         if (! empty($databases)) {
             foreach ($databases as $dbKey => $database) {
                 $dbName = $this->interpolateDatabaseName($database->name(), $project->name(), $profile->name());
-                $actions[] = "Create or find database: {$dbName} (user: {$database->user()}, type: {$database->type()})";
+                $dbUser = $this->interpolateDatabaseName($database->user(), $project->name(), $profile->name());
+                $actions[] = "Create or find database: {$dbName} (user: {$dbUser}, type: {$database->type()})";
             }
         }
 
@@ -121,7 +122,7 @@ final class PloiProvider extends AbstractDeploymentProvider
             'databases' => \array_map(
                 fn ($db) => [
                     'name' => $this->interpolateDatabaseName($db->name(), $project->name(), $profile->name()),
-                    'user' => $db->user(),
+                    'user' => $this->interpolateDatabaseName($db->user(), $project->name(), $profile->name()),
                     'type' => $db->type(),
                 ],
                 $databases,
