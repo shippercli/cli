@@ -22,6 +22,12 @@ projects:
     # Site configuration
     web_directory: /public # Default Laravel public directory
     project_root: / # Root of the project
+    # Database configuration
+    databases:
+      main:
+        name: "${PROJECT_NAME}_${PROFILE}"
+        user: "${PROJECT_NAME}_${PROFILE}"
+        type: mysql
     profiles:
       production:
         branch: main

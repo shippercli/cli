@@ -51,3 +51,25 @@ use App\Config\ConfigLoader;
     \expect($profile->name())->toBe('production');
     \expect($profile->branch())->toBe('main');
 });
+
+\test('loaded project has databases', function (): void {
+    $loader = new ConfigLoader('deployer.yml');
+    $config = $loader->load();
+    $project = $config->getProject('api');
+
+    \expect($project)->not->toBeNull();
+    \expect($project->databases())->toBeArray();
+    \expect($project->databases())->toHaveKey('main');
+});
+
+\test('loaded database has expected properties', function (): void {
+    $loader = new ConfigLoader('deployer.yml');
+    $config = $loader->load();
+    $project = $config->getProject('api');
+    $database = $project?->getDatabase('main');
+
+    \expect($database)->not->toBeNull();
+    \expect($database->name())->toBe('${PROJECT_NAME}_${PROFILE}');
+    \expect($database->user())->toBe('${PROJECT_NAME}_${PROFILE}');
+    \expect($database->type())->toBe('mysql');
+});

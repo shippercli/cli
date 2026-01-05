@@ -90,6 +90,24 @@ final class PloiProvider extends AbstractDeploymentProvider
         $repoNameValue = $repository['name'] ?? 'unknown';
         $repoName = \is_string($repoNameValue) ? $repoNameValue : 'unknown';
 
+        $actions = [
+            "Create or find site for domain: {$domain}",
+            "Install repository: {$repoProvider}:{$repoName} ({$profile->branch()})",
+        ];
+
+        // Add database creation actions
+        $databases = $project->databases();
+        if (! empty($databases)) {
+            foreach ($databases as $dbKey => $database) {
+                $dbName = $this->interpolateDatabaseName($database->name(), $project->name(), $profile->name());
+                $dbUser = $this->interpolateDatabaseName($database->user(), $project->name(), $profile->name());
+                $actions[] = "Create or find database: {$dbName} (user: {$dbUser}, type: {$database->type()})";
+            }
+        }
+
+        $actions[] = 'Deploy site via Ploi API';
+        $actions[] = 'Run deployment script';
+
         return [
             'provider' => $this->getName(),
             'project' => $project->name(),
@@ -101,12 +119,15 @@ final class PloiProvider extends AbstractDeploymentProvider
             'repository' => "{$repoProvider}:{$repoName}",
             'web_directory' => $project->webDirectory(),
             'project_root' => $project->projectRoot(),
-            'actions' => [
-                "Create or find site for domain: {$domain}",
-                "Install repository: {$repoProvider}:{$repoName} ({$profile->branch()})",
-                'Deploy site via Ploi API',
-                'Run deployment script',
-            ],
+            'databases' => \array_map(
+                fn ($db) => [
+                    'name' => $this->interpolateDatabaseName($db->name(), $project->name(), $profile->name()),
+                    'user' => $this->interpolateDatabaseName($db->user(), $project->name(), $profile->name()),
+                    'type' => $db->type(),
+                ],
+                $databases,
+            ),
+            'actions' => $actions,
             'note' => 'This will create a real deployment on Ploi server '.$serverId,
         ];
     }
@@ -183,6 +204,41 @@ final class PloiProvider extends AbstractDeploymentProvider
                     return false;
                 }
                 $siteId = (int) $existingSite->id;
+            }
+
+            // Create or find databases for this project/profile
+            $databases = $project->databases();
+            if (! empty($databases)) {
+                foreach ($databases as $dbKey => $database) {
+                    $dbName = $this->interpolateDatabaseName($database->name(), $project->name(), $profile->name());
+                    $dbUser = $this->interpolateDatabaseName($database->user(), $project->name(), $profile->name());
+
+                    // Check if database already exists
+                    $existingDatabases = $server->databases()->get();
+                    $existingDb = null;
+
+                    $dbData = $existingDatabases->getJson()->data ?? null;
+                    if ($dbData !== null && \is_array($dbData)) {
+                        foreach ($dbData as $db) {
+                            if (\is_object($db) && \property_exists($db, 'name') && $db->name === $dbName) {
+                                $existingDb = $db;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Create database if it doesn't exist
+                    if ($existingDb === null) {
+                        try {
+                            $password = $this->generateDatabasePassword();
+                            $server->databases()->create($dbName, $dbUser, $password, null, $siteId);
+                        } catch (\Exception $e) {
+                            $this->lastError = "Failed to create database {$dbName}: {$e->getMessage()}";
+
+                            return false;
+                        }
+                    }
+                }
             }
 
             // Deploy the site
@@ -339,6 +395,34 @@ final class PloiProvider extends AbstractDeploymentProvider
             }
             $siteId = (int) $existingSite->id;
 
+            // Delete databases associated with this project/profile
+            $databases = $project->databases();
+            if (! empty($databases)) {
+                foreach ($databases as $dbKey => $database) {
+                    $dbName = $this->interpolateDatabaseName($database->name(), $project->name(), $profile->name());
+
+                    // Find and delete the database
+                    $existingDatabases = $server->databases()->get();
+                    $dbData = $existingDatabases->getJson()->data ?? null;
+
+                    if ($dbData !== null && \is_array($dbData)) {
+                        foreach ($dbData as $db) {
+                            if (\is_object($db) && \property_exists($db, 'name') && $db->name === $dbName) {
+                                if (\property_exists($db, 'id')) {
+                                    try {
+                                        $server->databases((int) $db->id)->delete();
+                                    } catch (\Exception $e) {
+                                        // Continue even if database deletion fails
+                                        // We still want to delete the site
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             // Delete the site
             $site = $server->sites($siteId);
             $deleteResponse = $site->delete();
@@ -439,5 +523,24 @@ final class PloiProvider extends AbstractDeploymentProvider
     public function getLastSiteId(): int
     {
         return $this->lastSiteId;
+    }
+
+    /**
+     * Interpolate database name with project and profile placeholders.
+     */
+    private function interpolateDatabaseName(string $name, string $projectName, string $profileName): string
+    {
+        $name = \str_replace('${PROJECT_NAME}', $projectName, $name);
+        $name = \str_replace('${PROFILE}', $profileName, $name);
+
+        return $name;
+    }
+
+    /**
+     * Generate a secure random password for database.
+     */
+    private function generateDatabasePassword(): string
+    {
+        return \bin2hex(\random_bytes(16));
     }
 }

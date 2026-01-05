@@ -114,6 +114,23 @@ final class ConfigLoader
             }
         }
 
+        $databases = [];
+
+        if (isset($data['databases']) && \is_array($data['databases'])) {
+            foreach ($data['databases'] as $databaseName => $databaseData) {
+                if (\is_string($databaseName) && \is_array($databaseData)) {
+                    $dbName = $databaseData['name'] ?? $databaseName;
+                    $dbUser = $databaseData['user'] ?? $databaseName;
+                    $dbType = $databaseData['type'] ?? 'mysql';
+                    $databases[$databaseName] = new DatabaseConfig(
+                        \is_string($dbName) ? $dbName : $databaseName,
+                        \is_string($dbUser) ? $dbUser : $databaseName,
+                        \is_string($dbType) ? $dbType : 'mysql',
+                    );
+                }
+            }
+        }
+
         $provider = $data['provider'] ?? '';
         $path = $data['path'] ?? '';
         $repository = $data['repository'] ?? [];
@@ -128,6 +145,7 @@ final class ConfigLoader
             \is_array($repository) ? $repository : [],
             \is_string($webDirectory) ? $webDirectory : '/public',
             \is_string($projectRoot) ? $projectRoot : '/',
+            $databases,
         );
     }
 }

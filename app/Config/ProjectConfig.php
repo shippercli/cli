@@ -9,6 +9,7 @@ final class ProjectConfig
     /**
      * @param array<string, ProfileConfig> $profiles
      * @param array<string, mixed> $repository
+     * @param array<string, DatabaseConfig> $databases
      */
     public function __construct(
         private readonly string $name,
@@ -18,6 +19,7 @@ final class ProjectConfig
         private readonly array $repository = [],
         private readonly string $webDirectory = '/public',
         private readonly string $projectRoot = '/',
+        private readonly array $databases = [],
     ) {}
 
     public function name(): string
@@ -64,5 +66,18 @@ final class ProjectConfig
     public function projectRoot(): string
     {
         return $this->projectRoot;
+    }
+
+    /**
+     * @return array<string, DatabaseConfig>
+     */
+    public function databases(): array
+    {
+        return $this->databases;
+    }
+
+    public function getDatabase(string $name): ?DatabaseConfig
+    {
+        return $this->databases[$name] ?? null;
     }
 }

@@ -15,6 +15,8 @@ Deployer is a CLI tool that reads a repository-level config file (`deployer.yml`
 - ✅ Plan/apply workflow for safe deployments
 - ✅ Configuration validation
 - ✅ GitHub Actions workflows for CI/CD
+- ✅ Database configuration and automatic provisioning
+- ✅ Database lifecycle management (create, link, destroy)
 
 ### Strict Type Enforcement
 - ✅ `declare(strict_types=1)` in all PHP files
@@ -81,6 +83,12 @@ projects:
     # Site configuration
     web_directory: /public  # Default Laravel public directory
     project_root: /  # Root of the project
+    # Database configuration
+    databases:
+      main:
+        name: "${PROJECT_NAME}_${PROFILE}"
+        user: "${PROJECT_NAME}_${PROFILE}"
+        type: mysql
     profiles:
       production:
         branch: main
@@ -103,6 +111,16 @@ projects:
 - `project_root` defaults to `/` (project root)
 - No need to manually manage site IDs - the deployer handles this automatically
 - Domains use subdomains of ulties.dev for different environments
+
+**Database Configuration:**
+- Databases are automatically created/found by name
+- Database names and users support variable interpolation:
+  - `${PROJECT_NAME}` - The project name from config (e.g., "api")
+  - `${PROFILE}` - The deployment profile (e.g., "production", "staging", "preview")
+- Each database is created with a secure random password
+- Databases are linked to their respective sites
+- When a site is destroyed, its associated databases are also deleted
+- Example: For project "api" with profile "production", a database named "api_production" will be created
 
 ### CLI Commands
 
