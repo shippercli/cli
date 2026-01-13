@@ -69,7 +69,7 @@ use App\Config\ConfigLoader;
     $database = $project?->getDatabase('main');
 
     \expect($database)->not->toBeNull();
-    \expect($database->name())->toBe('shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
-    \expect($database->user())->toBe('shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
+    \expect($database->name())->toBe('shipper_cli_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
+    \expect($database->user())->toBe('shipper_cli_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
     \expect($database->type())->toBe('mysql');
 });

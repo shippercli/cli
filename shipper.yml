@@ -25,19 +25,19 @@ projects:
     # Database configuration
     databases:
       main:
-        name: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
-        user: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        name: "shipper_cli_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        user: "shipper_cli_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
         type: mysql
     profiles:
       production:
         branch: main
-        domain: shipper-wip-api.ulties.dev
+        domain: shipper-cli-api-production.ulties.dev
       staging:
         branch: develop
-        domain: shipper-wip-api-test.ulties.dev
+        domain: shipper-cli-api-staging.ulties.dev
       preview:
         branch: "${GITHUB_HEAD_REF}" # PR branch
-        domain: "shipper-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-cli-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
 
   # Example Frontend App
   frontend:
@@ -53,10 +53,10 @@ projects:
     profiles:
       production:
         branch: main
-        domain: shipper-wip.ulties.dev
+        domain: shipper-cli-production.ulties.dev
       staging:
         branch: develop
-        domain: shipper-wip-test.ulties.dev
+        domain: shipper-cli-staging.ulties.dev
       preview:
         branch: "${GITHUB_HEAD_REF}"
-        domain: "shipper-wip-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-cli-preview-${GITHUB_PR_NUMBER}.ulties.dev"
