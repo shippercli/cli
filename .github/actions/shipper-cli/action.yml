@@ -1,0 +1,102 @@
+name: 'Shipper CLI'
+description: 'Run Shipper CLI commands for declarative deployments'
+author: 'Ulties'
+
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+
+inputs:
+  command:
+    description: 'The shipper command to run (e.g., validate, plan, apply)'
+    required: true
+  project:
+    description: 'The project name from shipper.yml'
+    required: false
+  profile:
+    description: 'The deployment profile (e.g., production, staging, preview)'
+    required: false
+  force:
+    description: 'Skip confirmation prompts (for apply command)'
+    required: false
+    default: 'false'
+  version:
+    description: 'Version of shipper CLI to use (default: latest)'
+    required: false
+    default: 'latest'
+  working-directory:
+    description: 'Working directory containing shipper.yml'
+    required: false
+    default: '.'
+
+outputs:
+  exit-code:
+    description: 'Exit code from the shipper command'
+    value: ${{ steps.run-shipper.outputs.exit-code }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download Shipper CLI
+      shell: bash
+      run: |
+        if [ "${{ inputs.version }}" = "latest" ]; then
+          DOWNLOAD_URL="https://github.com/ulties/deployer-wip/releases/latest/download/shipper"
+        else
+          DOWNLOAD_URL="https://github.com/ulties/deployer-wip/releases/download/${{ inputs.version }}/shipper"
+        fi
+        
+        echo "Downloading shipper from: $DOWNLOAD_URL"
+        curl -LSso "${{ github.workspace }}/shipper" "$DOWNLOAD_URL"
+        chmod +x "${{ github.workspace }}/shipper"
+        
+        # Verify download succeeded and file is executable
+        if [ ! -x "${{ github.workspace }}/shipper" ]; then
+          echo "Error: Failed to download or make shipper executable"
+          exit 1
+        fi
+        
+        # Verify it's a valid binary by checking version
+        if ! "${{ github.workspace }}/shipper" --version > /dev/null 2>&1; then
+          echo "Error: Downloaded file is not a valid shipper binary"
+          exit 1
+        fi
+        
+        "${{ github.workspace }}/shipper" --version
+
+    - name: Run Shipper Command
+      id: run-shipper
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set +e
+        
+        # Build the command with proper argument handling
+        SHIPPER_BIN="${{ github.workspace }}/shipper"
+        COMMAND="${{ inputs.command }}"
+        PROJECT="${{ inputs.project }}"
+        PROFILE="${{ inputs.profile }}"
+        FORCE="${{ inputs.force }}"
+        
+        # Build arguments array safely
+        ARGS=("$COMMAND")
+        
+        if [ -n "$PROJECT" ]; then
+          ARGS+=("$PROJECT")
+        fi
+        
+        if [ -n "$PROFILE" ]; then
+          ARGS+=("--profile=$PROFILE")
+        fi
+        
+        if [ "$FORCE" = "true" ]; then
+          ARGS+=("--force")
+        fi
+        
+        # Execute command with proper argument passing
+        echo "Running: $SHIPPER_BIN ${ARGS[*]}"
+        "$SHIPPER_BIN" "${ARGS[@]}"
+        EXIT_CODE=$?
+        
+        echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        exit $EXIT_CODE

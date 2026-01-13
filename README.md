@@ -53,9 +53,30 @@ Modern testing with:
 
 ## Installation
 
+### For Development
+
 ```bash
 composer install
 cp .env.example .env
+```
+
+### Using Pre-built Binary
+
+Download the latest binary from the [releases page](https://github.com/ulties/deployer-wip/releases):
+
+```bash
+# Download latest release
+curl -LSso shipper https://github.com/ulties/deployer-wip/releases/latest/download/shipper
+chmod +x shipper
+./shipper --version
+```
+
+Or use a specific version:
+
+```bash
+# Download specific version
+curl -LSso shipper https://github.com/ulties/deployer-wip/releases/download/v1.0.0/shipper
+chmod +x shipper
 ```
 
 ## Usage
@@ -213,7 +234,82 @@ composer analyse
 
 # Run tests
 composer test
+
+# Build binary
+composer build
 ```
+
+## Building the Binary
+
+The shipper CLI can be built into a standalone PHAR binary:
+
+```bash
+# Build the binary
+composer build
+
+# The binary will be created at builds/shipper
+./builds/shipper --version
+```
+
+The build process uses [Box](https://github.com/box-project/box) to create an optimized PHAR archive with all dependencies included.
+
+### Release Process
+
+When a tag is pushed (e.g., `v1.0.0`), GitHub Actions automatically:
+1. Builds the binary
+2. Creates a GitHub Release
+3. Attaches the binary to the release
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+## Using Shipper CLI in GitHub Actions
+
+A reusable GitHub Action is provided to easily integrate shipper CLI into your workflows:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Shipper Validation
+        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        with:
+          command: validate
+      
+      - name: Deploy to Production
+        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        with:
+          command: apply
+          project: api
+          profile: production
+          force: true
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+```
+
+### Action Inputs
+
+- `command` (required): The shipper command to run (validate, plan, apply)
+- `project` (optional): The project name from shipper.yml
+- `profile` (optional): The deployment profile (production, staging, preview)
+- `force` (optional): Skip confirmation prompts (default: false)
+- `version` (optional): Version of shipper CLI to use (default: latest)
+- `working-directory` (optional): Directory containing shipper.yml (default: .)
+
+### Action Outputs
+
+- `exit-code`: Exit code from the shipper command
 
 ## Continuous Integration
 

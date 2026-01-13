@@ -1,0 +1,50 @@
+name: Deploy to Production (Using Action)
+
+# This is an example workflow showing how to use the shipper-cli action
+# The main deploy-production.yml uses the local shipper CLI instead
+
+on:
+  workflow_dispatch:  # Manual trigger only for testing
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        project: [api, frontend]
+    
+    name: Deploy ${{ matrix.project }} to Production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Validate configuration
+        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        with:
+          command: validate
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+      
+      - name: Plan deployment
+        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        with:
+          command: plan
+          project: ${{ matrix.project }}
+          profile: production
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+      
+      - name: Deploy to production
+        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        with:
+          command: apply
+          project: ${{ matrix.project }}
+          profile: production
+          force: true
+        env:
+          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
