@@ -18,7 +18,7 @@ projects:
     # Repository configuration
     repository:
       provider: github # github, gitlab, bitbucket, or custom
-      name: ulties/deployer-wip # username/repository
+      name: ulties/shipper # username/repository
     # Site configuration
     web_directory: /public # Default Laravel public directory
     project_root: / # Root of the project
@@ -46,7 +46,7 @@ projects:
     # Repository configuration
     repository:
       provider: github
-      name: ulties/deployer-wip
+      name: ulties/shipper
     # Site configuration  
     web_directory: /public
     project_root: /
