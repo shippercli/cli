@@ -1,0 +1,25 @@
+{
+    "main": "shipper",
+    "output": "builds/shipper",
+    "directories": [
+        "app",
+        "bootstrap",
+        "config",
+        "routes",
+        "vendor"
+    ],
+    "files": [
+        "composer.json"
+    ],
+    "blacklist": [
+        "vendor/*/tests",
+        "vendor/*/Tests",
+        "vendor/*/test",
+        "vendor/*/Test"
+    ],
+    "compression": "GZ",
+    "compactors": [
+        "KevinGH\\Box\\Compactor\\Php",
+        "KevinGH\\Box\\Compactor\\Json"
+    ]
+}

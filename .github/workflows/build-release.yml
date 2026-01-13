@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, zip
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      - name: Download Box
+        run: |
+          curl -LSso box.phar https://github.com/box-project/box/releases/latest/download/box.phar
+          chmod +x box.phar
+
+      - name: Build PHAR
+        run: php box.phar compile
+
+      - name: Test binary
+        run: |
+          chmod +x builds/shipper
+          ./builds/shipper --version
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: builds/shipper
+          body: |
+            ## Shipper CLI Binary
+            
+            This release includes a standalone binary for the Shipper CLI.
+            
+            ### Usage
+            
+            Download the `shipper` binary, make it executable, and run it:
+            
+            ```bash
+            chmod +x shipper
+            ./shipper --version
+            ```
+            
+            See the README for full documentation.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

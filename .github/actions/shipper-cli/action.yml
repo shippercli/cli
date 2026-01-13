@@ -1,0 +1,84 @@
+name: 'Shipper CLI'
+description: 'Run Shipper CLI commands for declarative deployments'
+author: 'Ulties'
+
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+
+inputs:
+  command:
+    description: 'The shipper command to run (e.g., validate, plan, apply)'
+    required: true
+  project:
+    description: 'The project name from shipper.yml'
+    required: false
+  profile:
+    description: 'The deployment profile (e.g., production, staging, preview)'
+    required: false
+  force:
+    description: 'Skip confirmation prompts (for apply command)'
+    required: false
+    default: 'false'
+  version:
+    description: 'Version of shipper CLI to use (default: latest)'
+    required: false
+    default: 'latest'
+  working-directory:
+    description: 'Working directory containing shipper.yml'
+    required: false
+    default: '.'
+
+outputs:
+  exit-code:
+    description: 'Exit code from the shipper command'
+    value: ${{ steps.run-shipper.outputs.exit-code }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download Shipper CLI
+      shell: bash
+      run: |
+        if [ "${{ inputs.version }}" = "latest" ]; then
+          DOWNLOAD_URL="https://github.com/ulties/deployer-wip/releases/latest/download/shipper"
+        else
+          DOWNLOAD_URL="https://github.com/ulties/deployer-wip/releases/download/${{ inputs.version }}/shipper"
+        fi
+        
+        echo "Downloading shipper from: $DOWNLOAD_URL"
+        curl -LSso shipper "$DOWNLOAD_URL"
+        chmod +x shipper
+        
+        # Verify download
+        ./shipper --version
+
+    - name: Run Shipper Command
+      id: run-shipper
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set +e
+        
+        # Build the command
+        CMD="../shipper ${{ inputs.command }}"
+        
+        # Add optional parameters
+        if [ -n "${{ inputs.project }}" ]; then
+          CMD="$CMD ${{ inputs.project }}"
+        fi
+        
+        if [ -n "${{ inputs.profile }}" ]; then
+          CMD="$CMD --profile=${{ inputs.profile }}"
+        fi
+        
+        if [ "${{ inputs.force }}" = "true" ]; then
+          CMD="$CMD --force"
+        fi
+        
+        echo "Running: $CMD"
+        eval $CMD
+        EXIT_CODE=$?
+        
+        echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        exit $EXIT_CODE

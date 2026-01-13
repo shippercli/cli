@@ -34,7 +34,11 @@
         ],
         "analyse": "php phpstan.phar analyse --memory-limit=1G",
         "format": "php pint.phar",
-        "format:check": "php pint.phar --test"
+        "format:check": "php pint.phar --test",
+        "build": [
+            "[ -f box.phar ] || curl -LSso box.phar https://github.com/box-project/box/releases/latest/download/box.phar",
+            "php box.phar compile"
+        ]
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
