@@ -9,10 +9,10 @@ use Symfony\Component\Yaml\Yaml;
 final class ConfigLoader
 {
     public function __construct(
-        private readonly string $configPath = 'deployer.yml',
+        private readonly string $configPath = 'shipper.yml',
     ) {}
 
-    public function load(): DeployerConfig
+    public function load(): ShipperConfig
     {
         if (! \file_exists($this->configPath)) {
             throw new \RuntimeException("Config file not found: {$this->configPath}");
@@ -70,7 +70,7 @@ final class ConfigLoader
     /**
      * @param array<string, mixed> $data
      */
-    private function parseConfig(array $data): DeployerConfig
+    private function parseConfig(array $data): ShipperConfig
     {
         $projects = [];
         $providers = $data['providers'] ?? [];
@@ -91,7 +91,7 @@ final class ConfigLoader
             }
         }
 
-        return new DeployerConfig($projects, $providers);
+        return new ShipperConfig($projects, $providers);
     }
 
     /**

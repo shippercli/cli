@@ -6,9 +6,9 @@ use App\Actions\LoadConfigurationAction;
 
 \test('LoadConfigurationAction loads valid configuration', function (): void {
     $action = new LoadConfigurationAction;
-    $config = $action->handle('deployer.yml');
+    $config = $action->handle('shipper.yml');
 
-    \expect($config)->toBeInstanceOf(\App\Config\DeployerConfig::class);
+    \expect($config)->toBeInstanceOf(\App\Config\ShipperConfig::class);
 });
 
 \test('LoadConfigurationAction throws exception for missing file', function (): void {

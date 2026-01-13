@@ -1,15 +1,15 @@
-# Deployer
+# Shipper
 
 A Laravel Zero application for declarative, config-driven deployments with strict type checking and code quality standards.
 
 ## Overview
 
-Deployer is a CLI tool that reads a repository-level config file (`deployer.yml`) and performs plan/apply style deployments through a pluggable provider system. It follows the same philosophy as Infrastructure as Code tools like Terraform, but for application deployments.
+Shipper is a CLI tool that reads a repository-level config file (`shipper.yml`) and performs plan/apply style deployments through a pluggable provider system. It follows the same philosophy as Infrastructure as Code tools like Terraform, but for application deployments.
 
 ## Features
 
 ### Deployment Features
-- ✅ Declarative YAML configuration (`deployer.yml`)
+- ✅ Declarative YAML configuration (`shipper.yml`)
 - ✅ Multiple projects and deployment profiles (production, staging, preview)
 - ✅ Pluggable provider system (currently supports Ploi)
 - ✅ Plan/apply workflow for safe deployments
@@ -62,7 +62,7 @@ cp .env.example .env
 
 ### Configuration
 
-Create a `deployer.yml` file in your repository root:
+Create a `shipper.yml` file in your repository root:
 
 ```yaml
 providers:
@@ -79,26 +79,26 @@ projects:
     # Repository configuration
     repository:
       provider: github  # github, gitlab, bitbucket, or custom
-      name: ulties/deployer-wip  # username/repository
+      name: ulties/shipper-wip  # username/repository
     # Site configuration
     web_directory: /public  # Default Laravel public directory
     project_root: /  # Root of the project
     # Database configuration
     databases:
       main:
-        name: "deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
-        user: "deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        name: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        user: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
         type: mysql
     profiles:
       production:
         branch: main
-        domain: deployer-wip-api.ulties.dev
+        domain: shipper-wip-api.ulties.dev
       staging:
         branch: develop
-        domain: deployer-wip-api-test.ulties.dev
+        domain: shipper-wip-api-test.ulties.dev
       preview:
         branch: "${GITHUB_HEAD_REF}"
-        domain: "deployer-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
 ```
 
 **Configuration Notes:**
@@ -109,7 +109,7 @@ projects:
 - Repository is automatically installed from GitHub/GitLab/Bitbucket when a new site is created
 - `web_directory` defaults to `/public` (Laravel standard)
 - `project_root` defaults to `/` (project root)
-- No need to manually manage site IDs - the deployer handles this automatically
+- No need to manually manage site IDs - the shipper handles this automatically
 - Domains use subdomains of ulties.dev for different environments
 
 **Database Configuration:**
@@ -124,31 +124,31 @@ projects:
 - Databases are linked to their respective sites
 - When a site is destroyed, its associated databases are also deleted
 - Examples:
-  - For project "api" with profile "production", using pattern `deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}`, the database name will be "deployer_api_production"
-  - For project "api" with profile "preview" and PR #123, the database name will be "deployer_api_preview_123"
+  - For project "api" with profile "production", using pattern `shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}`, the database name will be "shipper_api_production"
+  - For project "api" with profile "preview" and PR #123, the database name will be "shipper_api_preview_123"
 
 ### CLI Commands
 
 ```bash
 # Validate configuration
-./deployer validate
+./shipper validate
 
 # Plan a deployment (dry-run)
-./deployer plan api --profile=production
+./shipper plan api --profile=production
 
 # Execute a deployment
-./deployer apply api --profile=production
+./shipper apply api --profile=production
 
 # Execute with force (skip confirmation)
-./deployer apply api --profile=production --force
+./shipper apply api --profile=production --force
 
 # List all commands
-./deployer list
+./shipper list
 ```
 
 ### Provider System
 
-The deployer uses a pluggable provider system. Currently supported:
+The shipper uses a pluggable provider system. Currently supported:
 
 - **Ploi**: Deploy to servers managed by Ploi.io
 
@@ -157,7 +157,7 @@ To add a new provider, implement the `DeploymentProviderInterface` and register 
 ## Project Structure
 
 ```
-deployer/
+shipper/
 ├── app/
 │   ├── Commands/           # CLI commands
 │   │   ├── ValidateCommand.php
@@ -165,7 +165,7 @@ deployer/
 │   │   └── ApplyCommand.php
 │   ├── Config/             # Configuration classes
 │   │   ├── ConfigLoader.php
-│   │   ├── DeployerConfig.php
+│   │   ├── ShipperConfig.php
 │   │   ├── ProjectConfig.php
 │   │   └── ProfileConfig.php
 │   └── Providers/
@@ -182,8 +182,8 @@ deployer/
 │   ├── deploy-production.yml
 │   ├── deploy-staging.yml
 │   └── deploy-preview.yml
-├── deployer.yml            # Main configuration file
-└── deployer                # CLI entry point
+├── shipper.yml            # Main configuration file
+└── shipper                # CLI entry point
 ```
 
 ## GitHub Actions

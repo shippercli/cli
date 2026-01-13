@@ -1,10 +1,10 @@
 # Example Laravel API Project
 
-This is a Laravel application used as an example for the Deployer project.
+This is a Laravel application used as an example for the Shipper project.
 
 ## About
 
-This Laravel application is part of the deployer-wip repository and serves as an example API project for testing deployment workflows.
+This Laravel application is part of the shipper-wip repository and serves as an example API project for testing deployment workflows.
 
 ## API Endpoints
 
@@ -24,7 +24,7 @@ Returns a random programming joke in JSON format.
 
 ## Deployment
 
-This project is deployed using the `deployer` CLI with the configuration in `deployer.yml`.
+This project is deployed using the `shipper` CLI with the configuration in `shipper.yml`.
 
 ### Profiles
 
@@ -36,16 +36,16 @@ This project is deployed using the `deployer` CLI with the configuration in `dep
 
 ```bash
 # Validate configuration
-./deployer validate
+./shipper validate
 
 # Plan deployment (dry-run)
-./deployer plan api --profile=production
+./shipper plan api --profile=production
 
 # Deploy to production
-./deployer apply api --profile=production
+./shipper apply api --profile=production
 
 # Deploy to staging
-./deployer apply api --profile=staging
+./shipper apply api --profile=staging
 ```
 
 ## Local Development

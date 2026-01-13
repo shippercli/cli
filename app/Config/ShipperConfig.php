@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Config;
 
-final class DeployerConfig
+final class ShipperConfig
 {
     /**
      * @param array<string, ProjectConfig> $projects

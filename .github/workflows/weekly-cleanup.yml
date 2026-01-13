@@ -39,7 +39,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-dev
       
       - name: Cleanup orphaned preview sites
-        run: ./deployer cleanup-orphaned --force
+        run: ./shipper cleanup-orphaned --force
         env:
           PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

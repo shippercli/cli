@@ -28,7 +28,7 @@ final class GetOpenPullRequestsAction
                 'headers' => [
                     'Authorization' => "Bearer {$token}",
                     'Accept' => 'application/vnd.github+json',
-                    'User-Agent' => 'Deployer-Cleanup',
+                    'User-Agent' => 'Shipper-Cleanup',
                 ],
                 'http_errors' => false, // Handle errors manually
             ]);

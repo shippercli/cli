@@ -1,4 +1,4 @@
-# Deployer Configuration
+# Shipper Configuration
 # This file defines deployable projects and their deployment profiles
 
 # Provider configurations (credentials, API keys, etc.)
@@ -25,19 +25,19 @@ projects:
     # Database configuration
     databases:
       main:
-        name: "deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
-        user: "deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        name: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        user: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
         type: mysql
     profiles:
       production:
         branch: main
-        domain: deployer-wip-api.ulties.dev
+        domain: shipper-wip-api.ulties.dev
       staging:
         branch: develop
-        domain: deployer-wip-api-test.ulties.dev
+        domain: shipper-wip-api-test.ulties.dev
       preview:
         branch: "${GITHUB_HEAD_REF}" # PR branch
-        domain: "deployer-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
 
   # Example Frontend App
   frontend:
@@ -53,10 +53,10 @@ projects:
     profiles:
       production:
         branch: main
-        domain: deployer-wip.ulties.dev
+        domain: shipper-wip.ulties.dev
       staging:
         branch: develop
-        domain: deployer-wip-test.ulties.dev
+        domain: shipper-wip-test.ulties.dev
       preview:
         branch: "${GITHUB_HEAD_REF}"
-        domain: "deployer-wip-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-wip-preview-${GITHUB_PR_NUMBER}.ulties.dev"

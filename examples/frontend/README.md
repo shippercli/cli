@@ -13,7 +13,7 @@ In a real deployment, this directory would contain:
 
 ## Deployment
 
-This project is deployed using the `deployer` CLI with the configuration in `deployer.yml`.
+This project is deployed using the `shipper` CLI with the configuration in `shipper.yml`.
 
 ### Profiles
 
@@ -25,14 +25,14 @@ This project is deployed using the `deployer` CLI with the configuration in `dep
 
 ```bash
 # Validate configuration
-./deployer validate
+./shipper validate
 
 # Plan deployment (dry-run)
-./deployer plan frontend --profile=production
+./shipper plan frontend --profile=production
 
 # Deploy to production
-./deployer apply frontend --profile=production
+./shipper apply frontend --profile=production
 
 # Deploy to staging
-./deployer apply frontend --profile=staging
+./shipper apply frontend --profile=staging
 ```

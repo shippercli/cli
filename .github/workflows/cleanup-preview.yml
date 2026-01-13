@@ -44,7 +44,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-dev
       
       - name: Destroy preview site
-        run: ./deployer destroy ${{ matrix.project }} --profile=preview --force
+        run: ./shipper destroy ${{ matrix.project }} --profile=preview --force
         env:
           PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}

@@ -138,7 +138,7 @@ $path = \dirname(__DIR__);
 **Example**:
 ```php
 // ✅ Good
-$name = 'Deployer';
+$name = 'Shipper';
 
 // ✅ Also good when interpolation needed
 $message = "Welcome to {$name}";

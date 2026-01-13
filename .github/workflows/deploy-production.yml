@@ -41,16 +41,16 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-dev
       
       - name: Validate configuration
-        run: ./deployer validate
+        run: ./shipper validate
         env:
           PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
       
       - name: Plan deployment
-        run: ./deployer plan ${{ matrix.project }} --profile=production
+        run: ./shipper plan ${{ matrix.project }} --profile=production
         env:
           PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
       
       - name: Deploy to production
-        run: ./deployer apply ${{ matrix.project }} --profile=production --force
+        run: ./shipper apply ${{ matrix.project }} --profile=production --force
         env:
           PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}

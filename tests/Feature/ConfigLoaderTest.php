@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Config\ConfigLoader;
 
 \test('config loader loads valid config', function (): void {
-    $loader = new ConfigLoader('deployer.yml');
+    $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
 
     \expect($config->projects())->toBeArray();
@@ -19,7 +19,7 @@ use App\Config\ConfigLoader;
 })->throws(\RuntimeException::class, 'Config file not found');
 
 \test('loaded project has expected properties', function (): void {
-    $loader = new ConfigLoader('deployer.yml');
+    $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -30,7 +30,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('loaded project has profiles', function (): void {
-    $loader = new ConfigLoader('deployer.yml');
+    $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -42,7 +42,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('loaded profile has expected properties', function (): void {
-    $loader = new ConfigLoader('deployer.yml');
+    $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
     $profile = $project?->getProfile('production');
@@ -53,7 +53,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('loaded project has databases', function (): void {
-    $loader = new ConfigLoader('deployer.yml');
+    $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -63,13 +63,13 @@ use App\Config\ConfigLoader;
 });
 
 \test('loaded database has expected properties', function (): void {
-    $loader = new ConfigLoader('deployer.yml');
+    $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
     $database = $project?->getDatabase('main');
 
     \expect($database)->not->toBeNull();
-    \expect($database->name())->toBe('deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
-    \expect($database->user())->toBe('deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
+    \expect($database->name())->toBe('shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
+    \expect($database->user())->toBe('shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
     \expect($database->type())->toBe('mysql');
 });

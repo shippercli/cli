@@ -1,6 +1,6 @@
 {
-    "name": "ulties/deployer",
-    "description": "A deployer application built with Laravel Zero with strict type checking",
+    "name": "ulties/shipper",
+    "description": "A shipper application built with Laravel Zero with strict type checking",
     "type": "project",
     "license": "MIT",
     "require": {
