@@ -47,11 +47,11 @@ runs:
         fi
         
         echo "Downloading shipper from: $DOWNLOAD_URL"
-        curl -LSso shipper "$DOWNLOAD_URL"
-        chmod +x shipper
+        curl -LSso "${{ github.workspace }}/shipper" "$DOWNLOAD_URL"
+        chmod +x "${{ github.workspace }}/shipper"
         
         # Verify download
-        ./shipper --version
+        "${{ github.workspace }}/shipper" --version
 
     - name: Run Shipper Command
       id: run-shipper
@@ -60,24 +60,31 @@ runs:
       run: |
         set +e
         
-        # Build the command
-        CMD="../shipper ${{ inputs.command }}"
+        # Build the command with proper argument handling
+        SHIPPER_BIN="${{ github.workspace }}/shipper"
+        COMMAND="${{ inputs.command }}"
+        PROJECT="${{ inputs.project }}"
+        PROFILE="${{ inputs.profile }}"
+        FORCE="${{ inputs.force }}"
         
-        # Add optional parameters
-        if [ -n "${{ inputs.project }}" ]; then
-          CMD="$CMD ${{ inputs.project }}"
+        # Build arguments array safely
+        ARGS=("$COMMAND")
+        
+        if [ -n "$PROJECT" ]; then
+          ARGS+=("$PROJECT")
         fi
         
-        if [ -n "${{ inputs.profile }}" ]; then
-          CMD="$CMD --profile=${{ inputs.profile }}"
+        if [ -n "$PROFILE" ]; then
+          ARGS+=("--profile=$PROFILE")
         fi
         
-        if [ "${{ inputs.force }}" = "true" ]; then
-          CMD="$CMD --force"
+        if [ "$FORCE" = "true" ]; then
+          ARGS+=("--force")
         fi
         
-        echo "Running: $CMD"
-        eval $CMD
+        # Execute command with proper argument passing
+        echo "Running: $SHIPPER_BIN ${ARGS[*]}"
+        "$SHIPPER_BIN" "${ARGS[@]}"
         EXIT_CODE=$?
         
         echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
