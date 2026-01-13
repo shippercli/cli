@@ -50,7 +50,18 @@ runs:
         curl -LSso "${{ github.workspace }}/shipper" "$DOWNLOAD_URL"
         chmod +x "${{ github.workspace }}/shipper"
         
-        # Verify download
+        # Verify download succeeded and file is executable
+        if [ ! -x "${{ github.workspace }}/shipper" ]; then
+          echo "Error: Failed to download or make shipper executable"
+          exit 1
+        fi
+        
+        # Verify it's a valid binary by checking version
+        if ! "${{ github.workspace }}/shipper" --version > /dev/null 2>&1; then
+          echo "Error: Downloaded file is not a valid shipper binary"
+          exit 1
+        fi
+        
         "${{ github.workspace }}/shipper" --version
 
     - name: Run Shipper Command
