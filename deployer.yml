@@ -25,8 +25,8 @@ projects:
     # Database configuration
     databases:
       main:
-        name: "${PROJECT_NAME}_${PROFILE}"
-        user: "${PROJECT_NAME}_${PROFILE}"
+        name: "deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
+        user: "deployer_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
         type: mysql
     profiles:
       production:

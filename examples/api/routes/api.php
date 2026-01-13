@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/jokes', function () {
-    return response()->json([
+    return \response()->json([
         'joke' => 'Why do programmers prefer dark mode? Because light attracts bugs!',
         'type' => 'programming',
         'setup' => 'Why do programmers prefer dark mode?',
