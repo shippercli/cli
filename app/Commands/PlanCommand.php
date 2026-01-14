@@ -35,13 +35,8 @@ final class PlanCommand extends Command
     public function handle(): int
     {
         $configPath = $this->option('config');
-        \assert(\is_string($configPath));
-
         $projectName = $this->argument('project');
-        \assert(\is_string($projectName));
-
         $profileName = $this->option('profile');
-        \assert(\is_string($profileName));
 
         try {
             $flow = new PlanDeploymentFlow;

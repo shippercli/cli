@@ -50,7 +50,6 @@ final class PloiProvider extends AbstractDeploymentProvider
             $errors[] = 'Ploi server ID is required';
         } else {
             $serverIdValue = $this->config['server_id'];
-            \assert(\is_string($serverIdValue) || \is_int($serverIdValue) || \is_float($serverIdValue));
             $serverIdString = \is_string($serverIdValue) ? $serverIdValue : (string) $serverIdValue;
 
             if (! \ctype_digit($serverIdString)) {

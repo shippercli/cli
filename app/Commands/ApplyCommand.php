@@ -36,16 +36,9 @@ final class ApplyCommand extends Command
     public function handle(): int
     {
         $configPath = $this->option('config');
-        \assert(\is_string($configPath));
-
         $projectName = $this->argument('project');
-        \assert(\is_string($projectName));
-
         $profileName = $this->option('profile');
-        \assert(\is_string($profileName));
-
         $force = $this->option('force');
-        \assert(\is_bool($force));
 
         try {
             $flow = new ApplyDeploymentFlow;
@@ -72,11 +65,6 @@ final class ApplyCommand extends Command
             $project = $planResult['project'];
             $profile = $planResult['profile'];
             $provider = $planResult['provider'];
-
-            // These should be set if success is true, but assert for type safety
-            \assert($project !== null);
-            \assert($profile !== null);
-            \assert($provider !== null);
 
             $this->info("Deploying {$projectName} ({$profileName})...");
             $this->line('');
