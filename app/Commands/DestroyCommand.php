@@ -66,7 +66,7 @@ final class DestroyCommand extends Command
             $profile = $planResult['profile'];
             $provider = $planResult['provider'];
 
-            // At this point, success is true, so these must be non-null
+            // The flow contract guarantees these are non-null when success is true
             assert($project !== null && $profile !== null && $provider !== null);
 
             $this->info("Destroying {$projectName} ({$profileName})...");
