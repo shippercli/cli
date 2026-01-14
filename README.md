@@ -189,12 +189,11 @@ shipper/
 │   │   ├── ShipperConfig.php
 │   │   ├── ProjectConfig.php
 │   │   └── ProfileConfig.php
-│   └── Providers/
-│       └── Deployment/     # Deployment providers
-│           ├── DeploymentProviderInterface.php
-│           ├── AbstractDeploymentProvider.php
-│           ├── PloiProvider.php
-│           └── ProviderFactory.php
+│   └── Deployment/         # Deployment providers
+│       ├── DeploymentProviderInterface.php
+│       ├── AbstractDeploymentProvider.php
+│       ├── PloiProvider.php
+│       └── ProviderFactory.php
 ├── examples/               # Example deployable projects
 │   ├── api/
 │   └── frontend/

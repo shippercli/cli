@@ -6,7 +6,7 @@ namespace App\Actions;
 
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
-use App\Providers\Deployment\DeploymentProviderInterface;
+use App\Deployment\DeploymentProviderInterface;
 
 final class CreateDeploymentPlanAction
 {
