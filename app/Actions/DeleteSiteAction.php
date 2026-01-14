@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Providers\Deployment\PloiProvider;
+use App\Deployment\PloiProvider;
 use Psr\Log\LoggerInterface;
 
 final class DeleteSiteAction

@@ -9,8 +9,8 @@ use App\Actions\FindOrphanedSitesAction;
 use App\Actions\GetAllSitesAction;
 use App\Actions\GetOpenPullRequestsAction;
 use App\Actions\LoadConfigurationAction;
-use App\Providers\Deployment\PloiProvider;
-use App\Providers\Deployment\ProviderFactory;
+use App\Deployment\PloiProvider;
+use App\Deployment\ProviderFactory;
 
 final class CleanupOrphanedSitesFlow
 {

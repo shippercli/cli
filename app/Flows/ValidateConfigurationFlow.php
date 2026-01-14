@@ -6,7 +6,7 @@ namespace App\Flows;
 
 use App\Actions\LoadConfigurationAction;
 use App\Actions\ValidateProjectAction;
-use App\Providers\Deployment\ProviderFactory;
+use App\Deployment\ProviderFactory;
 
 final class ValidateConfigurationFlow
 {
