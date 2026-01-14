@@ -1,3 +1,6 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
 parameters:
     paths:
         - app
@@ -31,7 +34,7 @@ parameters:
     phpVersion: 80300
     
     excludePaths:
-        - vendor (?)
+        - vendor
         - tests/Pest.php
         - tests/Feature
     
