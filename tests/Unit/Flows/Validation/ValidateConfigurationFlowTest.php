@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Flows\ValidateConfigurationFlow;
+use App\Flows\Validation\ValidateConfigurationFlow;
 
 \test('ValidateConfigurationFlow validates valid configuration', function (): void {
     $flow = new ValidateConfigurationFlow;

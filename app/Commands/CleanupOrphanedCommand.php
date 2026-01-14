@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
-use App\Flows\CleanupOrphanedSitesFlow;
+use App\Flows\Maintenance\CleanupOrphanedSitesFlow;
 use Illuminate\Console\Command;
 
 final class CleanupOrphanedCommand extends Command

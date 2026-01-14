@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions;
+namespace App\Actions\Deployment;
 
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
-use App\Flows\DestroyDeploymentFlow;
+use App\Flows\Deployment\DestroyDeploymentFlow;
 use Illuminate\Console\Command;
 
 final class DestroyCommand extends Command

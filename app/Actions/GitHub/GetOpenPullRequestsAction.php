@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions;
+namespace App\Actions\GitHub;
 
 use App\Clients\GitHubHttpClient;
 use GuzzleHttp\Exception\ClientException;

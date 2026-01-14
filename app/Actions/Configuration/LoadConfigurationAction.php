@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions;
+namespace App\Actions\Configuration;
 
 use App\Config\ConfigLoader;
 use App\Config\ShipperConfig;

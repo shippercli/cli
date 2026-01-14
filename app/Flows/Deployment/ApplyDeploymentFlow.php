@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Flows;
+namespace App\Flows\Deployment;
 
-use App\Actions\CreateDeploymentPlanAction;
-use App\Actions\ExecuteDeploymentAction;
-use App\Actions\GetDeploymentLogsAction;
-use App\Actions\LoadConfigurationAction;
-use App\Actions\ValidateProjectAction;
+use App\Actions\Configuration\LoadConfigurationAction;
+use App\Actions\Deployment\CreateDeploymentPlanAction;
+use App\Actions\Deployment\ExecuteDeploymentAction;
+use App\Actions\Deployment\ValidateProjectAction;
+use App\Actions\Server\GetDeploymentLogsAction;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Deployment\DeploymentProviderInterface;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Flows;
+namespace App\Flows\Maintenance;
 
-use App\Actions\DeleteSiteAction;
-use App\Actions\FindOrphanedSitesAction;
-use App\Actions\GetAllSitesAction;
-use App\Actions\GetOpenPullRequestsAction;
-use App\Actions\LoadConfigurationAction;
+use App\Actions\Cleanup\FindOrphanedSitesAction;
+use App\Actions\Configuration\LoadConfigurationAction;
+use App\Actions\GitHub\GetOpenPullRequestsAction;
+use App\Actions\Server\DeleteSiteAction;
+use App\Actions\Server\GetAllSitesAction;
 use App\Deployment\PloiProvider;
 use App\Deployment\ProviderFactory;
 

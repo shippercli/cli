@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\LoadConfigurationAction;
+use App\Actions\Configuration\LoadConfigurationAction;
 
 \test('LoadConfigurationAction loads valid configuration', function (): void {
     $action = new LoadConfigurationAction;

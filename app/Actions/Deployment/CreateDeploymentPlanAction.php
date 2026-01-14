@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Actions;
+namespace App\Actions\Deployment;
 
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Deployment\DeploymentProviderInterface;
 
-final class ValidateProjectAction
+final class CreateDeploymentPlanAction
 {
     /**
-     * Validate a project and profile configuration.
+     * Create a deployment plan for a project and profile.
      *
-     * @return array<int, string> Array of validation error messages, empty if valid
+     * @return array<string, mixed>
      */
     public function handle(
         DeploymentProviderInterface $provider,
         ProjectConfig $project,
         ProfileConfig $profile,
     ): array {
-        return $provider->validate($project, $profile);
+        return $provider->plan($project, $profile);
     }
 }

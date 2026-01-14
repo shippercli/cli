@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands;
 
-use App\Flows\ValidateConfigurationFlow;
+use App\Flows\Validation\ValidateConfigurationFlow;
 use Illuminate\Console\Command;
 
 final class ValidateCommand extends Command

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
-use App\Flows\ApplyDeploymentFlow;
+use App\Flows\Deployment\ApplyDeploymentFlow;
 use Illuminate\Console\Command;
 
 final class ApplyCommand extends Command

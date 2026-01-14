@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Flows;
+namespace App\Flows\Deployment;
 
-use App\Actions\CreateDeploymentPlanAction;
-use App\Actions\LoadConfigurationAction;
-use App\Actions\ValidateProjectAction;
+use App\Actions\Configuration\LoadConfigurationAction;
+use App\Actions\Deployment\CreateDeploymentPlanAction;
+use App\Actions\Deployment\ValidateProjectAction;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Deployment\ProviderFactory;
