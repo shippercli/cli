@@ -5,6 +5,7 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 ## Quick Links
 
 - [Main README](../README.md) - Overview and quick start guide
+- [Roadmap](../ROADMAP.md) - Planned features and Ploi.io configurations not yet supported
 - [Configuration Guide](./CONFIGURATION.md) - Complete shipper.yml configuration reference
 - [PR Previews](./PR_PREVIEWS.md) - Set up preview environments for pull requests
 - [Sites Management](./SITES.md) - Managing site lifecycle and deployment

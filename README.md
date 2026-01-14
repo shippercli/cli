@@ -332,6 +332,7 @@ For comprehensive guides and detailed documentation, see the [docs folder](./doc
 - **[GitHub Action Usage](./docs/GITHUB_ACTION.md)** - Using Shipper as a reusable GitHub Action
 - **[Build System](./docs/BUILD_SYSTEM.md)** - Understanding the build and release process
 - **[Strict Standards](./docs/STRICT_STANDARDS.md)** - Code quality and type safety standards
+- **[Roadmap](./ROADMAP.md)** - Planned features and Ploi.io configurations not yet supported
 
 ## Strict Rules Applied
 
