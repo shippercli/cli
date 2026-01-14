@@ -41,9 +41,9 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.version }}" = "latest" ]; then
-          DOWNLOAD_URL="https://github.com/ulties/deployer-wip/releases/latest/download/shipper"
+          DOWNLOAD_URL="https://github.com/ulties/shipper/releases/latest/download/shipper"
         else
-          DOWNLOAD_URL="https://github.com/ulties/deployer-wip/releases/download/${{ inputs.version }}/shipper"
+          DOWNLOAD_URL="https://github.com/ulties/shipper/releases/download/${{ inputs.version }}/shipper"
         fi
         
         echo "Downloading shipper from: $DOWNLOAD_URL"

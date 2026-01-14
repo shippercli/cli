@@ -54,7 +54,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-This creates a release at: `https://github.com/ulties/deployer-wip/releases/tag/v1.0.0`
+This creates a release at: `https://github.com/ulties/shipper/releases/tag/v1.0.0`
 
 ## Distribution
 
@@ -64,11 +64,11 @@ Each tagged version creates a release with the binary attached. Users can downlo
 
 ```bash
 # Latest version
-curl -LSso shipper https://github.com/ulties/deployer-wip/releases/latest/download/shipper
+curl -LSso shipper https://github.com/ulties/shipper/releases/latest/download/shipper
 chmod +x shipper
 
 # Specific version
-curl -LSso shipper https://github.com/ulties/deployer-wip/releases/download/v1.0.0/shipper
+curl -LSso shipper https://github.com/ulties/shipper/releases/download/v1.0.0/shipper
 chmod +x shipper
 ```
 
@@ -84,7 +84,7 @@ The `.github/actions/shipper-cli/action.yml` provides a reusable action that:
 **Usage in other repositories**:
 
 ```yaml
-- uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+- uses: ulties/shipper/.github/actions/shipper-cli@main
   with:
     command: apply
     project: api
@@ -230,7 +230,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+      - uses: ulties/shipper/.github/actions/shipper-cli@main
         with:
           command: validate
 ```

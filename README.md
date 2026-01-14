@@ -62,11 +62,11 @@ cp .env.example .env
 
 ### Using Pre-built Binary
 
-Download the latest binary from the [releases page](https://github.com/ulties/deployer-wip/releases):
+Download the latest binary from the [releases page](https://github.com/ulties/shipper/releases):
 
 ```bash
 # Download latest release
-curl -LSso shipper https://github.com/ulties/deployer-wip/releases/latest/download/shipper
+curl -LSso shipper https://github.com/ulties/shipper/releases/latest/download/shipper
 chmod +x shipper
 ./shipper --version
 ```
@@ -75,7 +75,7 @@ Or use a specific version:
 
 ```bash
 # Download specific version
-curl -LSso shipper https://github.com/ulties/deployer-wip/releases/download/v1.0.0/shipper
+curl -LSso shipper https://github.com/ulties/shipper/releases/download/v1.0.0/shipper
 chmod +x shipper
 ```
 
@@ -100,7 +100,7 @@ projects:
     # Repository configuration
     repository:
       provider: github  # github, gitlab, bitbucket, or custom
-      name: ulties/shipper-wip  # username/repository
+      name: ulties/shipper  # username/repository
     # Site configuration
     web_directory: /public  # Default Laravel public directory
     project_root: /  # Root of the project
@@ -283,12 +283,12 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run Shipper Validation
-        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        uses: ulties/shipper/.github/actions/shipper-cli@main
         with:
           command: validate
       
       - name: Deploy to Production
-        uses: ulties/deployer-wip/.github/actions/shipper-cli@main
+        uses: ulties/shipper/.github/actions/shipper-cli@main
         with:
           command: apply
           project: api
@@ -319,6 +319,19 @@ GitHub Actions automatically runs:
 3. Tests (Pest)
 
 All checks must pass before merging.
+
+## Documentation
+
+For comprehensive guides and detailed documentation, see the [docs folder](./docs/):
+
+- **[Configuration Guide](./docs/CONFIGURATION.md)** - Complete shipper.yml configuration reference
+- **[PR Previews](./docs/PR_PREVIEWS.md)** - Set up preview environments for pull requests
+- **[Sites Management](./docs/SITES.md)** - Managing site lifecycle and deployment
+- **[Database Management](./docs/DATABASES.md)** - Database configuration and operations
+- **[GitHub Actions Setup](./docs/GITHUB_ACTIONS.md)** - Automated deployments with GitHub Actions
+- **[GitHub Action Usage](./docs/GITHUB_ACTION.md)** - Using Shipper as a reusable GitHub Action
+- **[Build System](./docs/BUILD_SYSTEM.md)** - Understanding the build and release process
+- **[Strict Standards](./docs/STRICT_STANDARDS.md)** - Code quality and type safety standards
 
 ## Strict Rules Applied
 
