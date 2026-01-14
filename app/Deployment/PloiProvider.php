@@ -472,8 +472,7 @@ final class PloiProvider extends AbstractDeploymentProvider
         if ($this->client === null) {
             $apiKey = $this->config['api_key'] ?? '';
             \assert(\is_string($apiKey));
-            $apiKeyString = $apiKey;
-            $this->client = new Ploi($apiKeyString);
+            $this->client = new Ploi($apiKey);
         }
 
         return $this->client;
@@ -482,7 +481,7 @@ final class PloiProvider extends AbstractDeploymentProvider
     public function getServerId(): string
     {
         $serverId = $this->config['server_id'] ?? '';
-        \assert(\is_string($serverId) || \is_numeric($serverId));
+        \assert(\is_string($serverId) || \is_int($serverId));
 
         return (string) $serverId;
     }
@@ -490,7 +489,7 @@ final class PloiProvider extends AbstractDeploymentProvider
     private function getDeploymentTimeout(): int
     {
         $timeout = $this->config['deployment_timeout'] ?? 60;
-        \assert(\is_numeric($timeout));
+        \assert(\is_int($timeout) || \is_numeric($timeout));
 
         return (int) $timeout;
     }
