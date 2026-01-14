@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use GuzzleHttp\Client;
+use App\Clients\GitHubHttpClient;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
@@ -23,15 +23,8 @@ final class GetOpenPullRequestsAction
     public function handle(string $repo, string $token): array
     {
         try {
-            $client = new Client([
-                'base_uri' => 'https://api.github.com',
-                'headers' => [
-                    'Authorization' => "Bearer {$token}",
-                    'Accept' => 'application/vnd.github+json',
-                    'User-Agent' => 'Shipper-Cleanup',
-                ],
-                'http_errors' => false, // Handle errors manually
-            ]);
+            $gitHubClient = new GitHubHttpClient($token);
+            $client = $gitHubClient->getClient();
 
             $prNumbers = [];
             $page = 1;
