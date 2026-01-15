@@ -13,11 +13,15 @@ use App\Clients\GitHubHttpClient;
 
     // Verify client has the correct base URI
     $config = $client->getConfig();
+    \assert(\is_array($config));
     \expect($config)->toHaveKey('base_uri');
-    \expect((string) $config['base_uri'])->toBe('https://api.github.com');
+    $baseUri = $config['base_uri'];
+    \assert(\is_string($baseUri) || (\is_object($baseUri) && \method_exists($baseUri, '__toString')));
+    \expect((string) $baseUri)->toBe('https://api.github.com');
 
     // Verify headers are set correctly
     \expect($config)->toHaveKey('headers');
+    \assert(\is_array($config['headers']));
     \expect($config['headers'])->toHaveKey('Authorization');
     \expect($config['headers']['Authorization'])->toBe("Bearer {$token}");
     \expect($config['headers']['Accept'])->toBe('application/vnd.github+json');
@@ -34,5 +38,7 @@ use App\Clients\GitHubHttpClient;
     $client = $gitHubClient->getClient();
 
     $config = $client->getConfig();
+    \assert(\is_array($config));
+    \assert(\is_array($config['headers']));
     \expect($config['headers']['Authorization'])->toBe("Bearer {$token}");
 });
