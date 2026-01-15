@@ -14,13 +14,16 @@ use App\Clients\GitHubHttpClient;
     // Verify client has the correct base URI
     $config = $client->getConfig();
     \expect($config)->toHaveKey('base_uri');
+    \expect($config)->toHaveKey('headers');
+    \expect($config)->toHaveKey('http_errors');
+    
+    // Now assert types for safe array access
     \assert(\is_array($config));
     $baseUri = $config['base_uri'];
     \assert(\is_string($baseUri) || (\is_object($baseUri) && \method_exists($baseUri, '__toString')));
     \expect((string) $baseUri)->toBe('https://api.github.com');
 
     // Verify headers are set correctly
-    \expect($config)->toHaveKey('headers');
     \assert(\is_array($config['headers']));
     \expect($config['headers'])->toHaveKey('Authorization');
     \expect($config['headers']['Authorization'])->toBe("Bearer {$token}");
@@ -28,7 +31,6 @@ use App\Clients\GitHubHttpClient;
     \expect($config['headers']['User-Agent'])->toBe('shippercli.com');
 
     // Verify http_errors is set to false
-    \expect($config)->toHaveKey('http_errors');
     \expect($config['http_errors'])->toBe(false);
 });
 
