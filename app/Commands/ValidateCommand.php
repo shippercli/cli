@@ -28,8 +28,7 @@ final class ValidateCommand extends Command
      */
     public function handle(): int
     {
-        $configPath = $this->option('config');
-        \assert(\is_string($configPath));
+        $configPath = (string) $this->option('config');
 
         $this->info("Validating configuration: {$configPath}");
 

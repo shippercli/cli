@@ -31,14 +31,9 @@ final class CleanupOrphanedCommand extends Command
      */
     public function handle(): int
     {
-        $configPath = $this->option('config');
-        \assert(\is_string($configPath));
-
-        $dryRun = $this->option('dry-run');
-        \assert(\is_bool($dryRun));
-
-        $force = $this->option('force');
-        \assert(\is_bool($force));
+        $configPath = (string) $this->option('config');
+        $dryRun = (bool) $this->option('dry-run');
+        $force = (bool) $this->option('force');
 
         try {
             $githubToken = \getenv('GITHUB_TOKEN');

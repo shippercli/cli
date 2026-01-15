@@ -35,17 +35,10 @@ final class DestroyCommand extends Command
      */
     public function handle(): int
     {
-        $configPath = $this->option('config');
-        \assert(\is_string($configPath));
-
-        $projectName = $this->argument('project');
-        \assert(\is_string($projectName));
-
-        $profileName = $this->option('profile');
-        \assert(\is_string($profileName));
-
-        $force = $this->option('force');
-        \assert(\is_bool($force));
+        $configPath = (string) $this->option('config');
+        $projectName = (string) $this->argument('project');
+        $profileName = (string) $this->option('profile');
+        $force = (bool) $this->option('force');
 
         try {
             $flow = new DestroyDeploymentFlow;
@@ -73,10 +66,8 @@ final class DestroyCommand extends Command
             $profile = $planResult['profile'];
             $provider = $planResult['provider'];
 
-            // These should be set if success is true, but assert for type safety
-            \assert($project !== null);
-            \assert($profile !== null);
-            \assert($provider !== null);
+            // The flow contract guarantees these are non-null when success is true
+            \assert($project !== null && $profile !== null && $provider !== null);
 
             $this->info("Destroying {$projectName} ({$profileName})...");
             $this->line('');
