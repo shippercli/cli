@@ -1,5 +1,6 @@
 includes:
     - vendor/larastan/larastan/extension.neon
+    - vendor/pestphp/pest/extension.neon
 
 parameters:
     paths:
@@ -11,9 +12,6 @@ parameters:
     
     # Use maximum level for strictness
     level: 9
-    
-    # Report unmatched ignored errors
-    reportUnmatchedIgnoredErrors: false
     
     # Strict rules
     checkFunctionNameCase: true
@@ -36,12 +34,4 @@ parameters:
     excludePaths:
         - vendor
         - tests/Pest.php
-        - tests/Feature
-    
-    # Ignore Laravel framework internals
-    ignoreErrors:
-        - '#Call to an undefined method Illuminate\\.*#'
-        - '#Access to an undefined property Illuminate\\.*#'
-        - '#Property .*::\$signature has no type specified#'
-        - '#Property .*::\$description has no type specified#'
 
