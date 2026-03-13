@@ -13,6 +13,7 @@ use App\Config\ConfigLoader;
     \expect($config->projects())->toHaveKey('frontend');
 });
 
+/** @phpstan-ignore method.notFound */
 \test('config loader throws exception for missing file', function (): void {
     $loader = new ConfigLoader('nonexistent.yml');
     $loader->load();
@@ -24,6 +25,7 @@ use App\Config\ConfigLoader;
     $project = $config->getProject('api');
 
     \expect($project)->not->toBeNull();
+    \assert($project !== null);
     \expect($project->name())->toBe('api');
     \expect($project->provider())->toBe('ploi');
     \expect($project->path())->toBe('./examples/api');
@@ -35,6 +37,7 @@ use App\Config\ConfigLoader;
     $project = $config->getProject('api');
 
     \expect($project)->not->toBeNull();
+    \assert($project !== null);
     \expect($project->profiles())->toBeArray();
     \expect($project->profiles())->toHaveKey('production');
     \expect($project->profiles())->toHaveKey('staging');
@@ -45,9 +48,11 @@ use App\Config\ConfigLoader;
     $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
-    $profile = $project?->getProfile('production');
+    \assert($project !== null);
+    $profile = $project->getProfile('production');
 
     \expect($profile)->not->toBeNull();
+    \assert($profile !== null);
     \expect($profile->name())->toBe('production');
     \expect($profile->branch())->toBe('main');
 });
@@ -58,6 +63,7 @@ use App\Config\ConfigLoader;
     $project = $config->getProject('api');
 
     \expect($project)->not->toBeNull();
+    \assert($project !== null);
     \expect($project->databases())->toBeArray();
     \expect($project->databases())->toHaveKey('main');
 });
@@ -66,9 +72,11 @@ use App\Config\ConfigLoader;
     $loader = new ConfigLoader('shipper.yml');
     $config = $loader->load();
     $project = $config->getProject('api');
-    $database = $project?->getDatabase('main');
+    \assert($project !== null);
+    $database = $project->getDatabase('main');
 
     \expect($database)->not->toBeNull();
+    \assert($database !== null);
     \expect($database->name())->toBe('shipper_cli_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
     \expect($database->user())->toBe('shipper_cli_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}');
     \expect($database->type())->toBe('mysql');
