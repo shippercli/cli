@@ -163,6 +163,12 @@ projects:
 # Execute with force (skip confirmation)
 ./shipper apply api --profile=production --force
 
+# Destroy a deployment environment
+./shipper destroy api --profile=preview --force
+
+# Clean up orphaned resources (dry-run)
+./shipper cleanup-orphaned --dry-run
+
 # List all commands
 ./shipper list
 ```
@@ -183,7 +189,9 @@ shipper/
 │   ├── Commands/           # CLI commands
 │   │   ├── ValidateCommand.php
 │   │   ├── PlanCommand.php
-│   │   └── ApplyCommand.php
+│   │   ├── ApplyCommand.php
+│   │   ├── DestroyCommand.php
+│   │   └── CleanupOrphanedCommand.php
 │   ├── Config/             # Configuration classes
 │   │   ├── ConfigLoader.php
 │   │   ├── ShipperConfig.php
