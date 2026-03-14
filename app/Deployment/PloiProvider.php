@@ -21,6 +21,30 @@ final class PloiProvider extends AbstractDeploymentProvider
      */
     private const MAX_ERROR_LOG_ENTRIES = 10;
 
+    /**
+     * Ploi status values that indicate an operation is still in progress.
+     *
+     * @var array<string>
+     */
+    private const PENDING_STATUSES = ['installing', 'deploying', 'queued', 'pending'];
+
+    /**
+     * Ploi status values that indicate the operation ended in failure.
+     *   deploy-failed  — deploy script failed (git pull, composer, etc.)
+     *   install-failed — initial site installation failed (e.g. "Clone Git repository failed")
+     *   failed         — generic / unexpected failure
+     *
+     * @var array<string>
+     */
+    private const FAILURE_STATUSES = ['deploy-failed', 'install-failed', 'failed'];
+
+    /**
+     * Ploi status values that indicate the operation completed successfully.
+     *
+     * @var array<string>
+     */
+    private const SUCCESS_STATUSES = ['active', 'deployed', 'ready', 'installed'];
+
     private ?Ploi $client = null;
 
     private string $lastError = '';
@@ -281,49 +305,53 @@ final class PloiProvider extends AbstractDeploymentProvider
                     continue;
                 }
 
-                // Check if site is currently deploying
+                $status = \property_exists($siteInfo, 'status') ? (string) $siteInfo->status : '';
                 $isDeploying = \property_exists($siteInfo, 'deploying') ? (bool) $siteInfo->deploying : false;
 
-                // If not deploying anymore, deployment has completed
-                if (! $isDeploying) {
-                    // Check if deployment failed based on site status
-                    // Ploi provides a 'status' field that can be 'deploy-failed'
-                    $status = \property_exists($siteInfo, 'status') ? $siteInfo->status : null;
+                // Keep polling while the site is still in a transitional state.
+                // Ploi uses 'deploying' flag and 'installing'/'queued' status values to
+                // signal that an operation is still in progress.
+                if ($isDeploying || \in_array($status, self::PENDING_STATUSES, true)) {
+                    continue;
+                }
 
-                    // Check for explicit failure status
-                    if ($status === 'deploy-failed') {
-                        $this->lastError = 'Deployment failed on Ploi server (status: deploy-failed)';
+                // The site has left its transitional state — check the outcome.
 
-                        // Wait a moment and fetch logs to provide details
-                        \sleep(self::LOG_FETCH_DELAY_SECONDS);
-                        $logs = $this->getDeploymentLogs($serverId, $siteId);
-                        if ($logs !== []) {
-                            $this->lastError .= "\nRecent logs:\n".\implode("\n", \array_slice($logs, 0, self::MAX_ERROR_LOG_ENTRIES));
-                        }
+                if (\in_array($status, self::FAILURE_STATUSES, true)) {
+                    $this->lastError = "Deployment failed on Ploi server (status: {$status})";
 
-                        return false;
-                    }
-
-                    // Wait a few seconds after deployment completes to ensure logs are fully written
+                    // Fetch logs to include actionable details in the error message
                     \sleep(self::LOG_FETCH_DELAY_SECONDS);
-
-                    // Deployment completed, check logs for success/failure
                     $logs = $this->getDeploymentLogs($serverId, $siteId);
-
-                    // Check if any recent log indicates failure
-                    foreach ($logs as $log) {
-                        if ($this->isFailureLog($log)) {
-                            $this->lastError = "Deployment failed on Ploi server (log: {$log})";
-
-                            return false;
-                        }
+                    if ($logs !== []) {
+                        $this->lastError .= "\nRecent logs:\n".\implode("\n", \array_slice($logs, 0, self::MAX_ERROR_LOG_ENTRIES));
                     }
 
-                    // No failures detected, deployment successful
+                    return false;
+                }
+
+                // Wait a moment to ensure logs are fully written before fetching them
+                \sleep(self::LOG_FETCH_DELAY_SECONDS);
+                $logs = $this->getDeploymentLogs($serverId, $siteId);
+
+                // Known success statuses — trust the API and return success.
+                if (\in_array($status, self::SUCCESS_STATUSES, true)) {
                     return true;
                 }
 
-                // Still deploying, continue polling
+                // Unknown status — fall back to inspecting the log descriptions. Ploi
+                // appends " failed" to a step name when it fails (e.g. "Clone Git
+                // repository failed"), so this covers any gaps in the status field.
+                foreach ($logs as $log) {
+                    if ($this->isFailureLog($log)) {
+                        $this->lastError = "Deployment failed on Ploi server (log: {$log})";
+
+                        return false;
+                    }
+                }
+
+                // No failure indicators found — treat as success
+                return true;
             }
 
             // Timeout reached - this could mean deployment is still running
