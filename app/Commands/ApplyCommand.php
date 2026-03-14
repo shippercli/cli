@@ -41,7 +41,7 @@ final class ApplyCommand extends Command
         $force = (bool) $this->option('force');
 
         try {
-            $flow = new ApplyDeploymentFlow;
+            $flow = \app(ApplyDeploymentFlow::class);
 
             // First, plan the deployment (no execution yet)
             $planResult = $flow->handle($configPath, $projectName, $profileName);

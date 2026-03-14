@@ -16,6 +16,13 @@ use App\Deployment\ProviderFactory;
 final class DestroyDeploymentFlow
 {
     /**
+     * @param (\Closure(string, array<string, mixed>): DeploymentProviderInterface)|null $providerResolver
+     */
+    public function __construct(
+        private readonly ?\Closure $providerResolver = null,
+    ) {}
+
+    /**
      * Plan a site destruction (validation + plan creation, no execution).
      *
      * @return array{success: bool, project: ProjectConfig|null, profile: ProfileConfig|null, plan: array<string, mixed>, errors: array<int, string>, error_message: string, provider: DeploymentProviderInterface|null}
@@ -54,8 +61,12 @@ final class DestroyDeploymentFlow
             ];
         }
 
-        $providerFactory = new ProviderFactory($config->providers());
-        $provider = $providerFactory->create($project->provider());
+        if ($this->providerResolver !== null) {
+            $provider = ($this->providerResolver)($project->provider(), $config->providers());
+        } else {
+            $providerFactory = new ProviderFactory($config->providers());
+            $provider = $providerFactory->create($project->provider());
+        }
 
         $errors = $validateAction->handle($provider, $project, $profile);
         if ($errors !== []) {

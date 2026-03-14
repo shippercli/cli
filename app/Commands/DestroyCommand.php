@@ -41,7 +41,7 @@ final class DestroyCommand extends Command
         $force = (bool) $this->option('force');
 
         try {
-            $flow = new DestroyDeploymentFlow;
+            $flow = \app(DestroyDeploymentFlow::class);
 
             // First, plan the destruction (no execution yet)
             $planResult = $flow->handle($configPath, $projectName, $profileName);
