@@ -312,13 +312,8 @@ final class PloiProvider extends AbstractDeploymentProvider
 
                     // Check if any recent log indicates failure
                     foreach ($logs as $log) {
-                        $logLower = \strtolower($log);
-                        if (\str_contains($logLower, 'deployment failed') ||
-                            \str_contains($logLower, 'deployment failure') ||
-                            \str_contains($logLower, 'deploy failed') ||
-                            \str_contains($logLower, 'fatal error') ||
-                            \str_contains($logLower, 'critical error')) {
-                            $this->lastError = 'Deployment failed on Ploi server (detected in logs)';
+                        if ($this->isFailureLog($log)) {
+                            $this->lastError = "Deployment failed on Ploi server (log: {$log})";
 
                             return false;
                         }
@@ -531,6 +526,23 @@ final class PloiProvider extends AbstractDeploymentProvider
     public function getLastSiteId(): int
     {
         return $this->lastSiteId;
+    }
+
+    /**
+     * Determine whether a single deployment log entry indicates a failure.
+     *
+     * Ploi appends " failed" to the step name for any failed deployment step
+     * (e.g. "Clone Git repository failed"), so we check for that in addition
+     * to other well-known failure keywords.
+     */
+    public function isFailureLog(string $log): bool
+    {
+        $logLower = \strtolower($log);
+
+        return \str_ends_with($logLower, 'failed') ||
+            \str_contains($logLower, 'deployment failure') ||
+            \str_contains($logLower, 'fatal error') ||
+            \str_contains($logLower, 'critical error');
     }
 
     /**
