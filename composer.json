@@ -5,15 +5,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "laravel-zero/framework": "^12.0",
+        "larastan/larastan": "^3.9",
+        "laravel-zero/framework": "^12.1",
+        "laravel/forge-sdk": "^3.25",
+        "laravel/pint": "^1.29",
+        "pestphp/pest": "^4.7",
         "ploi/ploi-php-sdk": "^1.9",
-        "symfony/yaml": "^7.0"
+        "symfony/yaml": "^8.0"
     },
     "require-dev": {
-        "larastan/larastan": "^3.0",
-        "laravel/pint": "*",
-        "mockery/mockery": "^1.6",
-        "pestphp/pest": "^3.0"
+        "mockery/mockery": "^1.6"
     },
     "autoload": {
         "psr-4": {
