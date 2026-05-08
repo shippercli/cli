@@ -51,4 +51,6 @@ jobs:
       run: composer analyse
 
     - name: Run tests
+      env:
+        PEST_NO_PLUGIN: "1"
       run: composer test

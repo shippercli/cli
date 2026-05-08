@@ -9,7 +9,7 @@
         "laravel-zero/framework": "^12.1",
         "laravel/forge-sdk": "^3.25",
         "laravel/pint": "^1.29",
-        "pestphp/pest": "^4.7",
+        "pestphp/pest": "^4.0",
         "ploi/ploi-php-sdk": "^1.9",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",
@@ -33,10 +33,7 @@
         }
     },
     "scripts": {
-        "test": [
-            "@php -r \"file_exists('vendor/bin/pest') ? exit(0) : exit(1);\" || (echo 'Dev dependencies required. Run: composer install' && exit 1)",
-            "@php -r \"if (file_exists('vendor/bin/pest')) { passthru('vendor/bin/pest', \\$exitCode); exit(\\$exitCode); }\""
-        ],
+        "test": "@php vendor/bin/pest",
         "analyse": "php phpstan.phar analyse --memory-limit=1G",
         "format": "php pint.phar",
         "format:check": "php pint.phar --test",

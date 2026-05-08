@@ -1,7 +1,7 @@
 # Graph Report - /Users/mark/Projects/Shipper/shipper  (2026-05-09)
 
 ## Corpus Check
-- 7027 files · ~2,461,699 words
+- 7027 files · ~2,549,478 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -2872,12 +2872,12 @@
   /Users/mark/Projects/Shipper/shipper/examples/frontend/script.js → /Users/mark/Projects/Shipper/shipper/vendor/laravel/forge-sdk/src/MakesHttpRequests.php
 - `formatDate()` --calls--> `format()`  [INFERRED]
   /Users/mark/Projects/Shipper/shipper/examples/frontend/script.js → /Users/mark/Projects/Shipper/shipper/vendor/illuminate/http/Concerns/InteractsWithContentTypes.php
-- `dispatchSync()` --calls--> `App`  [INFERRED]
-  /Users/mark/Projects/Shipper/shipper/vendor/laravel-zero/foundation/src/Illuminate/Foundation/Bus/Dispatchable.php → /Users/mark/Projects/Shipper/shipper/vendor/illuminate/support/Facades/App.php
+- `App` --calls--> `dispatchSync()`  [INFERRED]
+  /Users/mark/Projects/Shipper/shipper/vendor/illuminate/support/Facades/App.php → /Users/mark/Projects/Shipper/shipper/vendor/laravel-zero/foundation/src/Illuminate/Foundation/Bus/Dispatchable.php
 - `renderUsing()` --calls--> `termwind()`  [INFERRED]
   /Users/mark/Projects/Shipper/shipper/vendor/nunomaduro/termwind/src/Functions.php → /Users/mark/Projects/Shipper/shipper/vendor/laravel/prompts/src/Concerns/Termwind.php
-- `when()` --calls--> `Reflector`  [INFERRED]
-  /Users/mark/Projects/Shipper/shipper/vendor/illuminate/console/Scheduling/ManagesAttributes.php → /Users/mark/Projects/Shipper/shipper/vendor/illuminate/reflection/Reflector.php
+- `Reflector` --calls--> `when()`  [INFERRED]
+  /Users/mark/Projects/Shipper/shipper/vendor/illuminate/reflection/Reflector.php → /Users/mark/Projects/Shipper/shipper/vendor/illuminate/console/Scheduling/ManagesAttributes.php
 
 ## Communities
 
@@ -18035,10 +18035,10 @@ Nodes (0):
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Assert` connect `Community 6` to `Community 0`, `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 7`, `Community 8`, `Community 9`, `Community 10`, `Community 11`, `Community 12`, `Community 13`, `Community 14`, `Community 15`, `Community 16`, `Community 17`, `Community 18`, `Community 19`, `Community 20`, `Community 22`, `Community 24`, `Community 25`, `Community 27`, `Community 30`, `Community 31`, `Community 33`, `Community 34`, `Community 36`, `Community 37`, `Community 38`, `Community 39`, `Community 41`, `Community 46`, `Community 55`?**
-  _High betweenness centrality (0.075) - this node is a cross-community bridge._
-- **Why does `get()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 9`, `Community 10`, `Community 11`, `Community 12`, `Community 13`, `Community 270`, `Community 15`, `Community 16`, `Community 17`, `Community 18`, `Community 19`, `Community 22`, `Community 23`, `Community 26`, `Community 28`, `Community 31`, `Community 36`, `Community 43`, `Community 51`, `Community 114`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
 - **Why does `empty()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 9`, `Community 10`, `Community 11`, `Community 12`, `Community 13`, `Community 14`, `Community 15`, `Community 16`, `Community 17`, `Community 19`, `Community 20`, `Community 21`, `Community 22`, `Community 23`, `Community 24`, `Community 25`, `Community 26`, `Community 27`, `Community 28`, `Community 30`, `Community 31`, `Community 32`, `Community 159`, `Community 34`, `Community 33`, `Community 36`, `Community 38`, `Community 40`, `Community 42`, `Community 43`, `Community 45`, `Community 49`, `Community 50`, `Community 55`, `Community 57`, `Community 59`, `Community 69`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `get()` connect `Community 0` to `Community 1`, `Community 2`, `Community 3`, `Community 4`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 9`, `Community 10`, `Community 11`, `Community 12`, `Community 13`, `Community 270`, `Community 15`, `Community 16`, `Community 17`, `Community 18`, `Community 19`, `Community 22`, `Community 23`, `Community 26`, `Community 28`, `Community 31`, `Community 36`, `Community 43`, `Community 51`, `Community 114`?**
   _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Are the 684 inferred relationships involving `Assert` (e.g. with `.printArrayFormatPreserving()` and `.formatValue()`) actually correct?**
   _`Assert` has 684 INFERRED edges - model-reasoned connections that need verification._
