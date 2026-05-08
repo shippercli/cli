@@ -33,7 +33,7 @@
         }
     },
     "scripts": {
-        "test": "@php vendor/bin/pest",
+        "test": "php vendor/bin/pest",
         "analyse": "php phpstan.phar analyse --memory-limit=1G",
         "format": "php pint.phar",
         "format:check": "php pint.phar --test",
