@@ -13,6 +13,7 @@ final class ProfileConfig
         private readonly string $name,
         private readonly string $branch,
         private readonly array $config,
+        private readonly ?EnvironmentConfig $environment = null,
     ) {}
 
     public function name(): string
@@ -36,5 +37,25 @@ final class ProfileConfig
     public function get(string $key, mixed $default = null): mixed
     {
         return $this->config[$key] ?? $default;
+    }
+
+    public function environment(): EnvironmentConfig
+    {
+        return $this->environment ?? new EnvironmentConfig();
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function aliases(): array
+    {
+        $aliases = $this->config['aliases'] ?? null;
+
+        if (! \is_array($aliases)) {
+            return [];
+        }
+
+        /** @var array<string> */
+        return array_filter($aliases, '\is_string');
     }
 }

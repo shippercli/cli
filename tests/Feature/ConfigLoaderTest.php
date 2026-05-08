@@ -462,7 +462,7 @@ use App\Config\ConfigLoader;
 
     \expect($redirect->from())->toBe('/old');
     \expect($redirect->to())->toBe('/new');
-    \expect($redirect->type())->toBe('redirect');
+    \expect($redirect->type())->toBe(301);
 });
 
 \test('loaded project has php version', function (): void {
@@ -640,6 +640,8 @@ use App\Config\ConfigLoader;
         new \App\Config\SslConfig,
         new \App\Config\EnvironmentConfig,
         '',
+        [],
+        [],
         [],
         [],
         [],
