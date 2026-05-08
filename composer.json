@@ -11,6 +11,10 @@
         "laravel/pint": "^1.29",
         "pestphp/pest": "^4.7",
         "ploi/ploi-php-sdk": "^1.9",
+        "symfony/clock": "^7.3",
+        "symfony/console": "^7.3",
+        "symfony/string": "^7.3",
+        "symfony/translation": "^7.3",
         "symfony/yaml": "^7.0"
     },
     "require-dev": {
