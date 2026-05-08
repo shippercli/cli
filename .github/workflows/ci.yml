@@ -53,4 +53,4 @@ jobs:
     - name: Run tests
       env:
         PEST_NO_PLUGIN: "1"
-      run: php vendor/bin/pest
+      run: php vendor/bin/pest --no-coverage
