@@ -11,7 +11,7 @@
         "laravel/pint": "^1.29",
         "pestphp/pest": "^4.7",
         "ploi/ploi-php-sdk": "^1.9",
-        "symfony/yaml": "^8.0"
+        "symfony/yaml": "^7.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.6"
@@ -49,6 +49,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        },
+        "platform": {
         }
     }
 }
