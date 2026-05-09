@@ -1,0 +1,52 @@
+providers:
+  ploi:
+    api_key: "test-key"
+    api_url: "https://ploi.io/api"
+    server_id: "123456"
+
+projects:
+  api:
+    provider: ploi
+    path: ./examples/api
+    repository:
+      provider: github
+      name: ulties/shipper
+    web_directory: /public
+    project_root: /
+    php_version: "8.3"
+    ssl:
+      enabled: true
+      type: letsencrypt
+      force_https: true
+    environment:
+      variables:
+        APP_NAME: "Test API"
+        LOG_CHANNEL: "stack"
+    deploy_script: |
+      composer install --no-dev
+    databases:
+      main:
+        name: "test_db"
+        user: "test_user"
+        type: mysql
+    profiles:
+      production:
+        branch: main
+        domain: test-production.example.com
+      staging:
+        branch: develop
+        domain: test-staging.example.com
+
+  frontend:
+    provider: ploi
+    path: ./examples/frontend
+    repository:
+      provider: github
+      name: ulties/shipper
+    profiles:
+      production:
+        branch: main
+        domain: frontend-production.example.com
+      staging:
+        branch: develop
+        domain: frontend-staging.example.com
