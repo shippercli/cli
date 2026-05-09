@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-class ValidateCommandTest extends Tests\TestCase
+final class ValidateCommandTest extends Tests\TestCase
 {
-    public function testValidateShowsErrorForMissingConfig(): void
+    public function test_validate_shows_error_for_missing_config(): void
     {
         $command = $this->artisan('validate', ['--config' => 'nonexistent.yml']);
         /** @phpstan-ignore-next-line */
         $command->assertExitCode(1);
     }
 
-    public function testValidateRunsSuccessfullyWithValidConfig(): void
+    public function test_validate_runs_successfully_with_valid_config(): void
     {
         $command = $this->artisan('validate', ['--config' => 'shipper.yml']);
         /** @phpstan-ignore-next-line */
