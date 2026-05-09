@@ -13,7 +13,7 @@ final class ValidateCommandTest extends Tests\TestCase
 
     public function test_validate_runs_successfully_with_valid_config(): void
     {
-        if (getenv('CI') !== false) {
+        if ($_ENV['CI'] ?? false) {
             $this->markTestSkipped('Skipped in CI - flaky test that passes locally but fails in CI due to unknown environmental factor');
         }
 
