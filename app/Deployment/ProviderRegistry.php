@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Deployment;
 
+use App\Deployment\Providers\Forge\ForgeProvider;
+
 final class ProviderRegistry
 {
     /** @var array<string, string> */
     private static array $providers = [
         'ploi' => PloiProvider::class,
+        'forge' => ForgeProvider::class,
     ];
 
     public static function register(string $name, string $className): void
