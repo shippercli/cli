@@ -6,24 +6,26 @@ namespace App\Deployment;
 
 final class ProviderFactory
 {
-    /**
-     * @param array<string, mixed> $providersConfig
-     */
-    public function __construct(
-        private readonly array $providersConfig = [],
-    ) {}
+    /** @var array<string, mixed> */
+    private readonly array $providersConfig;
+
+    /** @param array<string, mixed> $providersConfig */
+    public function __construct(array $providersConfig = [])
+    {
+        $this->providersConfig = $providersConfig;
+    }
 
     public function create(string $providerName): DeploymentProviderInterface
     {
         $config = $this->providersConfig[$providerName] ?? [];
 
-        if (! \is_array($config)) {
-            $config = [];
+        $className = ProviderRegistry::get($providerName);
+
+        if ($className === null) {
+            throw new \InvalidArgumentException("Unknown provider: {$providerName}");
         }
 
-        return match ($providerName) {
-            'ploi' => new PloiProvider($config),
-            default => throw new \InvalidArgumentException("Unknown provider: {$providerName}"),
-        };
+        /** @var DeploymentProviderInterface */
+        return new $className($config);
     }
 }
