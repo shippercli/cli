@@ -58,4 +58,11 @@ final class ProfileConfig
         /** @var array<string> */
         return \array_filter($aliases, '\is_string');
     }
+
+    public function deployScript(): ?string
+    {
+        $script = $this->config['deploy_script'] ?? null;
+
+        return \is_string($script) ? $script : null;
+    }
 }

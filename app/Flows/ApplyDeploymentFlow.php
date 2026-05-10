@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Flows;
 
 use App\Actions\ApplyAliasAction;
+use App\Actions\ApplyDeployScriptAction;
 use App\Actions\CreateDeploymentPlanAction;
 use App\Actions\ExecuteDeploymentAction;
 use App\Actions\GetDeploymentLogsAction;
@@ -113,6 +114,7 @@ final class ApplyDeploymentFlow
         $deployAction = new ExecuteDeploymentAction;
         $logsAction = new GetDeploymentLogsAction;
         $aliasAction = new ApplyAliasAction;
+        $deployScriptAction = new ApplyDeployScriptAction;
 
         $result = $deployAction->handle($provider, $project, $profile);
 
@@ -143,6 +145,34 @@ final class ApplyDeploymentFlow
                     $errorMsg = 'Alias configuration failed';
                     if (isset($aliasResult['message']) && \is_string($aliasResult['message'])) {
                         $errorMsg = $aliasResult['message'];
+                    }
+
+                    return [
+                        'success' => false,
+                        'logs' => $logs,
+                        'error_message' => $errorMsg,
+                    ];
+                }
+            }
+
+            $projectScript = $project->deployScript();
+            $profileScript = $profile->deployScript();
+            $hasProjectScript = $projectScript !== '';
+            $hasProfileScript = $profileScript !== null && $profileScript !== '';
+
+            if ($hasProjectScript || $hasProfileScript) {
+                $deployScriptResult = $deployScriptAction->handle(
+                    $provider->getName(),
+                    $provider instanceof PloiProvider ? $provider->getApiKey() : '',
+                    $serverId,
+                    $siteId,
+                    $project,
+                    $profile,
+                );
+                if (! $deployScriptResult['success']) {
+                    $errorMsg = 'Deploy script configuration failed';
+                    if (isset($deployScriptResult['message']) && \is_string($deployScriptResult['message'])) {
+                        $errorMsg = $deployScriptResult['message'];
                     }
 
                     return [
