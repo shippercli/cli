@@ -7,6 +7,7 @@ namespace App\Flows;
 use App\Actions\ApplyAliasAction;
 use App\Actions\ApplyDeployScriptAction;
 use App\Actions\ApplyEnvironmentAction;
+use App\Actions\ApplySslAction;
 use App\Actions\CreateDeploymentPlanAction;
 use App\Actions\ExecuteDeploymentAction;
 use App\Actions\GetDeploymentLogsAction;
@@ -117,6 +118,7 @@ final class ApplyDeploymentFlow
         $aliasAction = new ApplyAliasAction;
         $deployScriptAction = new ApplyDeployScriptAction;
         $environmentAction = new ApplyEnvironmentAction;
+        $sslAction = new ApplySslAction;
 
         $result = $deployAction->handle($provider, $project, $profile);
 
@@ -202,6 +204,30 @@ final class ApplyDeploymentFlow
                     $errorMsg = 'Environment variable configuration failed';
                     if (isset($envResult['message']) && \is_string($envResult['message'])) {
                         $errorMsg = $envResult['message'];
+                    }
+
+                    return [
+                        'success' => false,
+                        'logs' => $logs,
+                        'error_message' => $errorMsg,
+                    ];
+                }
+            }
+
+            $ssl = $project->ssl();
+            if ($ssl->enabled()) {
+                $sslResult = $sslAction->handle(
+                    $provider->getName(),
+                    $provider instanceof PloiProvider ? $provider->getApiKey() : '',
+                    $serverId,
+                    $siteId,
+                    $project,
+                    $profile,
+                );
+                if (! $sslResult['success']) {
+                    $errorMsg = 'SSL certificate configuration failed';
+                    if (isset($sslResult['message']) && \is_string($sslResult['message'])) {
+                        $errorMsg = $sslResult['message'];
                     }
 
                     return [
