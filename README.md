@@ -1,4 +1,6 @@
-# Shipper test
+# Shipper
+
+![Shipper Banner](https://raw.githubusercontent.com/shippercli/assets/main/banner.png)
 
 A Laravel Zero application for declarative, config-driven deployments with strict type checking and code quality standards.
 
@@ -11,7 +13,7 @@ Shipper is a CLI tool that reads a repository-level config file (`shipper.yml`) 
 ### Deployment Features
 - ✅ Declarative YAML configuration (`shipper.yml`)
 - ✅ Multiple projects and deployment profiles (production, staging, preview)
-- ✅ Pluggable provider system (currently supports Ploi)
+- ✅ Pluggable provider system (currently supports Ploi and Forge)
 - ✅ Plan/apply workflow for safe deployments
 - ✅ Configuration validation
 - ✅ GitHub Actions workflows for CI/CD
@@ -62,21 +64,16 @@ cp .env.example .env
 
 ### Using Pre-built Binary
 
-Download the latest binary from the [releases page](https://github.com/ulties/shipper/releases):
+Download the latest binary from the [releases page](https://github.com/shippercli/cli/releases):
 
 ```bash
-# Download latest release
-curl -LSso shipper https://github.com/ulties/shipper/releases/latest/download/shipper
-chmod +x shipper
-./shipper --version
+curl -LSso shipper https://github.com/shippercli/cli/releases/latest/download/shipper
 ```
 
 Or use a specific version:
 
 ```bash
-# Download specific version
-curl -LSso shipper https://github.com/ulties/shipper/releases/download/v1.0.0/shipper
-chmod +x shipper
+curl -LSso shipper https://github.com/shippercli/cli/releases/download/v1.0.0/shipper
 ```
 
 ## Usage
@@ -100,7 +97,7 @@ projects:
     # Repository configuration
     repository:
       provider: github  # github, gitlab, bitbucket, or custom
-      name: ulties/shipper  # username/repository
+      name: shippercli/shipper  # username/repository
     # Site configuration
     web_directory: /public  # Default Laravel public directory
     project_root: /  # Root of the project
@@ -282,12 +279,12 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run Shipper Validation
-        uses: ulties/shipper/.github/actions/shipper@main
+        uses: shippercli/cli/.github/actions/shipper@main
         with:
           command: validate
       
       - name: Deploy to Production
-        uses: ulties/shipper/.github/actions/shipper@main
+        uses: shippercli/cli/.github/actions/shipper@main
         with:
           command: apply
           project: api
