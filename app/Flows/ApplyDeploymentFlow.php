@@ -141,14 +141,15 @@ final class ApplyDeploymentFlow
                 );
                 if (! $aliasResult['success']) {
                     $errorMsg = 'Alias configuration failed';
-                if (isset($aliasResult['message']) && \is_string($aliasResult['message'])) {
-                    $errorMsg = $aliasResult['message'];
-                }
-                return [
-                    'success' => false,
-                    'logs' => $logs,
-                    'error_message' => $errorMsg,
-                ];
+                    if (isset($aliasResult['message']) && \is_string($aliasResult['message'])) {
+                        $errorMsg = $aliasResult['message'];
+                    }
+
+                    return [
+                        'success' => false,
+                        'logs' => $logs,
+                        'error_message' => $errorMsg,
+                    ];
                 }
             }
         }

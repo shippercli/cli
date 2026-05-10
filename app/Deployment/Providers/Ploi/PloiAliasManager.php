@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Deployment\Providers\Ploi;
 
-use App\Deployment\Contracts\AliasManagerInterface;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
+use App\Deployment\Contracts\AliasManagerInterface;
 use Ploi\Ploi;
 
 final class PloiAliasManager implements AliasManagerInterface
@@ -37,6 +37,7 @@ final class PloiAliasManager implements AliasManagerInterface
 
     /**
      * @param array<int, string> $aliases
+     *
      * @return array<string, mixed>
      */
     public function apply(int $serverId, int $siteId, array $aliases): array

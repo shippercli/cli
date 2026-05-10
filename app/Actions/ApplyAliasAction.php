@@ -6,7 +6,6 @@ namespace App\Actions;
 
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
-use App\Deployment\Contracts\AliasManagerInterface;
 use App\Deployment\Providers\Ploi\PloiAliasManager;
 
 final class ApplyAliasAction

@@ -20,6 +20,7 @@ interface AliasManagerInterface
      * Apply alias configuration.
      *
      * @param array<int, string> $aliases
+     *
      * @return array<string, mixed>
      */
     public function apply(int $serverId, int $siteId, array $aliases): array;
