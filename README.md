@@ -2,6 +2,12 @@
 
 ![Shipper Banner](https://raw.githubusercontent.com/shippercli/assets/main/banner.png)
 
+[![CI](https://github.com/shippercli/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/shippercli/cli/actions)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%209-brightgreen)](https://phpstan.org/)
+[![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-purple)](https://www.php.net/)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![Style](https://img.shields.io/badge/Code%20Style-Laravel%20Pint-ff69b4)](https://github.com/laravel/pint)
+
 A Laravel Zero application for declarative, config-driven deployments with strict type checking and code quality standards.
 
 ## Overview
@@ -13,7 +19,7 @@ Shipper is a CLI tool that reads a repository-level config file (`shipper.yml`) 
 ### Deployment Features
 - ✅ Declarative YAML configuration (`shipper.yml`)
 - ✅ Multiple projects and deployment profiles (production, staging, preview)
-- ✅ Pluggable provider system (currently supports Ploi and Forge)
+- ✅ Pluggable provider system (Ploi, Forge, cPanel)
 - ✅ Plan/apply workflow for safe deployments
 - ✅ Configuration validation
 - ✅ GitHub Actions workflows for CI/CD
