@@ -12,3 +12,4 @@ composer.phar
 .phpstan.cache
 /builds
 box.phar
+graphify-out/
