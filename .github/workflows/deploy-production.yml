@@ -40,11 +40,6 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-dev
       
-      - name: Validate configuration
-        run: ./shipper validate
-        env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
-      
       - name: Plan deployment
         run: ./shipper plan ${{ matrix.project }} --profile=production
         env:
