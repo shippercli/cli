@@ -7,7 +7,6 @@ use App\Config\ProjectConfig;
 use App\Config\ServerLifecycleConfig;
 use App\Deployment\PloiProvider;
 use Mockery as m;
-use Mockery\ExpectationInterface;
 use Mockery\MockInterface;
 use Ploi\Http\Response;
 use Ploi\Ploi;
@@ -20,7 +19,7 @@ function setPloiClient(PloiProvider $provider, Ploi&MockInterface $client): void
     $property->setValue($provider, $client);
 }
 
-function mockShouldReceive(MockInterface $mock, string $method): ExpectationInterface
+function mockShouldReceive(MockInterface $mock, string $method): mixed
 {
     return $mock->shouldReceive($method);
 }
