@@ -631,7 +631,9 @@ final class PloiProvider extends AbstractDeploymentProvider
     {
         $name = $this->managedServerName($project, $profile, $serverConfig);
         $credentialValue = $serverConfig->specValue('credential', $serverConfig->specValue('provider_id', $serverConfig->specValue('provider')));
-        $credential = (int) $credentialValue;
+        $credential = \is_string($credentialValue) || \is_int($credentialValue)
+            ? (int) (string) $credentialValue
+            : 0;
         $regionValue = $serverConfig->specValue('region');
         $region = \is_string($regionValue) ? $regionValue : '';
         $planValue = $serverConfig->specValue('plan', $serverConfig->specValue('size'));
