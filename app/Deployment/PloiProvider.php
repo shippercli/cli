@@ -9,7 +9,7 @@ use App\Config\ProjectConfig;
 use App\Config\ServerLifecycleConfig;
 use Ploi\Ploi;
 
-class PloiProvider extends AbstractDeploymentProvider
+final class PloiProvider extends AbstractDeploymentProvider
 {
     private const MANAGED_SERVER_PREFIX = 'shipper';
 

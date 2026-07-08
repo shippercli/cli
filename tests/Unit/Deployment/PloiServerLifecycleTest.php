@@ -11,6 +11,22 @@ use Ploi\Http\Response;
 use Ploi\Ploi;
 use Ploi\Resources\Server;
 
+function setPloiClient(PloiProvider $provider, Ploi $client): void
+{
+    $reflection = new ReflectionClass($provider);
+    $property = $reflection->getProperty('client');
+    $property->setValue($provider, $client);
+}
+
+function resolvePloiServerId(PloiProvider $provider, ProjectConfig $project, ProfileConfig $profile, bool $createIfMissing = false): int
+{
+    $reflection = new ReflectionClass($provider);
+    $method = $reflection->getMethod('resolveServerIdForProfile');
+
+    /** @var int */
+    return $method->invoke($provider, $project, $profile, $createIfMissing);
+}
+
 function makePloiProject(): ProjectConfig
 {
     return new ProjectConfig(
@@ -30,7 +46,7 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     return new ProfileConfig(
         'preview',
         'feature/test',
-        array_merge([
+        \array_merge([
             'domain' => 'preview.example.com',
         ], $config),
         null,
@@ -38,31 +54,31 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     );
 }
 
-test('ploi validate requires create server lifecycle fields', function (): void {
+\test('ploi validate requires create server lifecycle fields', function (): void {
     $provider = new PloiProvider([
         'api_key' => 'token',
     ]);
 
     $errors = $provider->validate(
-        makePloiProject(),
-        makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
+        \makePloiProject(),
+        \makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
             'name' => 'api-preview',
         ])),
     );
 
-    expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.credential (or provider_id/provider) as digits');
-    expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.region');
-    expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.plan (or size)');
+    \expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.credential (or provider_id/provider) as digits');
+    \expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.region');
+    \expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.plan (or size)');
 });
 
-test('ploi plan shows create server lifecycle actions', function (): void {
+\test('ploi plan shows create server lifecycle actions', function (): void {
     $provider = new PloiProvider([
         'api_key' => 'token',
     ]);
 
     $plan = $provider->plan(
-        makePloiProject(),
-        makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', '72h', [
+        \makePloiProject(),
+        \makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', '72h', [
             'name' => 'api-pr-123',
             'credential' => '42',
             'region' => 'eu-west',
@@ -70,15 +86,15 @@ test('ploi plan shows create server lifecycle actions', function (): void {
         ])),
     );
 
-    expect($plan['server_mode'])->toBe('create');
-    expect($plan['server_id'])->toBeNull();
-    expect($plan['server_cleanup'])->toBe('destroy');
-    expect($plan['actions'])->toContain('Create server: api-pr-123');
-    expect($plan['actions'])->toContain('Mark created server as managed: shipper-api-preview-api-pr-123');
-    expect($plan['actions'])->toContain('Cleanup policy for created server: destroy');
+    \expect($plan['server_mode'])->toBe('create');
+    \expect($plan['server_id'])->toBeNull();
+    \expect($plan['server_cleanup'])->toBe('destroy');
+    \expect($plan['actions'])->toContain('Create server: api-pr-123');
+    \expect($plan['actions'])->toContain('Mark created server as managed: shipper-api-preview-api-pr-123');
+    \expect($plan['actions'])->toContain('Cleanup policy for created server: destroy');
 });
 
-test('ploi can resolve existing created-mode server by name without creating', function (): void {
+\test('ploi can resolve existing created-mode server by name without creating', function (): void {
     $client = m::mock(Ploi::class);
     $serverResource = m::mock(Server::class);
     $response = m::mock(Response::class);
@@ -92,35 +108,22 @@ test('ploi can resolve existing created-mode server by name without creating', f
     $serverResource->shouldReceive('get')->once()->andReturn($response);
     $client->shouldReceive('server')->withNoArgs()->once()->andReturn($serverResource);
 
-    $provider = new class($client) extends PloiProvider
-    {
-        public function __construct(private readonly Ploi $fakeClient)
-        {
-            parent::__construct(['api_key' => 'token']);
-        }
+    $provider = new PloiProvider([
+        'api_key' => 'token',
+    ]);
+    \setPloiClient($provider, $client);
 
-        public function getClient(): Ploi
-        {
-            return $this->fakeClient;
-        }
-
-        public function resolve(ProjectConfig $project, ProfileConfig $profile, bool $createIfMissing = false): int
-        {
-            return $this->resolveServerIdForProfile($project, $profile, $createIfMissing);
-        }
-    };
-
-    $profile = makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
+    $profile = \makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
         'name' => 'api-pr-123',
         'credential' => '42',
         'region' => 'eu-west',
         'plan' => 'small',
     ]));
 
-    expect($provider->resolve(makePloiProject(), $profile, true))->toBe(321);
+    \expect(\resolvePloiServerId($provider, \makePloiProject(), $profile, true))->toBe(321);
 });
 
-test('ploi can create server when create-mode server is missing', function (): void {
+\test('ploi can create server when create-mode server is missing', function (): void {
     $client = m::mock(Ploi::class);
     $serverResource = m::mock(Server::class);
     $listResponse = m::mock(Response::class);
@@ -139,25 +142,12 @@ test('ploi can create server when create-mode server is missing', function (): v
 
     $client->shouldReceive('server')->withNoArgs()->twice()->andReturn($serverResource);
 
-    $provider = new class($client) extends PloiProvider
-    {
-        public function __construct(private readonly Ploi $fakeClient)
-        {
-            parent::__construct(['api_key' => 'token']);
-        }
+    $provider = new PloiProvider([
+        'api_key' => 'token',
+    ]);
+    \setPloiClient($provider, $client);
 
-        public function getClient(): Ploi
-        {
-            return $this->fakeClient;
-        }
-
-        public function resolve(ProjectConfig $project, ProfileConfig $profile, bool $createIfMissing = false): int
-        {
-            return $this->resolveServerIdForProfile($project, $profile, $createIfMissing);
-        }
-    };
-
-    $profile = makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
+    $profile = \makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
         'name' => 'api-pr-456',
         'credential' => '42',
         'region' => 'eu-west',
@@ -165,17 +155,17 @@ test('ploi can create server when create-mode server is missing', function (): v
         'php_version' => '8.3',
     ]));
 
-    expect($provider->resolve(makePloiProject(), $profile, true))->toBe(654);
+    \expect(\resolvePloiServerId($provider, \makePloiProject(), $profile, true))->toBe(654);
 });
 
-test('ploi destroy skips created server cleanup when policy is retain', function (): void {
+\test('ploi destroy skips created server cleanup when policy is retain', function (): void {
     $provider = new PloiProvider([
         'api_key' => 'token',
     ]);
 
     $result = $provider->destroy(
-        makePloiProject(),
-        makePloiProfile([], new ServerLifecycleConfig('create', null, 'retain', null, [
+        \makePloiProject(),
+        \makePloiProfile([], new ServerLifecycleConfig('create', null, 'retain', null, [
             'name' => 'api-pr-123',
             'credential' => '42',
             'region' => 'eu-west',
@@ -183,10 +173,10 @@ test('ploi destroy skips created server cleanup when policy is retain', function
         ])),
     );
 
-    expect($result)->toBeTrue();
+    \expect($result)->toBeTrue();
 });
 
-test('ploi destroy deletes created server when cleanup policy is destroy', function (): void {
+\test('ploi destroy deletes created server when cleanup policy is destroy', function (): void {
     $client = m::mock(Ploi::class);
     $listResource = m::mock(Server::class);
     $serverResource = m::mock(Server::class);
@@ -208,22 +198,14 @@ test('ploi destroy deletes created server when cleanup policy is destroy', funct
     $client->shouldReceive('server')->withNoArgs()->once()->andReturn($listResource);
     $client->shouldReceive('server')->with(999)->once()->andReturn($serverResource);
 
-    $provider = new class($client) extends PloiProvider
-    {
-        public function __construct(private readonly Ploi $fakeClient)
-        {
-            parent::__construct(['api_key' => 'token']);
-        }
-
-        public function getClient(): Ploi
-        {
-            return $this->fakeClient;
-        }
-    };
+    $provider = new PloiProvider([
+        'api_key' => 'token',
+    ]);
+    \setPloiClient($provider, $client);
 
     $result = $provider->destroy(
-        makePloiProject(),
-        makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
+        \makePloiProject(),
+        \makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
             'name' => 'api-pr-999',
             'credential' => '42',
             'region' => 'eu-west',
@@ -231,10 +213,10 @@ test('ploi destroy deletes created server when cleanup policy is destroy', funct
         ])),
     );
 
-    expect($result)->toBeTrue();
+    \expect($result)->toBeTrue();
 });
 
-test('ploi destroy refuses deleting unmanaged created server name match', function (): void {
+\test('ploi destroy refuses deleting unmanaged created server name match', function (): void {
     $client = m::mock(Ploi::class);
     $listResource = m::mock(Server::class);
     $listResponse = m::mock(Response::class);
@@ -249,22 +231,14 @@ test('ploi destroy refuses deleting unmanaged created server name match', functi
 
     $client->shouldReceive('server')->withNoArgs()->twice()->andReturn($listResource);
 
-    $provider = new class($client) extends PloiProvider
-    {
-        public function __construct(private readonly Ploi $fakeClient)
-        {
-            parent::__construct(['api_key' => 'token']);
-        }
-
-        public function getClient(): Ploi
-        {
-            return $this->fakeClient;
-        }
-    };
+    $provider = new PloiProvider([
+        'api_key' => 'token',
+    ]);
+    \setPloiClient($provider, $client);
 
     $result = $provider->destroy(
-        makePloiProject(),
-        makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
+        \makePloiProject(),
+        \makePloiProfile([], new ServerLifecycleConfig('create', null, 'destroy', null, [
             'name' => 'api-pr-777',
             'credential' => '42',
             'region' => 'eu-west',
@@ -272,6 +246,6 @@ test('ploi destroy refuses deleting unmanaged created server name match', functi
         ])),
     );
 
-    expect($result)->toBeFalse();
-    expect($provider->getLastError())->toBe('Refusing to delete unmanaged server: api-pr-777');
+    \expect($result)->toBeFalse();
+    \expect($provider->getLastError())->toBe('Refusing to delete unmanaged server: api-pr-777');
 });
