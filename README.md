@@ -19,7 +19,7 @@ Shipper is a CLI tool that reads a repository-level config file (`shipper.yml`) 
 ### Deployment Features
 - ✅ Declarative YAML configuration (`shipper.yml`)
 - ✅ Multiple projects and deployment profiles (production, staging, preview)
-- ✅ Pluggable provider system (Ploi, Forge, cPanel)
+- ✅ Pluggable provider system with provider packages (`shippercli/provider-ploi`, `shippercli/provider-forge`, `shippercli/provider-cpanel`, `shippercli/provider-easypanel`)
 - ✅ Plan/apply workflow for safe deployments
 - ✅ Configuration validation
 - ✅ GitHub Actions workflows for CI/CD
@@ -327,6 +327,7 @@ All checks must pass before merging.
 For comprehensive guides and detailed documentation, see the [docs folder](./docs/):
 
 - **[Configuration Guide](./docs/CONFIGURATION.md)** - Complete shipper.yml configuration reference
+- **[Server Lifecycle](./docs/SERVER_LIFECYCLE.md)** - Existing servers, managed preview servers, and cleanup rules
 - **[PR Previews](./docs/PR_PREVIEWS.md)** - Set up preview environments for pull requests
 - **[Sites Management](./docs/SITES.md)** - Managing site lifecycle and deployment
 - **[Database Management](./docs/DATABASES.md)** - Database configuration and operations

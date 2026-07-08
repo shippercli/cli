@@ -15,9 +15,10 @@ PR preview deployments automatically create temporary environments for each pull
 1. A pull request is opened against `main` or `develop` branch
 2. GitHub Actions triggers the preview deployment workflow
 3. Shipper creates a new site with a unique domain (e.g., `api-preview-123.example.com`)
-4. Shipper creates dedicated preview databases
-5. The PR is updated with deployment status and links
-6. When the PR is closed or merged, the preview environment is automatically cleaned up
+4. Shipper can optionally create a managed preview server before creating the site
+5. Shipper creates dedicated preview databases
+6. The PR is updated with deployment status and links
+7. When the PR is closed or merged, the preview environment is automatically cleaned up
 
 ## Configuration
 
@@ -42,12 +43,39 @@ projects:
       preview:
         branch: "${GITHUB_HEAD_REF}"
         domain: "api-preview-${GITHUB_PR_NUMBER}.example.com"
+        infrastructure:
+          server:
+            mode: create
+            cleanup: destroy
+            ttl: 72h
+            spec:
+              name: "api-pr-${GITHUB_PR_NUMBER}"
+              credential: "42"
+              region: "fra1"
+              plan: "vc2-1c-2gb"
 ```
 
 **Key Points:**
 - `branch`: Use `${GITHUB_HEAD_REF}` to deploy the PR branch
 - `domain`: Use `${GITHUB_PR_NUMBER}` to create unique domains
 - `databases`: Use `${GITHUB_PR_NUMBER}` for PR-specific databases
+- `infrastructure.server.mode: create`: Provision preview infrastructure before site creation
+- `cleanup: destroy`: Remove managed preview infrastructure during cleanup
+
+### Dry run preview planning
+
+Preview infrastructure participates in the normal plan/apply flow:
+
+```bash
+./shipper plan api --profile=preview
+./shipper apply api --profile=preview --force
+```
+
+Plan output should clearly show whether Shipper will:
+
+- use an existing server
+- create a managed preview server
+- apply cleanup policy for that preview infrastructure
 
 ### 2. Create Preview Deployment Workflow
 
@@ -282,6 +310,8 @@ When the cleanup workflow runs:
 2. Associated databases are automatically deleted
 3. Database users are removed
 
+If the preview profile uses `infrastructure.server.mode: create`, cleanup may also delete the managed preview server after site and database cleanup.
+
 ### Data Seeding
 
 To seed preview databases with test data, add a deploy script:
@@ -402,6 +432,7 @@ jobs:
 1. Verify cleanup workflow is triggered on PR close
 2. Check that `GITHUB_PR_NUMBER` is available in cleanup workflow
 3. Verify Ploi API key has permissions to delete sites
+4. If preview servers are created on demand, verify the managed preview server identity matches the created server
 
 ## Best Practices
 
@@ -413,6 +444,18 @@ jobs:
 6. **Monitor Costs**: Preview environments consume server resources
 7. **Limit Preview Scope**: Only deploy what's necessary for testing
 8. **Use Matrix Strategy**: Deploy multiple projects in parallel
+
+## Managed preview server cleanup
+
+When `infrastructure.server.mode` is `create`, Shipper treats the created server as Shipper-managed preview infrastructure.
+
+Current Ploi behavior uses a deterministic managed name derived from:
+
+- project name
+- profile name
+- configured preview server name
+
+Cleanup only deletes servers that match that managed identity. If ownership cannot be proven, cleanup is refused instead of deleting unmanaged infrastructure.
 
 ## Security Considerations
 

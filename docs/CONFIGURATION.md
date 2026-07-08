@@ -47,6 +47,8 @@ providers:
 - `server_id` (required): The ID of your Ploi server where sites will be deployed
 - `deployment_timeout` (optional): Maximum time in seconds to wait for deployment completion (default: 60)
 
+`server_id` is the default target for existing-server deployments. A profile can override this with `infrastructure.server` if it needs server lifecycle behavior such as create-on-demand preview infrastructure.
+
 **Getting Your Ploi API Key:**
 1. Log in to your Ploi account
 2. Navigate to Settings → API
@@ -122,6 +124,60 @@ profiles:
 
 - `branch` (required): Git branch to deploy from
 - `domain` (required): Domain name for the site
+
+### Server Lifecycle
+
+Profiles can optionally describe how their target server is resolved.
+
+Use an existing server:
+
+```yaml
+profiles:
+  production:
+    branch: main
+    domain: api.example.com
+    infrastructure:
+      server:
+        mode: existing
+        id: "123456"
+```
+
+Create a managed server on demand:
+
+```yaml
+profiles:
+  preview:
+    branch: "${GITHUB_HEAD_REF}"
+    domain: "api-preview-${GITHUB_PR_NUMBER}.example.com"
+    infrastructure:
+      server:
+        mode: create
+        cleanup: destroy
+        ttl: 72h
+        spec:
+          name: "api-pr-${GITHUB_PR_NUMBER}"
+          credential: "42"
+          region: "fra1"
+          plan: "vc2-1c-2gb"
+          php_version: "8.3"
+```
+
+**Server lifecycle fields:**
+
+- `mode`: `existing` or `create`
+- `id`: required for `existing`
+- `cleanup`: `destroy`, `retain`, or `manual`
+- `ttl`: optional metadata for temporary environments
+- `spec`: provider-specific creation details
+
+**Ploi create-mode requirements:**
+
+- `spec.name`
+- `spec.credential` or `spec.provider_id` or `spec.provider`
+- `spec.region`
+- `spec.plan` or `spec.size`
+
+See [Server Lifecycle](./SERVER_LIFECYCLE.md) for ownership and cleanup rules.
 
 **Variable Interpolation:**
 
@@ -220,7 +276,7 @@ providers:
   ploi:
     api_key: "${PLOI_API_KEY}"
     api_url: "https://ploi.io/api"
-    server_id: "105556"
+    server_id: "123456"
     deployment_timeout: 60
 
 # Projects
@@ -243,12 +299,27 @@ projects:
       production:
         branch: main
         domain: api.example.com
+        infrastructure:
+          server:
+            mode: existing
+            id: "123456"
       staging:
         branch: develop
         domain: api-staging.example.com
       preview:
         branch: "${GITHUB_HEAD_REF}"
         domain: "api-preview-${GITHUB_PR_NUMBER}.example.com"
+        infrastructure:
+          server:
+            mode: create
+            cleanup: destroy
+            ttl: 72h
+            spec:
+              name: "api-pr-${GITHUB_PR_NUMBER}"
+              credential: "42"
+              region: "fra1"
+              plan: "vc2-1c-2gb"
+              php_version: "8.3"
   
   # Frontend Application
   frontend:

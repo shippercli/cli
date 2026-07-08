@@ -6,10 +6,13 @@ namespace App\Deployment;
 
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
+use App\Config\ServerLifecycleConfig;
 use Ploi\Ploi;
 
-final class PloiProvider extends AbstractDeploymentProvider
+class PloiProvider extends AbstractDeploymentProvider
 {
+    private const MANAGED_SERVER_PREFIX = 'shipper';
+
     /**
      * Delay in seconds to wait after deployment completes before fetching logs.
      * This ensures Ploi has time to finalize log entries.
@@ -46,16 +49,22 @@ final class PloiProvider extends AbstractDeploymentProvider
             $errors[] = 'Ploi API key is required';
         }
 
-        if (! isset($this->config['server_id']) || $this->config['server_id'] === '') {
-            $errors[] = 'Ploi server ID is required';
-        } else {
-            $serverIdValue = $this->config['server_id'];
-            \assert(\is_string($serverIdValue) || \is_int($serverIdValue));
-            $serverIdString = \is_string($serverIdValue) ? $serverIdValue : (string) $serverIdValue;
+        $serverConfig = $profile->server();
 
-            if (! \ctype_digit($serverIdString)) {
-                $errors[] = 'Ploi server ID must contain only digits';
+        if ($serverConfig === null) {
+            if (! isset($this->config['server_id']) || $this->config['server_id'] === '') {
+                $errors[] = 'Ploi server ID is required';
+            } else {
+                $serverIdValue = $this->config['server_id'];
+                \assert(\is_string($serverIdValue) || \is_int($serverIdValue));
+                $serverIdString = \is_string($serverIdValue) ? $serverIdValue : (string) $serverIdValue;
+
+                if (! \ctype_digit($serverIdString)) {
+                    $errors[] = 'Ploi server ID must contain only digits';
+                }
             }
+        } else {
+            $errors = [...$errors, ...$this->validateServerLifecycle($serverConfig)];
         }
 
         $domain = $profile->get('domain');
@@ -85,7 +94,8 @@ final class PloiProvider extends AbstractDeploymentProvider
 
     public function plan(ProjectConfig $project, ProfileConfig $profile): array
     {
-        $serverId = $this->getServerId();
+        $serverConfig = $profile->server();
+        $serverId = $serverConfig?->isCreate() === true ? null : $this->getServerId($profile);
         $domainValue = $profile->get('domain');
         $domain = \is_string($domainValue) ? $domainValue : '';
         $repository = $project->repository();
@@ -94,10 +104,23 @@ final class PloiProvider extends AbstractDeploymentProvider
         $repoNameValue = $repository['name'] ?? 'unknown';
         $repoName = \is_string($repoNameValue) ? $repoNameValue : 'unknown';
 
-        $actions = [
-            "Create or find site for domain: {$domain}",
-            "Install repository: {$repoProvider}:{$repoName} ({$profile->branch()})",
-        ];
+        $actions = [];
+
+        if ($serverConfig?->isCreate() === true) {
+            $serverName = $this->displayServerName($serverConfig);
+            $managedServerName = $this->managedServerName($project, $profile, $serverConfig);
+            $actions[] = "Create server: {$serverName}";
+            $actions[] = "Mark created server as managed: {$managedServerName}";
+
+            if ($serverConfig->cleanup() !== null && $serverConfig->cleanup() !== '') {
+                $actions[] = "Cleanup policy for created server: {$serverConfig->cleanup()}";
+            }
+        } else {
+            $actions[] = "Use existing server: {$serverId}";
+        }
+
+        $actions[] = "Create or find site for domain: {$domain}";
+        $actions[] = "Install repository: {$repoProvider}:{$repoName} ({$profile->branch()})";
 
         // Add database creation actions
         $databases = $project->databases();
@@ -112,13 +135,20 @@ final class PloiProvider extends AbstractDeploymentProvider
         $actions[] = 'Deploy site via Ploi API';
         $actions[] = 'Run deployment script';
 
+        $note = $serverConfig?->isCreate() === true
+            ? 'This may provision a new Ploi server and create a real deployment.'
+            : 'This will create a real deployment on Ploi server '.$serverId;
+
         return [
             'provider' => $this->getName(),
             'project' => $project->name(),
             'profile' => $profile->name(),
             'branch' => $profile->branch(),
             'path' => $project->path(),
-            'server_id' => $serverId,
+            'server_mode' => $serverConfig?->mode() ?? 'existing',
+            'server_id' => $serverConfig?->isCreate() === true ? null : $serverId,
+            'server_cleanup' => $serverConfig?->cleanup(),
+            'server_spec' => $serverConfig?->spec() ?? [],
             'domain' => $domain,
             'repository' => "{$repoProvider}:{$repoName}",
             'web_directory' => $project->webDirectory(),
@@ -132,7 +162,7 @@ final class PloiProvider extends AbstractDeploymentProvider
                 $databases,
             ),
             'actions' => $actions,
-            'note' => 'This will create a real deployment on Ploi server '.$serverId,
+            'note' => $note,
         ];
     }
 
@@ -144,7 +174,7 @@ final class PloiProvider extends AbstractDeploymentProvider
 
         try {
             $client = $this->getClient();
-            $serverId = (int) $this->getServerId();
+            $serverId = $this->resolveServerIdForProfile($project, $profile, true);
             $domainValue = $profile->get('domain');
             $domain = \is_string($domainValue) ? $domainValue : '';
 
@@ -362,8 +392,14 @@ final class PloiProvider extends AbstractDeploymentProvider
         $domain = '';
 
         try {
+            $serverConfig = $profile->server();
+
+            if ($serverConfig?->isCreate() === true) {
+                return $this->destroyCreatedServer($project, $profile, $serverConfig);
+            }
+
             $client = $this->getClient();
-            $serverId = (int) $this->getServerId();
+            $serverId = (int) $this->getServerId($profile);
             $domainValue = $profile->get('domain');
             $domain = \is_string($domainValue) ? $domainValue : '';
 
@@ -477,12 +513,207 @@ final class PloiProvider extends AbstractDeploymentProvider
         return $this->client;
     }
 
-    public function getServerId(): string
+    public function getServerId(?ProfileConfig $profile = null): string
     {
+        $profileServerId = $profile?->server()?->id();
+        if ($profileServerId !== null && $profileServerId !== '') {
+            return $profileServerId;
+        }
+
         $serverId = $this->config['server_id'] ?? '';
         \assert(\is_string($serverId) || \is_int($serverId));
 
         return (string) $serverId;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function validateServerLifecycle(ServerLifecycleConfig $serverConfig): array
+    {
+        $errors = [];
+
+        if (! \in_array($serverConfig->mode(), ['existing', 'create'], true)) {
+            $errors[] = 'Ploi infrastructure.server.mode must be either existing or create';
+
+            return $errors;
+        }
+
+        if ($serverConfig->isExisting()) {
+            $serverId = $serverConfig->id();
+            if ($serverId === null || $serverId === '') {
+                $errors[] = 'Ploi existing server mode requires infrastructure.server.id';
+            } elseif (! \ctype_digit($serverId)) {
+                $errors[] = 'Ploi infrastructure.server.id must contain only digits';
+            }
+        }
+
+        if ($serverConfig->isCreate()) {
+            $name = $serverConfig->specValue('name');
+            if (! \is_string($name) || $name === '') {
+                $errors[] = 'Ploi create server mode requires infrastructure.server.spec.name';
+            }
+
+            $credential = $serverConfig->specValue('credential', $serverConfig->specValue('provider_id', $serverConfig->specValue('provider')));
+            if ((! \is_string($credential) && ! \is_int($credential)) || (string) $credential === '' || ! \ctype_digit((string) $credential)) {
+                $errors[] = 'Ploi create server mode requires infrastructure.server.spec.credential (or provider_id/provider) as digits';
+            }
+
+            $region = $serverConfig->specValue('region');
+            if (! \is_string($region) || $region === '') {
+                $errors[] = 'Ploi create server mode requires infrastructure.server.spec.region';
+            }
+
+            $plan = $serverConfig->specValue('plan', $serverConfig->specValue('size'));
+            if (! \is_string($plan) || $plan === '') {
+                $errors[] = 'Ploi create server mode requires infrastructure.server.spec.plan (or size)';
+            }
+        }
+
+        $cleanup = $serverConfig->cleanup();
+        if ($cleanup !== null && $cleanup !== '' && ! \in_array($cleanup, ['destroy', 'retain', 'manual'], true)) {
+            $errors[] = 'Ploi infrastructure.server.cleanup must be one of destroy, retain, or manual';
+        }
+
+        return $errors;
+    }
+
+    protected function resolveServerIdForProfile(ProjectConfig $project, ProfileConfig $profile, bool $createIfMissing = false): int
+    {
+        $serverConfig = $profile->server();
+
+        if ($serverConfig === null || $serverConfig->isExisting()) {
+            return (int) $this->getServerId($profile);
+        }
+
+        $managedServerName = $this->managedServerName($project, $profile, $serverConfig);
+        $existingServerId = $this->findServerIdByName($managedServerName);
+
+        if ($existingServerId !== null) {
+            return $existingServerId;
+        }
+
+        if (! $createIfMissing) {
+            return 0;
+        }
+
+        return $this->createServerFromLifecycle($project, $profile, $serverConfig);
+    }
+
+    protected function findServerIdByName(string $name): ?int
+    {
+        if ($name === '') {
+            return null;
+        }
+
+        $serversResponse = $this->getClient()->server()->get();
+        $serverData = $serversResponse->getJson()->data ?? null;
+
+        if (! \is_array($serverData)) {
+            return null;
+        }
+
+        foreach ($serverData as $server) {
+            if (
+                \is_object($server) &&
+                \property_exists($server, 'name') &&
+                \property_exists($server, 'id') &&
+                $server->name === $name
+            ) {
+                return (int) $server->id;
+            }
+        }
+
+        return null;
+    }
+
+    protected function createServerFromLifecycle(ProjectConfig $project, ProfileConfig $profile, ServerLifecycleConfig $serverConfig): int
+    {
+        $name = $this->managedServerName($project, $profile, $serverConfig);
+        $credentialValue = $serverConfig->specValue('credential', $serverConfig->specValue('provider_id', $serverConfig->specValue('provider')));
+        $credential = (int) $credentialValue;
+        $regionValue = $serverConfig->specValue('region');
+        $region = \is_string($regionValue) ? $regionValue : '';
+        $planValue = $serverConfig->specValue('plan', $serverConfig->specValue('size'));
+        $plan = \is_string($planValue) ? $planValue : '';
+
+        $spec = $serverConfig->spec();
+        unset($spec['name'], $spec['credential'], $spec['provider_id'], $spec['provider'], $spec['region'], $spec['plan'], $spec['size']);
+
+        $response = $this->getClient()->server()->create($name, $credential, $region, $plan, $spec);
+        $responseData = $response->getJson()->data ?? null;
+
+        if ($responseData === null || ! \property_exists($responseData, 'id')) {
+            throw new \RuntimeException('Failed to create Ploi server: invalid response from API');
+        }
+
+        return (int) $responseData->id;
+    }
+
+    protected function destroyCreatedServer(ProjectConfig $project, ProfileConfig $profile, ServerLifecycleConfig $serverConfig): bool
+    {
+        $cleanup = $serverConfig->cleanup();
+
+        if ($cleanup === null || $cleanup === '' || $cleanup === 'retain' || $cleanup === 'manual') {
+            return true;
+        }
+
+        if ($cleanup !== 'destroy') {
+            $this->lastError = "Unsupported cleanup policy for Ploi server lifecycle: {$cleanup}";
+
+            return false;
+        }
+
+        $managedServerName = $this->managedServerName($project, $profile, $serverConfig);
+        $serverId = $this->findServerIdByName($managedServerName);
+
+        if ($serverId !== null) {
+            $response = $this->getClient()->server($serverId)->delete();
+            $responseData = $response->getJson();
+
+            if (isset($responseData->message) && \is_string($responseData->message)) {
+                $messageLower = \strtolower($responseData->message);
+                if (\str_contains($messageLower, 'error') || \str_contains($messageLower, 'failed')) {
+                    $this->lastError = "Failed to delete server: {$responseData->message}";
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        $displayServerName = $this->displayServerName($serverConfig);
+        if ($displayServerName !== $managedServerName && $this->findServerIdByName($displayServerName) !== null) {
+            $this->lastError = "Refusing to delete unmanaged server: {$displayServerName}";
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function displayServerName(ServerLifecycleConfig $serverConfig): string
+    {
+        $serverNameValue = $serverConfig->specValue('name', 'unnamed-server');
+
+        return \is_string($serverNameValue) ? $serverNameValue : 'unnamed-server';
+    }
+
+    private function managedServerName(ProjectConfig $project, ProfileConfig $profile, ServerLifecycleConfig $serverConfig): string
+    {
+        $prefix = self::MANAGED_SERVER_PREFIX.'-'.$this->slugify($project->name()).'-'.$this->slugify($profile->name());
+
+        return "{$prefix}-".$this->slugify($this->displayServerName($serverConfig));
+    }
+
+    private function slugify(string $value): string
+    {
+        $slug = \strtolower($value);
+        $slug = (string) \preg_replace('/[^a-z0-9]+/', '-', $slug);
+        $slug = \trim($slug, '-');
+
+        return $slug !== '' ? $slug : 'unnamed';
     }
 
     private function getDeploymentTimeout(): int
