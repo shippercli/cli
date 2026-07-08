@@ -7,15 +7,22 @@ use App\Config\ProjectConfig;
 use App\Config\ServerLifecycleConfig;
 use App\Deployment\PloiProvider;
 use Mockery as m;
+use Mockery\ExpectationInterface;
+use Mockery\MockInterface;
 use Ploi\Http\Response;
 use Ploi\Ploi;
 use Ploi\Resources\Server;
 
-function setPloiClient(PloiProvider $provider, Ploi $client): void
+function setPloiClient(PloiProvider $provider, Ploi&MockInterface $client): void
 {
     $reflection = new ReflectionClass($provider);
     $property = $reflection->getProperty('client');
     $property->setValue($provider, $client);
+}
+
+function mockShouldReceive(MockInterface $mock, string $method): ExpectationInterface
+{
+    return $mock->shouldReceive($method);
 }
 
 function resolvePloiServerId(PloiProvider $provider, ProjectConfig $project, ProfileConfig $profile, bool $createIfMissing = false): int
@@ -41,6 +48,9 @@ function makePloiProject(): ProjectConfig
     );
 }
 
+/**
+ * @param array<string, mixed> $config
+ */
 function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = null): ProfileConfig
 {
     return new ProfileConfig(
@@ -95,18 +105,21 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
 });
 
 \test('ploi can resolve existing created-mode server by name without creating', function (): void {
+    /** @var Ploi&MockInterface $client */
     $client = m::mock(Ploi::class);
+    /** @var Server&MockInterface $serverResource */
     $serverResource = m::mock(Server::class);
+    /** @var Response&MockInterface $response */
     $response = m::mock(Response::class);
 
-    $response->shouldReceive('getJson')->andReturn((object) [
+    \mockShouldReceive($response, 'getJson')->andReturn((object) [
         'data' => [
             (object) ['id' => 321, 'name' => 'shipper-api-preview-api-pr-123'],
         ],
     ]);
 
-    $serverResource->shouldReceive('get')->once()->andReturn($response);
-    $client->shouldReceive('server')->withNoArgs()->once()->andReturn($serverResource);
+    \mockShouldReceive($serverResource, 'get')->once()->andReturn($response);
+    \mockShouldReceive($client, 'server')->withNoArgs()->once()->andReturn($serverResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
@@ -124,23 +137,27 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
 });
 
 \test('ploi can create server when create-mode server is missing', function (): void {
+    /** @var Ploi&MockInterface $client */
     $client = m::mock(Ploi::class);
+    /** @var Server&MockInterface $serverResource */
     $serverResource = m::mock(Server::class);
+    /** @var Response&MockInterface $listResponse */
     $listResponse = m::mock(Response::class);
+    /** @var Response&MockInterface $createResponse */
     $createResponse = m::mock(Response::class);
 
-    $listResponse->shouldReceive('getJson')->andReturn((object) ['data' => []]);
-    $createResponse->shouldReceive('getJson')->andReturn((object) [
+    \mockShouldReceive($listResponse, 'getJson')->andReturn((object) ['data' => []]);
+    \mockShouldReceive($createResponse, 'getJson')->andReturn((object) [
         'data' => (object) ['id' => 654],
     ]);
 
-    $serverResource->shouldReceive('get')->once()->andReturn($listResponse);
-    $serverResource->shouldReceive('create')
+    \mockShouldReceive($serverResource, 'get')->once()->andReturn($listResponse);
+    \mockShouldReceive($serverResource, 'create')
         ->once()
         ->with('shipper-api-preview-api-pr-456', 42, 'eu-west', 'small', m::type('array'))
         ->andReturn($createResponse);
 
-    $client->shouldReceive('server')->withNoArgs()->twice()->andReturn($serverResource);
+    \mockShouldReceive($client, 'server')->withNoArgs()->twice()->andReturn($serverResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
@@ -177,26 +194,31 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
 });
 
 \test('ploi destroy deletes created server when cleanup policy is destroy', function (): void {
+    /** @var Ploi&MockInterface $client */
     $client = m::mock(Ploi::class);
+    /** @var Server&MockInterface $listResource */
     $listResource = m::mock(Server::class);
+    /** @var Server&MockInterface $serverResource */
     $serverResource = m::mock(Server::class);
+    /** @var Response&MockInterface $listResponse */
     $listResponse = m::mock(Response::class);
+    /** @var Response&MockInterface $deleteResponse */
     $deleteResponse = m::mock(Response::class);
 
-    $listResponse->shouldReceive('getJson')->andReturn((object) [
+    \mockShouldReceive($listResponse, 'getJson')->andReturn((object) [
         'data' => [
             (object) ['id' => 999, 'name' => 'shipper-api-preview-api-pr-999'],
         ],
     ]);
-    $deleteResponse->shouldReceive('getJson')->andReturn((object) [
+    \mockShouldReceive($deleteResponse, 'getJson')->andReturn((object) [
         'message' => 'Server deleted successfully',
     ]);
 
-    $listResource->shouldReceive('get')->once()->andReturn($listResponse);
-    $serverResource->shouldReceive('delete')->once()->andReturn($deleteResponse);
+    \mockShouldReceive($listResource, 'get')->once()->andReturn($listResponse);
+    \mockShouldReceive($serverResource, 'delete')->once()->andReturn($deleteResponse);
 
-    $client->shouldReceive('server')->withNoArgs()->once()->andReturn($listResource);
-    $client->shouldReceive('server')->with(999)->once()->andReturn($serverResource);
+    \mockShouldReceive($client, 'server')->withNoArgs()->once()->andReturn($listResource);
+    \mockShouldReceive($client, 'server')->with(999)->once()->andReturn($serverResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
@@ -217,19 +239,22 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
 });
 
 \test('ploi destroy refuses deleting unmanaged created server name match', function (): void {
+    /** @var Ploi&MockInterface $client */
     $client = m::mock(Ploi::class);
+    /** @var Server&MockInterface $listResource */
     $listResource = m::mock(Server::class);
+    /** @var Response&MockInterface $listResponse */
     $listResponse = m::mock(Response::class);
 
-    $listResponse->shouldReceive('getJson')->twice()->andReturn((object) [
+    \mockShouldReceive($listResponse, 'getJson')->twice()->andReturn((object) [
         'data' => [
             (object) ['id' => 777, 'name' => 'api-pr-777'],
         ],
     ]);
 
-    $listResource->shouldReceive('get')->twice()->andReturn($listResponse);
+    \mockShouldReceive($listResource, 'get')->twice()->andReturn($listResponse);
 
-    $client->shouldReceive('server')->withNoArgs()->twice()->andReturn($listResource);
+    \mockShouldReceive($client, 'server')->withNoArgs()->twice()->andReturn($listResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
