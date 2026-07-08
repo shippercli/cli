@@ -7,6 +7,7 @@ use App\Config\ProjectConfig;
 use App\Config\ServerLifecycleConfig;
 use App\Deployment\PloiProvider;
 use Mockery as m;
+use Mockery\Expectation;
 use Mockery\MockInterface;
 use Ploi\Http\Response;
 use Ploi\Ploi;
@@ -111,14 +112,20 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     /** @var Response&MockInterface $response */
     $response = m::mock(Response::class);
 
-    \mockShouldReceive($response, 'getJson')->andReturn((object) [
+    /** @var Expectation $responseGetJson */
+    $responseGetJson = \mockShouldReceive($response, 'getJson');
+    $responseGetJson->andReturn((object) [
         'data' => [
             (object) ['id' => 321, 'name' => 'shipper-api-preview-api-pr-123'],
         ],
     ]);
 
-    \mockShouldReceive($serverResource, 'get')->once()->andReturn($response);
-    \mockShouldReceive($client, 'server')->withNoArgs()->once()->andReturn($serverResource);
+    /** @var Expectation $serverGet */
+    $serverGet = \mockShouldReceive($serverResource, 'get');
+    $serverGet->once()->andReturn($response);
+    /** @var Expectation $clientServer */
+    $clientServer = \mockShouldReceive($client, 'server');
+    $clientServer->withNoArgs()->once()->andReturn($serverResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
@@ -145,18 +152,27 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     /** @var Response&MockInterface $createResponse */
     $createResponse = m::mock(Response::class);
 
-    \mockShouldReceive($listResponse, 'getJson')->andReturn((object) ['data' => []]);
-    \mockShouldReceive($createResponse, 'getJson')->andReturn((object) [
+    /** @var Expectation $listResponseGetJson */
+    $listResponseGetJson = \mockShouldReceive($listResponse, 'getJson');
+    $listResponseGetJson->andReturn((object) ['data' => []]);
+    /** @var Expectation $createResponseGetJson */
+    $createResponseGetJson = \mockShouldReceive($createResponse, 'getJson');
+    $createResponseGetJson->andReturn((object) [
         'data' => (object) ['id' => 654],
     ]);
 
-    \mockShouldReceive($serverResource, 'get')->once()->andReturn($listResponse);
-    \mockShouldReceive($serverResource, 'create')
-        ->once()
+    /** @var Expectation $serverGet */
+    $serverGet = \mockShouldReceive($serverResource, 'get');
+    $serverGet->once()->andReturn($listResponse);
+    /** @var Expectation $serverCreate */
+    $serverCreate = \mockShouldReceive($serverResource, 'create');
+    $serverCreate->once()
         ->with('shipper-api-preview-api-pr-456', 42, 'eu-west', 'small', m::type('array'))
         ->andReturn($createResponse);
 
-    \mockShouldReceive($client, 'server')->withNoArgs()->twice()->andReturn($serverResource);
+    /** @var Expectation $clientServer */
+    $clientServer = \mockShouldReceive($client, 'server');
+    $clientServer->withNoArgs()->twice()->andReturn($serverResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
@@ -204,20 +220,32 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     /** @var Response&MockInterface $deleteResponse */
     $deleteResponse = m::mock(Response::class);
 
-    \mockShouldReceive($listResponse, 'getJson')->andReturn((object) [
+    /** @var Expectation $listResponseGetJson */
+    $listResponseGetJson = \mockShouldReceive($listResponse, 'getJson');
+    $listResponseGetJson->andReturn((object) [
         'data' => [
             (object) ['id' => 999, 'name' => 'shipper-api-preview-api-pr-999'],
         ],
     ]);
-    \mockShouldReceive($deleteResponse, 'getJson')->andReturn((object) [
+    /** @var Expectation $deleteResponseGetJson */
+    $deleteResponseGetJson = \mockShouldReceive($deleteResponse, 'getJson');
+    $deleteResponseGetJson->andReturn((object) [
         'message' => 'Server deleted successfully',
     ]);
 
-    \mockShouldReceive($listResource, 'get')->once()->andReturn($listResponse);
-    \mockShouldReceive($serverResource, 'delete')->once()->andReturn($deleteResponse);
+    /** @var Expectation $listResourceGet */
+    $listResourceGet = \mockShouldReceive($listResource, 'get');
+    $listResourceGet->once()->andReturn($listResponse);
+    /** @var Expectation $serverDelete */
+    $serverDelete = \mockShouldReceive($serverResource, 'delete');
+    $serverDelete->once()->andReturn($deleteResponse);
 
-    \mockShouldReceive($client, 'server')->withNoArgs()->once()->andReturn($listResource);
-    \mockShouldReceive($client, 'server')->with(999)->once()->andReturn($serverResource);
+    /** @var Expectation $clientServerNoArgs */
+    $clientServerNoArgs = \mockShouldReceive($client, 'server');
+    $clientServerNoArgs->withNoArgs()->once()->andReturn($listResource);
+    /** @var Expectation $clientServerWithId */
+    $clientServerWithId = \mockShouldReceive($client, 'server');
+    $clientServerWithId->with(999)->once()->andReturn($serverResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
@@ -245,15 +273,21 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     /** @var Response&MockInterface $listResponse */
     $listResponse = m::mock(Response::class);
 
-    \mockShouldReceive($listResponse, 'getJson')->twice()->andReturn((object) [
+    /** @var Expectation $listResponseGetJson */
+    $listResponseGetJson = \mockShouldReceive($listResponse, 'getJson');
+    $listResponseGetJson->twice()->andReturn((object) [
         'data' => [
             (object) ['id' => 777, 'name' => 'api-pr-777'],
         ],
     ]);
 
-    \mockShouldReceive($listResource, 'get')->twice()->andReturn($listResponse);
+    /** @var Expectation $listResourceGet */
+    $listResourceGet = \mockShouldReceive($listResource, 'get');
+    $listResourceGet->twice()->andReturn($listResponse);
 
-    \mockShouldReceive($client, 'server')->withNoArgs()->twice()->andReturn($listResource);
+    /** @var Expectation $clientServer */
+    $clientServer = \mockShouldReceive($client, 'server');
+    $clientServer->withNoArgs()->twice()->andReturn($listResource);
 
     $provider = new PloiProvider([
         'api_key' => 'token',
