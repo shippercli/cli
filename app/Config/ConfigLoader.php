@@ -120,11 +120,13 @@ final class ConfigLoader
                 if (\is_string($profileName) && \is_array($profileData)) {
                     $branch = $profileData['branch'] ?? '';
                     $environment = $this->parseEnvironment($profileData['environment'] ?? null);
+                    $server = $this->parseServerLifecycle($profileData['infrastructure']['server'] ?? null);
                     $profiles[$profileName] = new ProfileConfig(
                         $profileName,
                         \is_string($branch) ? $branch : '',
                         $this->interpolateArray($profileData),
                         $environment,
+                        $server,
                     );
                 }
             }
@@ -271,6 +273,33 @@ final class ConfigLoader
         }
 
         return new EnvironmentConfig($variables);
+    }
+
+    /**
+     * @param array<mixed, mixed>|null $data
+     */
+    private function parseServerLifecycle(?array $data): ?ServerLifecycleConfig
+    {
+        if ($data === null) {
+            return null;
+        }
+
+        $modeRaw = $data['mode'] ?? null;
+        $mode = \is_string($modeRaw) ? $modeRaw : '';
+
+        $idRaw = $data['id'] ?? null;
+        $id = \is_string($idRaw) || \is_int($idRaw) ? (string) $idRaw : null;
+
+        $cleanupRaw = $data['cleanup'] ?? null;
+        $cleanup = \is_string($cleanupRaw) ? $cleanupRaw : null;
+
+        $ttlRaw = $data['ttl'] ?? null;
+        $ttl = \is_string($ttlRaw) || \is_int($ttlRaw) ? (string) $ttlRaw : null;
+
+        $specRaw = $data['spec'] ?? [];
+        $spec = \is_array($specRaw) ? $specRaw : [];
+
+        return new ServerLifecycleConfig($mode, $id, $cleanup, $ttl, $spec);
     }
 
     /**

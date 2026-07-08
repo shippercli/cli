@@ -14,6 +14,7 @@ final class ProfileConfig
         private readonly string $branch,
         private readonly array $config,
         private readonly ?EnvironmentConfig $environment = null,
+        private readonly ?ServerLifecycleConfig $server = null,
     ) {}
 
     public function name(): string
@@ -42,6 +43,11 @@ final class ProfileConfig
     public function environment(): EnvironmentConfig
     {
         return $this->environment ?? new EnvironmentConfig;
+    }
+
+    public function server(): ?ServerLifecycleConfig
+    {
+        return $this->server;
     }
 
     /**

@@ -9,6 +9,7 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 - [Main README](../README.md) - Overview and quick start guide
 - [Roadmap](../ROADMAP.md) - Planned features and Ploi.io configurations not yet supported
 - [Configuration Guide](./CONFIGURATION.md) - Complete shipper.yml configuration reference
+- [Server Lifecycle](./SERVER_LIFECYCLE.md) - Existing vs created servers and cleanup rules
 - [PR Previews](./PR_PREVIEWS.md) - Set up preview environments for pull requests
 - [Sites Management](./SITES.md) - Managing site lifecycle and deployment
 - [Database Management](./DATABASES.md) - Database configuration and operations
@@ -23,13 +24,15 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 
 1. **[Read the main README](../README.md)** - Understand what Shipper is and its features
 2. **[Configuration Guide](./CONFIGURATION.md)** - Learn how to configure `shipper.yml`
-3. **[GitHub Actions Setup](./GITHUB_ACTIONS.md)** - Set up automated deployments
+3. **[Server Lifecycle](./SERVER_LIFECYCLE.md)** - Configure existing or managed preview servers
+4. **[GitHub Actions Setup](./GITHUB_ACTIONS.md)** - Set up automated deployments
 
 ### Common Tasks
 
 #### Setting Up Deployments
 
 - [Configure shipper.yml](./CONFIGURATION.md) - Define your projects and profiles
+- [Configure server lifecycle](./SERVER_LIFECYCLE.md) - Reuse existing servers or create preview servers
 - [Set up GitHub Actions workflows](./GITHUB_ACTIONS.md) - Automate your deployments
 - [Configure PR previews](./PR_PREVIEWS.md) - Enable preview environments
 
@@ -57,6 +60,12 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 - Environment variables
 - Complete examples
 - Best practices
+
+**[SERVER_LIFECYCLE.md](./SERVER_LIFECYCLE.md)** - Server provisioning and ownership guide
+- Existing server targeting
+- Create-on-demand preview servers
+- Cleanup policies
+- Ownership and safety rules
 
 ### PR Previews
 
@@ -140,6 +149,7 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 Define your entire deployment infrastructure in `shipper.yml`:
 - Multiple projects
 - Multiple environments (production, staging, preview)
+- Existing and managed preview servers
 - Database configurations
 - Provider settings
 
