@@ -79,6 +79,14 @@ final class CpanelApiClient
     /**
      * @return array<string, mixed>
      */
+    public function listFeatures(): array
+    {
+        return $this->request('Features::list_features', []);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function deleteGitRepository(string $repositoryPath): array
     {
         return $this->request('Git::delete_repository', [
@@ -147,7 +155,7 @@ final class CpanelApiClient
      */
     public function listDomains(): array
     {
-        return $this->request('Domain::list_domains', []);
+        return $this->request('DomainInfo::list_domains', []);
     }
 
     /**
@@ -155,9 +163,55 @@ final class CpanelApiClient
      */
     public function createSubdomain(string $domain, string $subdomain): array
     {
-        return $this->request('SubDomain::create_subdomain', [
+        return $this->request('SubDomain::addsubdomain', [
             'domain' => $domain,
             'subdomain' => $subdomain,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function uploadFile(string $directory, string $localPath, string $remoteFilename, bool $overwrite = true): array
+    {
+        $handle = \fopen($localPath, 'rb');
+        if ($handle === false) {
+            return [
+                'success' => false,
+                'message' => "Unable to open file for upload: {$localPath}",
+                'data' => [],
+            ];
+        }
+
+        try {
+            return $this->requestMultipart('Fileman::upload_files', [
+                [
+                    'name' => 'dir',
+                    'contents' => $directory,
+                ],
+                [
+                    'name' => 'overwrite',
+                    'contents' => $overwrite ? '1' : '0',
+                ],
+                [
+                    'name' => 'file-1',
+                    'contents' => $handle,
+                    'filename' => $remoteFilename,
+                ],
+            ]);
+        } finally {
+            \fclose($handle);
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getFileContent(string $directory, string $filename): array
+    {
+        return $this->request('Fileman::get_file_content', [
+            'dir' => $directory,
+            'file' => $filename,
         ]);
     }
 
@@ -201,13 +255,42 @@ final class CpanelApiClient
         [$module, $function] = \explode('::', $moduleFunction, 2);
         $url = "{$this->baseUrl}/{$module}/{$function}";
 
-        $headers = $this->getAuthHeaders();
+        try {
+            $response = $client->request('GET', $url, $this->buildRequestOptions([
+                'query' => $params,
+            ]));
+
+            /** @var string $body */
+            $body = (string) $response->getBody();
+            /** @var array<string, mixed> $data */
+            $data = \json_decode($body, true) ?? [];
+
+            return $this->formatResponse($data);
+        } catch (GuzzleException $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => [],
+            ];
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $multipart
+     *
+     * @return array<string, mixed>
+     */
+    private function requestMultipart(string $moduleFunction, array $multipart): array
+    {
+        $client = $this->getHttpClient();
+
+        [$module, $function] = \explode('::', $moduleFunction, 2);
+        $url = "{$this->baseUrl}/{$module}/{$function}";
 
         try {
-            $response = $client->request('GET', $url, [
-                'headers' => $headers,
-                'query' => $params,
-            ]);
+            $response = $client->request('POST', $url, $this->buildRequestOptions([
+                'multipart' => $multipart,
+            ]));
 
             /** @var string $body */
             $body = (string) $response->getBody();
@@ -237,20 +320,22 @@ final class CpanelApiClient
     }
 
     /**
-     * @return array<string, string>
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
      */
-    private function getAuthHeaders(): array
+    private function buildRequestOptions(array $options): array
     {
         if ($this->authType === 'api_token') {
-            return [
+            $options['headers'] = [
                 'Authorization' => 'cpanel '.$this->username.':'.$this->credential,
             ];
+
+            return $options;
         }
 
-        $auth = \base64_encode($this->username.':'.$this->credential);
+        $options['auth'] = [$this->username, $this->credential];
 
-        return [
-            'Authorization' => 'Basic '.$auth,
-        ];
+        return $options;
     }
 }
