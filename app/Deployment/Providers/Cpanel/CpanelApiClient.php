@@ -229,6 +229,46 @@ final class CpanelApiClient
     /**
      * @return array<string, mixed>
      */
+    public function saveFileContent(string $directory, string $filename, string $content): array
+    {
+        $authorization = $this->authType === 'api_token'
+            ? '-H '.\escapeshellarg('Authorization: cpanel '.$this->username.':'.$this->credential)
+            : '-u '.\escapeshellarg($this->username.':'.$this->credential);
+
+        $command = \sprintf(
+            '%s -skS %s -X POST --data-urlencode %s --data-urlencode %s --data-urlencode %s --data-urlencode %s --data-urlencode %s %s',
+            $this->resolveCurlBinary(),
+            $authorization,
+            \escapeshellarg("dir={$directory}"),
+            \escapeshellarg("file={$filename}"),
+            \escapeshellarg("content={$content}"),
+            \escapeshellarg('from_charset=utf-8'),
+            \escapeshellarg('to_charset=utf-8'),
+            \escapeshellarg("{$this->baseUrl}/Fileman/save_file_content"),
+        );
+
+        $output = [];
+        $exitCode = 0;
+        \exec($command, $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            return [
+                'success' => false,
+                'message' => \implode("\n", $output),
+                'data' => [],
+            ];
+        }
+
+        $body = \implode("\n", $output);
+        /** @var array<string, mixed> $data */
+        $data = \json_decode($body, true) ?? [];
+
+        return $this->formatResponse($data);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function installSsl(string $domain, string $cert, string $key, string $ca = ''): array
     {
         $params = [

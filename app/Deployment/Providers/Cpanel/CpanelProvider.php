@@ -289,6 +289,8 @@ final class CpanelProvider extends AbstractDeploymentProvider
         $mode = $this->resolveFilemanMode($project);
         $scriptName = 'shipper-deploy.php';
         $archiveName = 'shipper-deploy.zip';
+        $manifestName = 'shipper-deploy.manifest.json';
+        $chunkPrefix = 'shipper-deploy.zip.b64.';
 
         if (! \is_dir($sourcePath)) {
             $this->lastError = "Project path does not exist or is not a directory: {$sourcePath}";
@@ -309,22 +311,50 @@ final class CpanelProvider extends AbstractDeploymentProvider
         try {
             $this->buildDeploymentArchive($sourcePath, $archivePath, $mode);
             \file_put_contents($scriptPath, $this->buildExtractorScript($mode, $project->webDirectory()));
+            $archiveContents = \file_get_contents($archivePath);
+            if (! \is_string($archiveContents)) {
+                throw new RuntimeException("Unable to read deployment archive: {$archivePath}");
+            }
+
+            $encodedArchive = \base64_encode($archiveContents);
+            $chunks = \str_split($encodedArchive, 100000);
 
             $client = $this->getApiClient();
-            $archiveUpload = $client->uploadFile($deployPath, $archivePath, $archiveName, true);
-            if (! $archiveUpload['success']) {
-                $this->lastError = \is_string($archiveUpload['message'] ?? null)
-                    ? $archiveUpload['message']
-                    : 'Failed to upload deployment archive';
+            $manifestContents = \json_encode([
+                'chunk_prefix' => $chunkPrefix,
+                'chunk_count' => \count($chunks),
+            ], JSON_THROW_ON_ERROR);
+            $manifestSave = $client->saveFileContent($deployPath, $manifestName, $manifestContents);
+            if (! $manifestSave['success']) {
+                $this->lastError = \is_string($manifestSave['message'] ?? null)
+                    ? $manifestSave['message']
+                    : 'Failed to save deployment manifest';
 
                 return false;
             }
 
-            $scriptUpload = $client->uploadFile($deployPath, $scriptPath, $scriptName, true);
-            if (! $scriptUpload['success']) {
-                $this->lastError = \is_string($scriptUpload['message'] ?? null)
-                    ? $scriptUpload['message']
-                    : 'Failed to upload deployment extractor';
+            foreach ($chunks as $index => $chunk) {
+                $chunkName = $chunkPrefix.\str_pad((string) $index, 6, '0', STR_PAD_LEFT);
+                $chunkSave = $client->saveFileContent($deployPath, $chunkName, $chunk);
+                if (! $chunkSave['success']) {
+                    $this->lastError = \is_string($chunkSave['message'] ?? null)
+                        ? $chunkSave['message']
+                        : "Failed to save deployment chunk {$index}";
+
+                    return false;
+                }
+            }
+
+            $scriptContents = \file_get_contents($scriptPath);
+            if (! \is_string($scriptContents)) {
+                throw new RuntimeException("Unable to read deployment extractor: {$scriptPath}");
+            }
+
+            $scriptSave = $client->saveFileContent($deployPath, $scriptName, $scriptContents);
+            if (! $scriptSave['success']) {
+                $this->lastError = \is_string($scriptSave['message'] ?? null)
+                    ? $scriptSave['message']
+                    : 'Failed to save deployment extractor';
 
                 return false;
             }
@@ -506,11 +536,51 @@ function rcopy(string \$source, string \$destination): void
     copy(\$source, \$destination);
 }
 
+\$manifestPath = __DIR__ . '/shipper-deploy.manifest.json';
+\$manifest = json_decode((string) file_get_contents(\$manifestPath), true);
+if (! is_array(\$manifest)) {
+    http_response_code(500);
+    exit('manifest invalid');
+}
+
+\$chunkPrefix = isset(\$manifest['chunk_prefix']) && is_string(\$manifest['chunk_prefix']) ? \$manifest['chunk_prefix'] : '';
+\$chunkCount = isset(\$manifest['chunk_count']) ? (int) \$manifest['chunk_count'] : 0;
+if (\$chunkPrefix === '' || \$chunkCount < 1) {
+    http_response_code(500);
+    exit('manifest incomplete');
+}
+
 \$archive = __DIR__ . '/shipper-deploy.zip';
 \$script = __FILE__;
 \$appDir = __DIR__ . '/app';
 
-if (! file_exists(\$archive)) {
+\$encoded = '';
+for (\$i = 0; \$i < \$chunkCount; \$i++) {
+    \$chunkPath = __DIR__ . '/' . \$chunkPrefix . str_pad((string) \$i, 6, '0', STR_PAD_LEFT);
+
+    if (! file_exists(\$chunkPath)) {
+        http_response_code(500);
+        exit('chunk missing');
+    }
+
+    \$chunk = file_get_contents(\$chunkPath);
+    if (! is_string(\$chunk)) {
+        http_response_code(500);
+        exit('chunk unreadable');
+    }
+
+    \$encoded .= \$chunk;
+}
+
+\$decoded = base64_decode(\$encoded, true);
+if (! is_string(\$decoded)) {
+    http_response_code(500);
+    exit('archive decode failed');
+}
+
+file_put_contents(\$archive, \$decoded);
+
+if (! file_exists(\$archive) || filesize(\$archive) === 0) {
     http_response_code(500);
     exit('missing archive');
 }
@@ -553,6 +623,10 @@ if (! \$zip->extractTo(__DIR__)) {
 {$copyPublicBlock}
 
 @unlink(\$archive);
+@unlink(\$manifestPath);
+for (\$i = 0; \$i < \$chunkCount; \$i++) {
+    @unlink(__DIR__ . '/' . \$chunkPrefix . str_pad((string) \$i, 6, '0', STR_PAD_LEFT));
+}
 @unlink(\$script);
 
 echo 'shipper deployment ok';
