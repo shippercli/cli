@@ -174,8 +174,7 @@ final class CpanelApiClient
      */
     public function uploadFile(string $directory, string $localPath, string $remoteFilename, bool $overwrite = true): array
     {
-        $handle = \fopen($localPath, 'rb');
-        if ($handle === false) {
+        if (! \is_file($localPath)) {
             return [
                 'success' => false,
                 'message' => "Unable to open file for upload: {$localPath}",
@@ -183,27 +182,37 @@ final class CpanelApiClient
             ];
         }
 
-        try {
-            return $this->requestMultipart('Fileman::upload_files', [
-                [
-                    'name' => 'dir',
-                    'contents' => $directory,
-                ],
-                [
-                    'name' => 'overwrite',
-                    'contents' => $overwrite ? '1' : '0',
-                ],
-                [
-                    'name' => 'file-1',
-                    'contents' => $handle,
-                    'filename' => $remoteFilename,
-                ],
-            ]);
-        } finally {
-            if (\is_resource($handle)) {
-                \fclose($handle);
-            }
+        $authorization = $this->authType === 'api_token'
+            ? '-H '.\escapeshellarg('Authorization: cpanel '.$this->username.':'.$this->credential)
+            : '-u '.\escapeshellarg($this->username.':'.$this->credential);
+
+        $command = \sprintf(
+            '%s -skS %s -F %s -F %s -F %s %s',
+            $this->resolveCurlBinary(),
+            $authorization,
+            \escapeshellarg("dir={$directory}"),
+            \escapeshellarg('overwrite='.($overwrite ? '1' : '0')),
+            \escapeshellarg("file-1=@{$localPath};filename={$remoteFilename}"),
+            \escapeshellarg("{$this->baseUrl}/Fileman/upload_files"),
+        );
+
+        $output = [];
+        $exitCode = 0;
+        \exec($command, $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            return [
+                'success' => false,
+                'message' => \implode("\n", $output),
+                'data' => [],
+            ];
         }
+
+        $body = \implode("\n", $output);
+        /** @var array<string, mixed> $data */
+        $data = \json_decode($body, true) ?? [];
+
+        return $this->formatResponse($data);
     }
 
     /**
@@ -307,6 +316,17 @@ final class CpanelApiClient
                 'data' => [],
             ];
         }
+    }
+
+    private function resolveCurlBinary(): string
+    {
+        $binary = \trim((string) \shell_exec('command -v curl'));
+
+        if ($binary === '') {
+            throw new \RuntimeException('curl binary is required for cPanel file uploads');
+        }
+
+        return \escapeshellcmd($binary);
     }
 
     private function getHttpClient(): Client
