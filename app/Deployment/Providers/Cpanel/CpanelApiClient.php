@@ -200,7 +200,9 @@ final class CpanelApiClient
                 ],
             ]);
         } finally {
-            \fclose($handle);
+            if (\is_resource($handle)) {
+                \fclose($handle);
+            }
         }
     }
 
