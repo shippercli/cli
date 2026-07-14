@@ -51,6 +51,7 @@ final class CpanelApiClient
         private readonly string $username,
         private readonly string $authType,
         private readonly string $credential,
+        private readonly ?string $originIp = null,
     ) {
         $protocol = $this->port === 2096 || $this->port === 2095 ? 'http' : 'https';
         $this->baseUrl = "{$protocol}://{$host}:{$this->port}/execute";
@@ -187,9 +188,10 @@ final class CpanelApiClient
             : '-u '.\escapeshellarg($this->username.':'.$this->credential);
 
         $command = \sprintf(
-            '%s -skS %s -F %s -F %s -F %s %s',
+            '%s -skS %s%s -F %s -F %s -F %s %s',
             $this->resolveCurlBinary(),
             $authorization,
+            $this->buildCurlResolveArgument(),
             \escapeshellarg("dir={$directory}"),
             \escapeshellarg('overwrite='.($overwrite ? '1' : '0')),
             \escapeshellarg("file-1=@{$localPath};filename={$remoteFilename}"),
@@ -211,6 +213,9 @@ final class CpanelApiClient
         $body = \implode("\n", $output);
         /** @var array<string, mixed> $data */
         $data = \json_decode($body, true) ?? [];
+        if ($data === []) {
+            return $this->formatUnexpectedResponse($body);
+        }
 
         return $this->formatResponse($data);
     }
@@ -236,9 +241,10 @@ final class CpanelApiClient
             : '-u '.\escapeshellarg($this->username.':'.$this->credential);
 
         $command = \sprintf(
-            '%s -skS %s -X POST --data-urlencode %s --data-urlencode %s --data-urlencode %s --data-urlencode %s --data-urlencode %s %s',
+            '%s -skS %s%s -X POST --data-urlencode %s --data-urlencode %s --data-urlencode %s --data-urlencode %s --data-urlencode %s %s',
             $this->resolveCurlBinary(),
             $authorization,
+            $this->buildCurlResolveArgument(),
             \escapeshellarg("dir={$directory}"),
             \escapeshellarg("file={$filename}"),
             \escapeshellarg("content={$content}"),
@@ -262,6 +268,9 @@ final class CpanelApiClient
         $body = \implode("\n", $output);
         /** @var array<string, mixed> $data */
         $data = \json_decode($body, true) ?? [];
+        if ($data === []) {
+            return $this->formatUnexpectedResponse($body);
+        }
 
         return $this->formatResponse($data);
     }
@@ -315,6 +324,9 @@ final class CpanelApiClient
             $body = (string) $response->getBody();
             /** @var array<string, mixed> $data */
             $data = \json_decode($body, true) ?? [];
+            if ($data === []) {
+                return $this->formatUnexpectedResponse($body);
+            }
 
             return $this->formatResponse($data);
         } catch (GuzzleException $e) {
@@ -347,6 +359,9 @@ final class CpanelApiClient
             $body = (string) $response->getBody();
             /** @var array<string, mixed> $data */
             $data = \json_decode($body, true) ?? [];
+            if ($data === []) {
+                return $this->formatUnexpectedResponse($body);
+            }
 
             return $this->formatResponse($data);
         } catch (GuzzleException $e) {
@@ -369,13 +384,56 @@ final class CpanelApiClient
         return \escapeshellcmd($binary);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function formatUnexpectedResponse(string $body): array
+    {
+        $snippet = \trim($body);
+        if ($snippet === '') {
+            $snippet = 'Empty response body from cPanel API';
+        } else {
+            $snippet = \preg_replace('/\s+/', ' ', $snippet) ?? $snippet;
+            if (\strlen($snippet) > 280) {
+                $snippet = \substr($snippet, 0, 280).'...';
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => $snippet,
+            'data' => [],
+        ];
+    }
+
+    private function buildCurlResolveArgument(): string
+    {
+        $originIp = $this->normalizedOriginIp();
+        if ($originIp === null) {
+            return '';
+        }
+
+        return ' --resolve '.\escapeshellarg("{$this->hostFromBaseUrl()}:{$this->port}:{$originIp}");
+    }
+
     private function getHttpClient(): Client
     {
         if ($this->httpClient === null) {
-            $this->httpClient = new Client([
+            $config = [
                 'timeout' => 30,
                 'verify' => true,
-            ]);
+            ];
+
+            $originIp = $this->normalizedOriginIp();
+            if ($originIp !== null) {
+                $config['curl'] = [
+                    \CURLOPT_RESOLVE => [
+                        "{$this->hostFromBaseUrl()}:{$this->port}:{$originIp}",
+                    ],
+                ];
+            }
+
+            $this->httpClient = new Client($config);
         }
 
         return $this->httpClient;
@@ -399,5 +457,23 @@ final class CpanelApiClient
         $options['auth'] = [$this->username, $this->credential];
 
         return $options;
+    }
+
+    private function normalizedOriginIp(): ?string
+    {
+        if (! \is_string($this->originIp)) {
+            return null;
+        }
+
+        $originIp = \trim($this->originIp);
+
+        return $originIp === '' ? null : $originIp;
+    }
+
+    private function hostFromBaseUrl(): string
+    {
+        $host = \parse_url($this->baseUrl, PHP_URL_HOST);
+
+        return \is_string($host) ? $host : '';
     }
 }

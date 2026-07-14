@@ -39,6 +39,7 @@ final class CpanelProvider extends AbstractDeploymentProvider
                 $this->getUsername(),
                 $this->getAuthType(),
                 $this->getCredential(),
+                $this->getOriginIp(),
             );
         }
 
@@ -228,6 +229,19 @@ final class CpanelProvider extends AbstractDeploymentProvider
         $password = $this->config['password'] ?? '';
 
         return \is_string($password) ? $password : '';
+    }
+
+    private function getOriginIp(): ?string
+    {
+        $originIp = $this->config['origin_ip'] ?? null;
+
+        if (! \is_string($originIp)) {
+            return null;
+        }
+
+        $originIp = \trim($originIp);
+
+        return $originIp === '' ? null : $originIp;
     }
 
     private function getRepositoryPath(string $domain): string
