@@ -563,37 +563,38 @@ PHP;
     {
         $originIpValue = $this->config['origin_ip'] ?? null;
         $originIp = \is_string($originIpValue) ? \trim($originIpValue) : '';
-        $url = $originIp !== ''
-            ? "https://{$originIp}/{$scriptName}"
-            : "https://{$domain}/{$scriptName}";
+        $url = "https://{$domain}/{$scriptName}";
+        $command = $originIp !== ''
+            ? \sprintf(
+                '%s -skS --resolve %s %s',
+                $this->resolveCurlBinary(),
+                \escapeshellarg("{$domain}:443:{$originIp}"),
+                \escapeshellarg($url),
+            )
+            : \sprintf(
+                '%s -skS %s',
+                $this->resolveCurlBinary(),
+                \escapeshellarg($url),
+            );
 
-        $options = [
-            'timeout' => 120,
-            'verify' => false,
-        ];
+        $output = [];
+        $exitCode = 0;
+        \exec($command, $output, $exitCode);
 
-        if ($originIp !== '') {
-            $options['headers'] = [
-                'Host' => $domain,
-            ];
-        }
-
-        try {
-            $response = (new Client)->request('GET', $url, $options);
-            $body = (string) $response->getBody();
-
-            if (\str_contains($body, 'shipper deployment ok')) {
-                return true;
-            }
-
-            $this->lastError = 'Deployment extractor did not report success';
-
-            return false;
-        } catch (GuzzleException $e) {
-            $this->lastError = $e->getMessage();
+        if ($exitCode !== 0) {
+            $this->lastError = \implode("\n", $output);
 
             return false;
         }
+
+        $body = \implode("\n", $output);
+        if (\str_contains($body, 'shipper deployment ok')) {
+            return true;
+        }
+
+        $this->lastError = $body !== '' ? $body : 'Deployment extractor did not report success';
+
+        return false;
     }
 
     private function isGitUnavailableError(string $message): bool
@@ -601,6 +602,17 @@ PHP;
         return \str_contains($message, 'Failed to load module “Git”')
             || \str_contains($message, 'could not find the function “create_repository”')
             || \str_contains($message, 'Cpanel::API::Git');
+    }
+
+    private function resolveCurlBinary(): string
+    {
+        $binary = \trim((string) \shell_exec('command -v curl'));
+
+        if ($binary === '') {
+            throw new RuntimeException('curl binary is required for cPanel deployment operations');
+        }
+
+        return \escapeshellcmd($binary);
     }
 
     private function interpolateDatabaseName(string $name, string $projectName, string $profileName): string
