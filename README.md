@@ -1,362 +1,196 @@
-# Shipper
-
-![Shipper Banner](https://raw.githubusercontent.com/shippercli/assets/main/banner.png)
+# Shipper CLI
 
 [![CI](https://github.com/shippercli/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/shippercli/cli/actions)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%209-brightgreen)](https://phpstan.org/)
-[![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-purple)](https://www.php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.3%2B-777bb4)](https://www.php.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-[![Style](https://img.shields.io/badge/Code%20Style-Laravel%20Pint-ff69b4)](https://github.com/laravel/pint)
 
-A Laravel Zero application for declarative, config-driven deployments with strict type checking and code quality standards.
+Declarative application deployments through provider plugins.
 
-## Overview
+Shipper reads `shipper.yml`, validates the selected project and profile, shows
+the planned operations, and delegates deployment work to the installed
+provider package.
 
-Shipper is a CLI tool that reads a repository-level config file (`shipper.yml`) and performs plan/apply style deployments through a pluggable provider system. It follows the same philosophy as Infrastructure as Code tools like Terraform, but for application deployments.
+## Install
 
-## Features
+Install globally with Composer:
 
-### Deployment Features
-- ✅ Declarative YAML configuration (`shipper.yml`)
-- ✅ Multiple projects and deployment profiles (production, staging, preview)
-- ✅ Pluggable provider system with provider packages (`shippercli/provider-ploi`, `shippercli/provider-forge`, `shippercli/provider-cpanel`, `shippercli/provider-easypanel`)
-- ✅ Plan/apply workflow for safe deployments
-- ✅ Configuration validation
-- ✅ GitHub Actions workflows for CI/CD
-- ✅ Database configuration and automatic provisioning
-- ✅ Database lifecycle management (create, link, destroy)
+```bash
+composer global require shippercli/cli
+```
 
-### Strict Type Enforcement
-- ✅ `declare(strict_types=1)` in all PHP files
-- ✅ Type hints on all method parameters and return types
-- ✅ Final classes by default (immutability)
-- ✅ No mixed types allowed
-- ✅ Strict comparison operators
-
-### Code Quality Tools
-
-#### PHPStan (Level 9)
-Configured with maximum strictness:
-- No mixed types
-- All properties must have type declarations
-- Checks for always-true conditions
-- Validates return types in protected and public methods
-- Reports uninitialized properties
-- Dynamic properties disabled
-
-#### Laravel Pint
-Code style enforcement with:
-- Strict type declarations
-- Strict comparison
-- Native function invocation optimization
-- Ordered imports
-- Final class enforcement
-- No superfluous PHPDoc tags
-
-#### Pest Testing
-Modern testing with:
-- Type-safe test cases
-- Feature and unit testing support
-- Integration with Laravel Zero
-
-## Installation
-
-### For Development
+Or work from source:
 
 ```bash
 composer install
-cp .env.example .env
-```
-
-### Using Pre-built Binary
-
-Download the latest binary from the [releases page](https://github.com/shippercli/cli/releases):
-
-```bash
-curl -LSso shipper https://github.com/shippercli/cli/releases/latest/download/shipper
-```
-
-Or use a specific version:
-
-```bash
-curl -LSso shipper https://github.com/shippercli/cli/releases/download/v1.0.0/shipper
-```
-
-## Usage
-
-### Configuration
-
-Create a `shipper.yml` file in your repository root:
-
-```yaml
-providers:
-  ploi:
-    api_key: "${PLOI_API_KEY}"
-    api_url: "https://ploi.io/api"
-    server_id: "105556"  # Your Ploi server ID
-    deployment_timeout: 60  # Maximum time (in seconds) to wait for deployment (default: 60)
-
-projects:
-  api:
-    provider: ploi
-    path: ./examples/api
-    # Repository configuration
-    repository:
-      provider: github  # github, gitlab, bitbucket, or custom
-      name: shippercli/shipper  # username/repository
-    # Site configuration
-    web_directory: /public  # Default Laravel public directory
-    project_root: /  # Root of the project
-    # Database configuration
-    databases:
-      main:
-        name: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
-        user: "shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}"
-        type: mysql
-    profiles:
-      production:
-        branch: main
-        domain: shipper-wip-api.ulties.dev
-      staging:
-        branch: develop
-        domain: shipper-wip-api-test.ulties.dev
-      preview:
-        branch: "${GITHUB_HEAD_REF}"
-        domain: "shipper-wip-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
-```
-
-**Configuration Notes:**
-- The `server_id` is configured once at the provider level
-- The `deployment_timeout` specifies how long to wait for deployment completion (default: 60 seconds)
-- Deployment status is polled every 5 seconds until completion or timeout
-- Sites are automatically created/found by domain name
-- Repository is automatically installed from GitHub/GitLab/Bitbucket when a new site is created
-- `web_directory` defaults to `/public` (Laravel standard)
-- `project_root` defaults to `/` (project root)
-- No need to manually manage site IDs - the shipper handles this automatically
-- Domains use subdomains of ulties.dev for different environments
-
-**Database Configuration:**
-- Databases are automatically created/found by name
-- Database names and users support variable interpolation:
-  - `${PROJECT_NAME}` - The project name from config (e.g., "api")
-  - `${PROFILE}` - The deployment profile (e.g., "production", "staging", "preview")
-  - Any environment variable (e.g., `${GITHUB_PR_NUMBER}` for PR-specific databases)
-- Environment variables that are not set will be treated as empty strings
-- Trailing underscores and multiple consecutive underscores are automatically cleaned up
-- Each database is created with a secure random password
-- Databases are linked to their respective sites
-- When a site is destroyed, its associated databases are also deleted
-- Examples:
-  - For project "api" with profile "production", using pattern `shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}`, the database name will be "shipper_api_production"
-  - For project "api" with profile "preview" and PR #123, the database name will be "shipper_api_preview_123"
-
-### CLI Commands
-
-```bash
-# Validate configuration
-./shipper validate
-
-# Plan a deployment (dry-run)
-./shipper plan api --profile=production
-
-# Execute a deployment
-./shipper apply api --profile=production
-
-# Execute with force (skip confirmation)
-./shipper apply api --profile=production --force
-
-# Inspect provider deployment state
-./shipper status api --profile=production
-
-# Read recent provider log lines
-./shipper logs api --profile=production --lines=100
-
-# Restore the latest provider-managed release
-./shipper rollback api --profile=production
-
-# Destroy manifest-owned deployment resources
-./shipper destroy api --profile=production
-
-# List all commands
 ./shipper list
 ```
 
-### Provider System
+Prebuilt PHAR binaries are published on the
+[releases page](https://github.com/shippercli/cli/releases).
 
-Shipper loads provider packages through Composer. Official packages currently
-cover Ploi, Laravel Forge, cPanel, and EasyPanel. Providers implement the core
-deployment contract and can optionally add status, logs, rollback, and server
-lifecycle capabilities.
+## Provider packages
 
-## Project Structure
+Providers are separate Composer packages:
 
+| Provider | Package |
+| --- | --- |
+| Ploi | `shippercli/provider-ploi` |
+| Laravel Forge | `shippercli/provider-forge` |
+| cPanel | `shippercli/provider-cpanel` |
+| EasyPanel | `shippercli/provider-easypanel` |
+
+Install the package for the target platform:
+
+```bash
+composer global require shippercli/provider-cpanel
 ```
-shipper/
-├── app/
-│   ├── Commands/           # CLI commands
-│   │   ├── ValidateCommand.php
-│   │   ├── PlanCommand.php
-│   │   └── ApplyCommand.php
-│   ├── Config/             # Configuration classes
-│   │   ├── ConfigLoader.php
-│   │   ├── ShipperConfig.php
-│   │   ├── ProjectConfig.php
-│   │   └── ProfileConfig.php
-│   └── Deployment/         # Deployment providers
-│       ├── DeploymentProviderInterface.php
-│       ├── AbstractDeploymentProvider.php
-│       ├── PloiProvider.php
-│       └── ProviderFactory.php
-├── examples/               # Example deployable projects
-│   ├── api/
-│   └── frontend/
-├── .github/workflows/      # CI/CD workflows
-│   ├── ci.yml              # Code quality checks
-│   ├── deploy-production.yml
-│   ├── deploy-staging.yml
-│   └── deploy-preview.yml
-├── shipper.yml            # Main configuration file
-└── shipper                # CLI entry point
+
+Shipper discovers packages with Composer's runtime plugin metadata. Provider
+credentials, platform features, and configuration options belong to each
+provider's documentation rather than the core CLI.
+
+## Configure
+
+Create `shipper.yml` in the application repository:
+
+```yaml
+providers:
+  provider_name:
+    api_token: "${PROVIDER_API_TOKEN}"
+
+projects:
+  backend:
+    provider: provider_name
+    path: "."
+    web_directory: /public
+    profiles:
+      production:
+        branch: main
+        domain: "api.example.com"
+      staging:
+        branch: develop
+        domain: "api.example-test.com"
 ```
+
+`provider_name` is the slug registered by the installed package. Profiles can
+override provider-supported runtime, database, domain, environment, and
+lifecycle options.
+
+Environment placeholders use `${NAME}` syntax and are resolved at runtime.
+Keep credentials in the shell, CI secrets, or another secret manager.
+
+## Commands
+
+```bash
+# Validate all configured projects and profiles.
+shipper validate
+
+# Preview provider operations without changing remote state.
+shipper plan backend --profile=production
+
+# Apply a deployment. --force skips the confirmation prompt.
+shipper apply backend --profile=production --force
+
+# Inspect provider-defined deployment and resource state.
+shipper status backend --profile=production
+
+# Read recent provider or application log lines.
+shipper logs backend --profile=production --lines=100
+
+# Restore the latest or a named provider-managed release.
+shipper rollback backend --profile=production
+shipper rollback backend --profile=production --release=release-id
+
+# Remove only resources the provider identifies as Shipper-managed.
+shipper destroy backend --profile=preview --force
+```
+
+`status`, `logs`, and `rollback` are optional provider capabilities. Shipper
+returns a clear error when the selected provider does not implement one.
+
+## Provider contracts
+
+Every provider implements validation, planning, apply, destroy, name, and
+error-reporting methods from `shippercli/contracts`.
+
+Optional contracts add:
+
+- deployment status
+- recent logs
+- release rollback
+- server provisioning and cleanup
+
+The CLI adapts installed contract providers to its internal flows. Provider
+implementations do not belong in the core repository.
 
 ## GitHub Actions
 
-Three deployment workflows are included:
-
-### Production (main branch)
-Deploys all projects to production when code is pushed to `main`.
-
-### Staging (develop branch)
-Deploys all projects to staging when code is pushed to `develop`.
-
-### Preview (pull requests)
-Deploys preview environments for pull requests and comments on the PR with deployment status.
-
-## Development
-
-```bash
-# Run code style checks
-composer format:check
-
-# Fix code style
-composer format
-
-# Run static analysis
-composer analyse
-
-# Run tests
-composer test
-
-# Build binary
-composer build
-```
-
-## Building the Binary
-
-The shipper CLI can be built into a standalone PHAR binary:
-
-```bash
-# Build the binary
-composer build
-
-# The binary will be created at builds/shipper
-./builds/shipper --version
-```
-
-The build process uses [Box](https://github.com/box-project/box) to create an optimized PHAR archive with all dependencies included.
-
-### Release Process
-
-When a tag is pushed (e.g., `v1.0.0`), GitHub Actions automatically:
-1. Builds the binary
-2. Creates a GitHub Release
-3. Attaches the binary to the release
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-## Using Shipper CLI in GitHub Actions
-
-A reusable GitHub Action is provided to easily integrate shipper CLI into your workflows:
+A minimal deployment workflow validates before applying:
 
 ```yaml
 name: Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Run Shipper Validation
-        uses: shippercli/cli/.github/actions/shipper@main
+
+      - uses: shivammathur/setup-php@v2
         with:
-          command: validate
-      
-      - name: Deploy to Production
-        uses: shippercli/cli/.github/actions/shipper@main
-        with:
-          command: apply
-          project: api
-          profile: production
-          force: true
+          php-version: '8.3'
+          extensions: yaml, zip
+
+      - run: composer install --no-interaction --prefer-dist
+      - run: ./shipper validate
+      - run: ./shipper apply backend --profile=production --force
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
 ```
 
-### Action Inputs
-
-- `command` (required): The shipper command to run (validate, plan, apply)
-- `project` (optional): The project name from shipper.yml
-- `profile` (optional): The deployment profile (production, staging, preview)
-- `force` (optional): Skip confirmation prompts (default: false)
-- `version` (optional): Version of shipper CLI to use (default: latest)
-- `working-directory` (optional): Directory containing shipper.yml (default: .)
-
-### Action Outputs
-
-- `exit-code`: Exit code from the shipper command
-
-## Continuous Integration
-
-GitHub Actions automatically runs:
-1. Code style validation (Pint)
-2. Static analysis (PHPStan level 9)
-3. Tests (Pest)
-
-All checks must pass before merging.
+See [GitHub Actions](docs/GITHUB_ACTIONS.md) for production, staging, preview,
+cleanup, and reusable-action patterns.
 
 ## Documentation
 
-For comprehensive guides and detailed documentation, see the [docs folder](./docs/):
+- [Documentation index](docs/README.md)
+- [Configuration](docs/CONFIGURATION.md)
+- [Provider operations](docs/PROVIDER_OPERATIONS.md)
+- [Server lifecycle](docs/SERVER_LIFECYCLE.md)
+- [Sites](docs/SITES.md)
+- [Databases](docs/DATABASES.md)
+- [PR previews](docs/PR_PREVIEWS.md)
+- [GitHub Actions](docs/GITHUB_ACTIONS.md)
+- [Build and releases](docs/BUILD_SYSTEM.md)
 
-- **[Configuration Guide](./docs/CONFIGURATION.md)** - Complete shipper.yml configuration reference
-- **[Server Lifecycle](./docs/SERVER_LIFECYCLE.md)** - Existing servers, managed preview servers, and cleanup rules
-- **[PR Previews](./docs/PR_PREVIEWS.md)** - Set up preview environments for pull requests
-- **[Sites Management](./docs/SITES.md)** - Managing site lifecycle and deployment
-- **[Database Management](./docs/DATABASES.md)** - Database configuration and operations
-- **[Provider Operations](./docs/PROVIDER_OPERATIONS.md)** - Status, logs, rollback, and safe destroy
-- **[GitHub Actions Setup](./docs/GITHUB_ACTIONS.md)** - Automated deployments with GitHub Actions
-- **[Build System](./docs/BUILD_SYSTEM.md)** - Understanding the build and release process
-- **[Strict Standards](./docs/STRICT_STANDARDS.md)** - Code quality and type safety standards
-- **[Roadmap](./ROADMAP.md)** - Planned features and Ploi.io configurations not yet supported
+## Development
 
-## Strict Rules Applied
+```bash
+composer format
+composer format:check
+composer analyse
+XDEBUG_MODE=coverage composer test
+composer build
+```
 
-1. **Type Safety**: Every method has explicit parameter and return types
-2. **Immutability**: Classes are final by default
-3. **Strict Comparisons**: Using `===` and `!==` operators
-4. **No Mixed Types**: Explicit types required everywhere
-5. **Property Types**: All properties must declare types
-6. **PHPStan Level 9**: Maximum static analysis strictness
-7. **Code Style**: Enforced via Pint with strict rules
+The codebase targets PHP 8.3+, Laravel Pint, PHPStan level 9, and Pest.
+
+## Release
+
+Tags build and publish the PHAR through GitHub Actions:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
 
 ## License
 
