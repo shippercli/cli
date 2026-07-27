@@ -3,19 +3,29 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
   workflow_dispatch:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BOX_VERSION: '4.7.0'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -23,40 +33,68 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, xml, ctype, json, zip
           coverage: none
+          tools: composer:v2, box:${{ env.BOX_VERSION }}
 
       - name: Cache Composer packages
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-8.3-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-8.3-
 
       - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Run Pint
+        run: composer format:check
+
+      - name: Run PHPStan
+        run: composer analyse
+
+      - name: Run tests
+        env:
+          PEST_NO_PLUGIN: '1'
+        run: php vendor/bin/pest --no-coverage
+
+      - name: Install production dependencies
         run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
 
-      - name: Download Box
-        run: |
-          curl -LSso box.phar https://github.com/box-project/box/releases/latest/download/box.phar
-          chmod +x box.phar
-
       - name: Build PHAR
-        run: php box.phar compile
+        run: box compile
 
       - name: Test binary
         run: |
           chmod +x builds/shipper
           ./builds/shipper --version
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Create checksum
+        working-directory: builds
+        run: sha256sum shipper > shipper.sha256
+
+      - name: Attest release binary
+        if: github.ref_type == 'tag'
+        uses: actions/attest@v4
         with:
-          files: builds/shipper
+          subject-path: builds/shipper
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            builds/shipper
+            builds/shipper.sha256
+          fail_on_unmatched_files: true
+          generate_release_notes: true
           body: |
             ## Shipper CLI Binary
             
-            This release includes a standalone binary for the Shipper CLI.
+            This release includes the standalone Shipper CLI binary, its
+            SHA-256 checksum, and GitHub build provenance.
             
             ### Usage
             
@@ -68,5 +106,3 @@ jobs:
             ```
             
             See the README for full documentation.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
