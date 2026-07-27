@@ -6823,12 +6823,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/shippercli/contracts.git",
-                "reference": "49ee3eefdded39b9e23188b7efb22c13a89fd05e"
+                "reference": "0995d4157918a92314350678d11f347050a60d95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shippercli/contracts/zipball/49ee3eefdded39b9e23188b7efb22c13a89fd05e",
-                "reference": "49ee3eefdded39b9e23188b7efb22c13a89fd05e",
+                "url": "https://api.github.com/repos/shippercli/contracts/zipball/0995d4157918a92314350678d11f347050a60d95",
+                "reference": "0995d4157918a92314350678d11f347050a60d95",
                 "shasum": ""
             },
             "require": {
@@ -6849,7 +6849,7 @@
                 "source": "https://github.com/shippercli/contracts/tree/main",
                 "issues": "https://github.com/shippercli/contracts/issues"
             },
-            "time": "2026-07-26T17:52:35+00:00"
+            "time": "2026-07-27T09:37:47+00:00"
         },
         {
             "name": "staabm/side-effects-detector",

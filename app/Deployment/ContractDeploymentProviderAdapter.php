@@ -43,4 +43,9 @@ final readonly class ContractDeploymentProviderAdapter implements DeploymentProv
     {
         return $this->provider->getLastError();
     }
+
+    public function contractProvider(): ContractProvider
+    {
+        return $this->provider;
+    }
 }
