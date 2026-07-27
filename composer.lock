@@ -9564,12 +9564,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/shippercli/provider-cpanel.git",
-                "reference": "211f0b6d5da9318a89e81584af162008bc7efd97"
+                "reference": "cfb506c83f3324f570173e172563f4a876443ad2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shippercli/provider-cpanel/zipball/211f0b6d5da9318a89e81584af162008bc7efd97",
-                "reference": "211f0b6d5da9318a89e81584af162008bc7efd97",
+                "url": "https://api.github.com/repos/shippercli/provider-cpanel/zipball/cfb506c83f3324f570173e172563f4a876443ad2",
+                "reference": "cfb506c83f3324f570173e172563f4a876443ad2",
                 "shasum": ""
             },
             "require": {
@@ -9609,7 +9609,7 @@
                 "source": "https://github.com/shippercli/provider-cpanel/tree/main",
                 "issues": "https://github.com/shippercli/provider-cpanel/issues"
             },
-            "time": "2026-07-26T18:08:20+00:00"
+            "time": "2026-07-27T09:20:05+00:00"
         }
     ],
     "aliases": [],
