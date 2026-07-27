@@ -4,6 +4,7 @@
     "type": "project",
     "license": "MIT",
     "require": {
+        "composer-runtime-api": "^2.1",
         "php": "^8.3",
         "guzzlehttp/guzzle": "^7.0",
         "larastan/larastan": "^3.9",
@@ -12,6 +13,7 @@
         "laravel/pint": "^1.29",
         "pestphp/pest": "^4.0",
         "ploi/ploi-php-sdk": "^1.9",
+        "shippercli/contracts": "dev-main",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",
         "symfony/string": "^7.3",
@@ -19,7 +21,21 @@
         "symfony/yaml": "^7.0"
     },
     "require-dev": {
-        "mockery/mockery": "^1.6"
+        "mockery/mockery": "^1.6",
+        "shippercli/provider-cpanel": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/shippercli/contracts"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/shippercli/provider-cpanel"
+        }
+    ],
+    "suggest": {
+        "shippercli/provider-cpanel": "Deploy through cPanel accounts with domain, runtime, database, cron, SSL, and lifecycle management."
     },
     "autoload": {
         "psr-4": {

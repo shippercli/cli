@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Deployment;
 
+use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
+
 final class ProviderFactory
 {
     /** @var array<string, mixed> */
@@ -25,7 +27,19 @@ final class ProviderFactory
             throw new \InvalidArgumentException("Unknown provider: {$providerName}");
         }
 
-        /** @var DeploymentProviderInterface */
-        return new $className($config);
+        $provider = new $className($config);
+
+        if ($provider instanceof DeploymentProviderInterface) {
+            return $provider;
+        }
+
+        if ($provider instanceof ContractProvider) {
+            return new ContractDeploymentProviderAdapter($provider);
+        }
+
+        throw new \UnexpectedValueException(
+            "Provider {$className} must implement ".DeploymentProviderInterface::class
+            .' or '.ContractProvider::class.'.',
+        );
     }
 }
