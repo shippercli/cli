@@ -7,6 +7,9 @@ namespace App\Deployment;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Config\ServerLifecycleConfig;
+use Ploi\Exceptions\Http\NotFound;
+use Ploi\Exceptions\Http\NotValid;
+use Ploi\Exceptions\Http\Unauthenticated;
 use Ploi\Ploi;
 
 final class PloiProvider extends AbstractDeploymentProvider
@@ -365,16 +368,16 @@ final class PloiProvider extends AbstractDeploymentProvider
             $this->lastError = "Deployment timeout after {$timeout} seconds. Deployment may still be running on Ploi.";
 
             return false;
-        } catch (\Ploi\Exceptions\Http\Unauthenticated $e) {
+        } catch (Unauthenticated $e) {
             $this->lastError = "Authentication failed: Invalid Ploi API key. {$e->getMessage()}";
 
             return false;
-        } catch (\Ploi\Exceptions\Http\NotFound $e) {
+        } catch (NotFound $e) {
             $serverInfo = $serverId > 0 ? "Server ID {$serverId}" : 'The requested server';
             $this->lastError = "Resource not found: {$serverInfo} may not exist or you don't have access. {$e->getMessage()}";
 
             return false;
-        } catch (\Ploi\Exceptions\Http\NotValid $e) {
+        } catch (NotValid $e) {
             $this->lastError = "Validation error: {$e->getMessage()}";
 
             return false;
@@ -484,14 +487,14 @@ final class PloiProvider extends AbstractDeploymentProvider
             }
 
             return true;
-        } catch (\Ploi\Exceptions\Http\Unauthenticated $e) {
+        } catch (Unauthenticated $e) {
             $this->lastError = "Authentication failed: Invalid Ploi API key. {$e->getMessage()}";
 
             return false;
-        } catch (\Ploi\Exceptions\Http\NotFound $e) {
+        } catch (NotFound $e) {
             // If site is not found, consider it already destroyed
             return true;
-        } catch (\Ploi\Exceptions\Http\NotValid $e) {
+        } catch (NotValid $e) {
             $this->lastError = "Validation error: {$e->getMessage()}";
 
             return false;

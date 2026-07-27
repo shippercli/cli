@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Testing\PendingCommand;
+use Tests\TestCase;
 
 \test('deploy command runs successfully', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     $command = $this->artisan('deploy');
     \assert($command instanceof PendingCommand);
     $command->expectsOutput('Starting deployment...')
@@ -14,7 +15,7 @@ use Illuminate\Testing\PendingCommand;
 });
 
 \test('inspire command is hidden', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     $command = $this->artisan('list');
     \assert($command instanceof PendingCommand);
     $command->assertExitCode(0);

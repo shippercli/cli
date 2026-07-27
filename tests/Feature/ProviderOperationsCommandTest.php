@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Deployment\ProviderRegistry;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\TestShipperPlugin;
+use Tests\TestCase;
 
 function providerOperationsConfig(): string
 {
@@ -28,7 +29,7 @@ YAML);
 }
 
 \test('status command prints provider deployment state', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     ProviderRegistry::registerPlugin(new TestShipperPlugin);
     $config = \providerOperationsConfig();
 
@@ -45,7 +46,7 @@ YAML);
 });
 
 \test('logs command prints provider log lines', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     ProviderRegistry::registerPlugin(new TestShipperPlugin);
     $config = \providerOperationsConfig();
 
@@ -65,7 +66,7 @@ YAML);
 });
 
 \test('rollback command restores provider release with force flag', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     ProviderRegistry::registerPlugin(new TestShipperPlugin);
     $config = \providerOperationsConfig();
 

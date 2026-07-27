@@ -119,8 +119,15 @@ final class ConfigLoader
             foreach ($data['profiles'] as $profileName => $profileData) {
                 if (\is_string($profileName) && \is_array($profileData)) {
                     $branch = $profileData['branch'] ?? '';
-                    $environment = $this->parseEnvironment($profileData['environment'] ?? null);
-                    $server = $this->parseServerLifecycle($profileData['infrastructure']['server'] ?? null);
+                    $environmentData = $profileData['environment'] ?? null;
+                    $environment = $this->parseEnvironment(
+                        \is_array($environmentData) ? $environmentData : null,
+                    );
+                    $infrastructureData = $profileData['infrastructure'] ?? null;
+                    $serverData = \is_array($infrastructureData)
+                        ? ($infrastructureData['server'] ?? null)
+                        : null;
+                    $server = $this->parseServerLifecycle(\is_array($serverData) ? $serverData : null);
                     $profiles[$profileName] = new ProfileConfig(
                         $profileName,
                         \is_string($branch) ? $branch : '',
@@ -369,7 +376,8 @@ final class ConfigLoader
     {
         $from = isset($data['from']) && \is_string($data['from']) ? $data['from'] : '';
         $to = isset($data['to']) && \is_string($data['to']) ? $data['to'] : '';
-        $type = isset($data['type']) ? $data['type'] : 301;
+        $typeRaw = $data['type'] ?? null;
+        $type = \is_int($typeRaw) || \is_string($typeRaw) ? $typeRaw : 301;
         $enabled = isset($data['enabled']) ? (bool) $data['enabled'] : true;
 
         return new RedirectConfig($from, $to, $type, $enabled);

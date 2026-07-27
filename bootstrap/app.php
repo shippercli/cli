@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Kernel;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Exceptions\Handler;
 use LaravelZero\Framework\Application;
 
 /*
@@ -30,12 +33,12 @@ $app = new Application(
 
 $app->singleton(
     Illuminate\Contracts\Console\Kernel::class,
-    App\Kernel::class,
+    Kernel::class,
 );
 
 $app->singleton(
-    Illuminate\Contracts\Debug\ExceptionHandler::class,
-    Illuminate\Foundation\Exceptions\Handler::class,
+    ExceptionHandler::class,
+    Handler::class,
 );
 
 /*

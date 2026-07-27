@@ -3,13 +3,14 @@
 declare(strict_types=1);
 
 use App\Clients\GitHubHttpClient;
+use GuzzleHttp\Client;
 
 \test('GitHubHttpClient creates client with correct configuration', function (): void {
     $token = 'test-token-123';
     $gitHubClient = new GitHubHttpClient($token);
     $client = $gitHubClient->getClient();
 
-    \expect($client)->toBeInstanceOf(\GuzzleHttp\Client::class);
+    \expect($client)->toBeInstanceOf(Client::class);
 
     // Verify client has the correct base URI
     $config = $client->getConfig();

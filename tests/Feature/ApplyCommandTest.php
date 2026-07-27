@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Deployment\DeploymentProviderInterface;
 use App\Flows\ApplyDeploymentFlow;
 use Illuminate\Testing\PendingCommand;
+use Mockery\MockInterface;
+use Tests\TestCase;
 
 \test('apply command runs successfully with force flag', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     \putenv('PLOI_API_KEY=test-mock-key');
 
     $planData = [
@@ -26,8 +28,8 @@ use Illuminate\Testing\PendingCommand;
         'note' => 'mock deployment',
     ];
 
-    /** @var DeploymentProviderInterface&\Mockery\MockInterface $mockProvider */
-    $mockProvider = \Mockery::mock(DeploymentProviderInterface::class, [
+    /** @var DeploymentProviderInterface&MockInterface $mockProvider */
+    $mockProvider = Mockery::mock(DeploymentProviderInterface::class, [
         'validate' => [],
         'plan' => $planData,
         'apply' => true,
@@ -49,7 +51,7 @@ use Illuminate\Testing\PendingCommand;
 });
 
 \test('apply command shows error for nonexistent project', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     $command = $this->artisan('apply', ['project' => 'nonexistent', '--profile' => 'production', '--force' => true]);
     \assert($command instanceof PendingCommand);
     $command->expectsOutput('Project not found: nonexistent')
@@ -57,7 +59,7 @@ use Illuminate\Testing\PendingCommand;
 });
 
 \test('apply command shows error for nonexistent profile', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'nonexistent', '--force' => true]);
     \assert($command instanceof PendingCommand);
     $command->expectsOutput('Profile not found: nonexistent')
