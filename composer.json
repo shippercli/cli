@@ -1,17 +1,14 @@
 {
-    "name": "ulties/shipper",
+    "name": "shippercli/cli",
     "description": "A shipper application built with Laravel Zero with strict type checking",
     "type": "project",
     "license": "MIT",
     "require": {
-        "composer-runtime-api": "^2.1",
+        "composer-runtime-api": "^2.2",
         "php": "^8.3",
         "guzzlehttp/guzzle": "^7.0",
-        "larastan/larastan": "^3.9",
         "laravel-zero/framework": "^12.1",
         "laravel/forge-sdk": "^3.25",
-        "laravel/pint": "^1.29",
-        "pestphp/pest": "^4.0",
         "ploi/ploi-php-sdk": "^1.9",
         "shippercli/contracts": "dev-main",
         "symfony/clock": "^7.3",
@@ -21,17 +18,22 @@
         "symfony/yaml": "^7.0"
     },
     "require-dev": {
+        "larastan/larastan": "^3.9",
+        "laravel/pint": "^1.29",
         "mockery/mockery": "^1.6",
+        "pestphp/pest": "^4.0",
         "shippercli/provider-cpanel": "dev-main"
     },
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/shippercli/contracts"
+            "url": "https://github.com/shippercli/contracts",
+            "no-api": true
         },
         {
             "type": "vcs",
-            "url": "https://github.com/shippercli/provider-cpanel"
+            "url": "https://github.com/shippercli/provider-cpanel",
+            "no-api": true
         }
     ],
     "suggest": {
