@@ -8960,12 +8960,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/shippercli/provider-cpanel",
-                "reference": "08be7006175dfa19636e0a9770358ee75f896777"
+                "reference": "16634d10120275a8bbcbdef2a6b1e88f8bd703f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shippercli/provider-cpanel/zipball/08be7006175dfa19636e0a9770358ee75f896777",
-                "reference": "08be7006175dfa19636e0a9770358ee75f896777",
+                "url": "https://api.github.com/repos/shippercli/provider-cpanel/zipball/16634d10120275a8bbcbdef2a6b1e88f8bd703f9",
+                "reference": "16634d10120275a8bbcbdef2a6b1e88f8bd703f9",
                 "shasum": ""
             },
             "require": {
@@ -9001,7 +9001,7 @@
                 "MIT"
             ],
             "description": "cPanel provider plugin for Shipper CLI",
-            "time": "2026-07-27T16:52:59+00:00"
+            "time": "2026-07-27T18:17:07+00:00"
         },
         {
             "name": "staabm/side-effects-detector",
