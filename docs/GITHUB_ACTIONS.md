@@ -602,6 +602,5 @@ jobs:
 
 ## Next Steps
 
-- [Using Shipper as GitHub Action](./GITHUB_ACTION.md) - Detailed action usage
 - [PR Previews](./PR_PREVIEWS.md) - PR preview deployment guide
 - [Build System](./BUILD_SYSTEM.md) - Understanding the build process

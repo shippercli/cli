@@ -166,17 +166,28 @@ projects:
 # Execute with force (skip confirmation)
 ./shipper apply api --profile=production --force
 
+# Inspect provider deployment state
+./shipper status api --profile=production
+
+# Read recent provider log lines
+./shipper logs api --profile=production --lines=100
+
+# Restore the latest provider-managed release
+./shipper rollback api --profile=production
+
+# Destroy manifest-owned deployment resources
+./shipper destroy api --profile=production
+
 # List all commands
 ./shipper list
 ```
 
 ### Provider System
 
-The shipper uses a pluggable provider system. Currently supported:
-
-- **Ploi**: Deploy to servers managed by Ploi.io
-
-To add a new provider, implement the `DeploymentProviderInterface` and register it in `ProviderFactory`.
+Shipper loads provider packages through Composer. Official packages currently
+cover Ploi, Laravel Forge, cPanel, and EasyPanel. Providers implement the core
+deployment contract and can optionally add status, logs, rollback, and server
+lifecycle capabilities.
 
 ## Project Structure
 
@@ -331,8 +342,8 @@ For comprehensive guides and detailed documentation, see the [docs folder](./doc
 - **[PR Previews](./docs/PR_PREVIEWS.md)** - Set up preview environments for pull requests
 - **[Sites Management](./docs/SITES.md)** - Managing site lifecycle and deployment
 - **[Database Management](./docs/DATABASES.md)** - Database configuration and operations
+- **[Provider Operations](./docs/PROVIDER_OPERATIONS.md)** - Status, logs, rollback, and safe destroy
 - **[GitHub Actions Setup](./docs/GITHUB_ACTIONS.md)** - Automated deployments with GitHub Actions
-- **[GitHub Action Usage](./docs/GITHUB_ACTION.md)** - Using Shipper as a reusable GitHub Action
 - **[Build System](./docs/BUILD_SYSTEM.md)** - Understanding the build and release process
 - **[Strict Standards](./docs/STRICT_STANDARDS.md)** - Code quality and type safety standards
 - **[Roadmap](./ROADMAP.md)** - Planned features and Ploi.io configurations not yet supported

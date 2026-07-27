@@ -13,8 +13,8 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 - [PR Previews](./PR_PREVIEWS.md) - Set up preview environments for pull requests
 - [Sites Management](./SITES.md) - Managing site lifecycle and deployment
 - [Database Management](./DATABASES.md) - Database configuration and operations
+- [Provider Operations](./PROVIDER_OPERATIONS.md) - Status, logs, rollback, and safe destroy
 - [GitHub Actions](./GITHUB_ACTIONS.md) - Automated deployments with GitHub Actions
-- [GitHub Action Usage](./GITHUB_ACTION.md) - Using Shipper as a reusable GitHub Action
 - [Build System](./BUILD_SYSTEM.md) - Understanding the build and release process
 - [Strict Standards](./STRICT_STANDARDS.md) - Code quality and type safety standards
 
@@ -44,7 +44,7 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 
 #### Advanced Topics
 
-- [Use Shipper as a GitHub Action](./GITHUB_ACTION.md) - Reusable action integration
+- [Use Shipper as a GitHub Action](./GITHUB_ACTIONS.md#using-shipper-github-action) - Reusable action integration
 - [Understanding the build system](./BUILD_SYSTEM.md) - Binary building and releases
 - [Code quality standards](./STRICT_STANDARDS.md) - Type safety and best practices
 
@@ -111,16 +111,21 @@ Welcome to the Shipper documentation! This comprehensive guide covers everything
 - Workflow patterns
 - Notifications
 - Security best practices
-
-### GitHub Action
-
-**[GITHUB_ACTION.md](./GITHUB_ACTION.md)** - Reusable action guide
 - Using Shipper as a GitHub Action
 - Action inputs and outputs
 - Usage examples
 - Version management
 - Migration guide
 - Troubleshooting
+
+### Provider Operations
+
+**[PROVIDER_OPERATIONS.md](./PROVIDER_OPERATIONS.md)** - Runtime operations guide
+- Provider capability contracts
+- Deployment status
+- Recent logs
+- Release rollback
+- Manifest-scoped destroy safety
 
 ### Build System
 
