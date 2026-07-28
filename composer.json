@@ -2,6 +2,9 @@
     "name": "shippercli/cli",
     "description": "A shipper application built with Laravel Zero with strict type checking",
     "type": "project",
+    "bin": [
+        "shipper"
+    ],
     "license": "MIT",
     "require": {
         "composer-runtime-api": "^2.2",
