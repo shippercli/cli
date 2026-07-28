@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "adbc8b19109583640803c46951d32832",
+    "content-hash": "81d961fd694120199fc24b3fa756251e",
     "packages": [
         {
             "name": "brick/math",
@@ -3549,37 +3549,37 @@
         },
         {
             "name": "shippercli/contracts",
-            "version": "dev-main",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/shippercli/contracts",
-                "reference": "0995d4157918a92314350678d11f347050a60d95"
+                "url": "https://github.com/shippercli/contracts.git",
+                "reference": "07cc0fea028294b1fa23bf4dff49e6c2ef52c720"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shippercli/contracts/zipball/0995d4157918a92314350678d11f347050a60d95",
-                "reference": "0995d4157918a92314350678d11f347050a60d95",
+                "url": "https://api.github.com/repos/shippercli/contracts/zipball/07cc0fea028294b1fa23bf4dff49e6c2ef52c720",
+                "reference": "07cc0fea028294b1fa23bf4dff49e6c2ef52c720",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.3"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "ShipperCli\\Contracts\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "Contracts and interfaces for Shipper CLI providers",
             "support": {
-                "source": "https://github.com/shippercli/contracts/tree/main",
-                "issues": "https://github.com/shippercli/contracts/issues"
+                "issues": "https://github.com/shippercli/contracts/issues",
+                "source": "https://github.com/shippercli/contracts/tree/v1.0.0"
             },
-            "time": "2026-07-27T09:37:47+00:00"
+            "time": "2026-07-27T18:36:51+00:00"
         },
         {
             "name": "symfony/clock",
@@ -8956,28 +8956,27 @@
         },
         {
             "name": "shippercli/provider-cpanel",
-            "version": "dev-main",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/shippercli/provider-cpanel",
-                "reference": "16634d10120275a8bbcbdef2a6b1e88f8bd703f9"
+                "url": "https://github.com/shippercli/provider-cpanel.git",
+                "reference": "08a55d0359136498c4da22a929aae26306b07930"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shippercli/provider-cpanel/zipball/16634d10120275a8bbcbdef2a6b1e88f8bd703f9",
-                "reference": "16634d10120275a8bbcbdef2a6b1e88f8bd703f9",
+                "url": "https://api.github.com/repos/shippercli/provider-cpanel/zipball/08a55d0359136498c4da22a929aae26306b07930",
+                "reference": "08a55d0359136498c4da22a929aae26306b07930",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.1",
                 "guzzlehttp/guzzle": "^7.9",
                 "php": "^8.3",
-                "shippercli/contracts": "dev-main"
+                "shippercli/contracts": "^1.0"
             },
             "require-dev": {
                 "pestphp/pest": "^3.8"
             },
-            "default-branch": true,
             "type": "shipper-plugin",
             "extra": {
                 "shipper-plugin": "ShipperCli\\ProviderCpanel\\CpanelPlugin"
@@ -8987,21 +8986,16 @@
                     "ShipperCli\\ProviderCpanel\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "ShipperCli\\ProviderCpanel\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "php vendor/bin/pest --no-coverage"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "cPanel provider plugin for Shipper CLI",
-            "time": "2026-07-27T18:17:07+00:00"
+            "support": {
+                "issues": "https://github.com/shippercli/provider-cpanel/issues",
+                "source": "https://github.com/shippercli/provider-cpanel/tree/v1.0.0"
+            },
+            "time": "2026-07-28T09:51:44+00:00"
         },
         {
             "name": "staabm/side-effects-detector",
@@ -9610,10 +9604,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "shippercli/contracts": 20,
-        "shippercli/provider-cpanel": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

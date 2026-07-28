@@ -10,7 +10,7 @@ projects:
     path: ./examples/api
     repository:
       provider: github
-      name: ulties/shipper
+      name: shippercli/cli
     web_directory: /public
     project_root: /
     php_version: "8.3"
@@ -42,7 +42,7 @@ projects:
     path: ./examples/frontend
     repository:
       provider: github
-      name: ulties/shipper
+      name: shippercli/cli
     profiles:
       production:
         branch: main

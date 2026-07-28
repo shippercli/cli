@@ -293,7 +293,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Deploy to Production
-        uses: ulties/shipper/.github/actions/shipper@main
+        uses: shippercli/cli/.github/actions/shipper@main
         with:
           command: apply
           project: api
@@ -332,7 +332,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: ulties/shipper/.github/actions/shipper@main
+      - uses: shippercli/cli/.github/actions/shipper@main
         with:
           command: apply
           project: ${{ matrix.project }}
@@ -345,7 +345,7 @@ jobs:
 ### With Specific Version
 
 ```yaml
-- uses: ulties/shipper/.github/actions/shipper@v1.0.0
+- uses: shippercli/cli/.github/actions/shipper@v1.0.0
   with:
     command: apply
     project: api

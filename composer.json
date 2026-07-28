@@ -10,7 +10,7 @@
         "laravel-zero/framework": "^12.1",
         "laravel/forge-sdk": "^3.25",
         "ploi/ploi-php-sdk": "^1.9",
-        "shippercli/contracts": "dev-main",
+        "shippercli/contracts": "^1.0",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",
         "symfony/string": "^7.3",
@@ -22,20 +22,8 @@
         "laravel/pint": "^1.29",
         "mockery/mockery": "^1.6",
         "pestphp/pest": "^4.0",
-        "shippercli/provider-cpanel": "dev-main"
+        "shippercli/provider-cpanel": "^1.0"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/shippercli/contracts",
-            "no-api": true
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/shippercli/provider-cpanel",
-            "no-api": true
-        }
-    ],
     "suggest": {
         "shippercli/provider-cpanel": "Deploy through cPanel accounts with domain, runtime, database, cron, SSL, and lifecycle management."
     },
