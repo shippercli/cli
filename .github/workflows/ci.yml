@@ -6,18 +6,26 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     strategy:
       matrix:
-        php: ['8.3', '8.4']
+        php: ['8.3', '8.4', '8.5']
 
     name: PHP ${{ matrix.php }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -25,6 +33,7 @@ jobs:
         php-version: '${{ matrix.php }}'
         extensions: mbstring, xml, ctype, json
         coverage: none
+        tools: composer:v2
     
     - name: Verify PHP version
       run: php -v
@@ -34,12 +43,12 @@ jobs:
 
     - name: Cache Composer packages
       id: composer-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v5
       with:
         path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        key: ${{ runner.os }}-php-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
-          ${{ runner.os }}-php-
+          ${{ runner.os }}-php-${{ matrix.php }}-
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress

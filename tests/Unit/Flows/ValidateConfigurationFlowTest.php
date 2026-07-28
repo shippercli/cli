@@ -17,5 +17,5 @@ use App\Flows\ValidateConfigurationFlow;
     $flow = new ValidateConfigurationFlow;
 
     \expect(fn () => $flow->handle('nonexistent.yml'))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });

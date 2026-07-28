@@ -43,7 +43,7 @@ function makePloiProject(): ProjectConfig
         [],
         [
             'provider' => 'github',
-            'name' => 'ulties/shipper',
+            'name' => 'shippercli/cli',
         ],
     );
 }

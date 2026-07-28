@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Testing\PendingCommand;
+use Tests\TestCase;
 
 \test('cleanup-orphaned command requires GITHUB_TOKEN', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     \putenv('GITHUB_TOKEN=');
 
     $command = $this->artisan('cleanup-orphaned', ['--force' => true]);
@@ -15,7 +16,7 @@ use Illuminate\Testing\PendingCommand;
 });
 
 \test('cleanup-orphaned command requires GITHUB_REPOSITORY', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     \putenv('GITHUB_TOKEN=test-token');
     \putenv('GITHUB_REPOSITORY=');
 
@@ -29,7 +30,7 @@ use Illuminate\Testing\PendingCommand;
 });
 
 \test('cleanup-orphaned command supports dry-run flag', function (): void {
-    /** @var Tests\TestCase $this */
+    /** @var TestCase $this */
     \putenv('GITHUB_TOKEN=');
 
     $command = $this->artisan('cleanup-orphaned', ['--dry-run' => true, '--force' => true]);

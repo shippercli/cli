@@ -30,7 +30,7 @@ jobs:
           profile: production
           force: true
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
 ```
 
 ## Multi-Project Deployment
@@ -59,7 +59,7 @@ jobs:
           profile: production
           force: true
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
 ```
 
 ## Preview Deployments for Pull Requests
@@ -84,7 +84,7 @@ jobs:
           project: api
           profile: preview
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
       
@@ -96,7 +96,7 @@ jobs:
           profile: preview
           force: true
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
 ```
@@ -113,7 +113,7 @@ jobs:
     version: v1.0.0  # Use a specific release
     force: true
   env:
-    PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+    PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
 ```
 
 ## Custom Working Directory
@@ -130,7 +130,7 @@ If your `shipper.yml` is not in the repository root:
     working-directory: ./infrastructure
     force: true
   env:
-    PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+    PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
 ```
 
 ## Available Commands
@@ -138,12 +138,16 @@ If your `shipper.yml` is not in the repository root:
 - `validate`: Validate the shipper.yml configuration
 - `plan`: Show what changes would be made (dry-run)
 - `apply`: Execute the deployment
+- `status`: Print provider deployment state as JSON
+- `logs`: Print recent provider or application log lines
+- `rollback`: Restore a provider-managed release
+- `destroy`: Remove Shipper-managed deployment resources
 
 ## Required Environment Variables
 
-Most commands require the following environment variables:
-
-- `PLOI_API_KEY`: Your Ploi API key
+Most commands require credentials documented by the installed provider package.
+Store them as GitHub Actions secrets and expose only the required variables to
+the Shipper step.
 
 For preview deployments, you may also need:
 
@@ -154,10 +158,12 @@ For preview deployments, you may also need:
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `command` | Yes | - | The shipper command to run (validate, plan, apply) |
+| `command` | Yes | - | The Shipper command to run |
 | `project` | No | - | The project name from shipper.yml |
 | `profile` | No | - | The deployment profile (production, staging, preview) |
 | `force` | No | false | Skip confirmation prompts |
+| `release` | No | - | Provider release identifier for rollback |
+| `lines` | No | - | Maximum log lines for the logs command |
 | `version` | No | latest | Version of shipper CLI to use |
 | `working-directory` | No | . | Directory containing shipper.yml |
 

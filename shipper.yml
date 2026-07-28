@@ -18,7 +18,7 @@ projects:
     # Repository configuration
     repository:
       provider: github # github, gitlab, bitbucket, or custom
-      name: ulties/shipper # username/repository
+      name: shippercli/cli # username/repository
 # Site configuration
     web_directory: /public # Default Laravel public directory
     project_root: /
@@ -157,7 +157,7 @@ projects:
     # Repository configuration
     repository:
       provider: github
-      name: ulties/shipper
+      name: shippercli/cli
     # Site configuration
     web_directory: /public
     project_root: /

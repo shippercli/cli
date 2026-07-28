@@ -16,7 +16,7 @@ projects:
     path: ./api
     repository:
       provider: github
-      name: ulties/shipper
+      name: shippercli/cli
     profiles:
       production:
         branch: main
@@ -54,7 +54,7 @@ projects:
     path: ./api
     repository:
       provider: github
-      name: ulties/shipper
+      name: shippercli/cli
     profiles:
       preview:
         branch: feature/test
