@@ -1,6 +1,7 @@
 {
     "main": "shipper",
     "output": "builds/shipper",
+    "exclude-composer-files": false,
     "directories": [
         "app",
         "bootstrap",
