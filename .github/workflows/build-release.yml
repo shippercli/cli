@@ -66,10 +66,16 @@ jobs:
       - name: Build PHAR
         run: box compile
 
-      - name: Test binary
+      - name: Test binary outside checkout
         run: |
           chmod +x builds/shipper
-          ./builds/shipper --version
+          test_dir="$(mktemp -d)"
+          trap 'rm -rf "$test_dir"' EXIT
+          cp builds/shipper "$test_dir/shipper"
+          (
+            cd "$test_dir"
+            ./shipper --version
+          )
 
       - name: Create checksum
         working-directory: builds
