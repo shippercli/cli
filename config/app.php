@@ -1,7 +1,18 @@
 <?php
 
 declare(strict_types=1);
+
 use App\Providers\AppServiceProvider;
+use Composer\InstalledVersions;
+
+$packageName = 'shippercli/cli';
+$rootPackage = InstalledVersions::getRootPackage();
+$packageVersion = $rootPackage['name'] === $packageName
+    ? $rootPackage['pretty_version']
+    : (InstalledVersions::isInstalled($packageName)
+        ? InstalledVersions::getPrettyVersion($packageName)
+        : null);
+$applicationVersion = \ltrim($packageVersion ?? 'dev-main', 'v');
 
 return [
 
@@ -29,7 +40,7 @@ return [
     |
     */
 
-    'version' => '1.0.0',
+    'version' => $applicationVersion,
 
     /*
     |--------------------------------------------------------------------------
