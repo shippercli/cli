@@ -74,7 +74,12 @@ jobs:
           cp builds/shipper "$test_dir/shipper"
           (
             cd "$test_dir"
-            ./shipper --version
+            version_output="$(./shipper --version)"
+            printf '%s\n' "$version_output"
+            if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+              expected_version="${GITHUB_REF_NAME#v}"
+              test "$version_output" = "Shipper $expected_version"
+            fi
           )
 
       - name: Create checksum
