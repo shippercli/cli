@@ -1,17 +1,19 @@
 {
-    "name": "ulties/shipper",
+    "name": "shippercli/cli",
     "description": "A shipper application built with Laravel Zero with strict type checking",
     "type": "project",
+    "bin": [
+        "shipper"
+    ],
     "license": "MIT",
     "require": {
+        "composer-runtime-api": "^2.2",
         "php": "^8.3",
         "guzzlehttp/guzzle": "^7.0",
-        "larastan/larastan": "^3.9",
         "laravel-zero/framework": "^12.1",
         "laravel/forge-sdk": "^3.25",
-        "laravel/pint": "^1.29",
-        "pestphp/pest": "^4.0",
         "ploi/ploi-php-sdk": "^1.9",
+        "shippercli/contracts": "^1.0",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",
         "symfony/string": "^7.3",
@@ -19,7 +21,14 @@
         "symfony/yaml": "^7.0"
     },
     "require-dev": {
-        "mockery/mockery": "^1.6"
+        "larastan/larastan": "^3.9",
+        "laravel/pint": "^1.29",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^4.0",
+        "shippercli/provider-cpanel": "^1.0"
+    },
+    "suggest": {
+        "shippercli/provider-cpanel": "Deploy through cPanel accounts with domain, runtime, database, cron, SSL, and lifecycle management."
     },
     "autoload": {
         "psr-4": {

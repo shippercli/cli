@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-use Symfony\Component\Process\Process;
+namespace Tests\Feature;
 
-final class ValidateCommandTest extends Tests\TestCase
+use Symfony\Component\Process\Process;
+use Tests\TestCase;
+
+final class ValidateCommandTest extends TestCase
 {
     private string $testConfigPath = __DIR__.'/../../test-validate.yml';
 

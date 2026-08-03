@@ -17,7 +17,15 @@ define('LARAVEL_START', microtime(true));
 |
 */
 
-require __DIR__.'/vendor/autoload.php';
+$autoloadPath = $_composer_autoload_path ?? __DIR__.'/vendor/autoload.php';
+
+if (! \is_string($autoloadPath) || ! \is_file($autoloadPath)) {
+    \fwrite(STDERR, "Unable to locate Composer's autoloader.\n");
+
+    exit(1);
+}
+
+require $autoloadPath;
 
 $app = require_once __DIR__.'/bootstrap/app.php';
 

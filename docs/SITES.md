@@ -75,7 +75,7 @@ Specify which repository to deploy from:
 ```yaml
 repository:
   provider: github  # github, gitlab, bitbucket, or custom
-  name: ulties/shipper  # username/repository
+  name: shippercli/cli  # username/repository
 ```
 
 **Supported Providers:**

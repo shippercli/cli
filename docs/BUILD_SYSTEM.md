@@ -84,7 +84,7 @@ The `.github/actions/shipper/action.yml` provides a reusable action that:
 **Usage in other repositories**:
 
 ```yaml
-- uses: ulties/shipper/.github/actions/shipper@main
+- uses: shippercli/cli/.github/actions/shipper@main
   with:
     command: apply
     project: api
@@ -230,7 +230,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ulties/shipper/.github/actions/shipper@main
+      - uses: shippercli/cli/.github/actions/shipper@main
         with:
           command: validate
 ```

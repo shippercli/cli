@@ -10,6 +10,6 @@ composer.phar
 .phpunit.cache
 .php-cs-fixer.cache
 .phpstan.cache
-/builds
+/build
 box.phar
 graphify-out/

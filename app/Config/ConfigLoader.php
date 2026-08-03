@@ -369,7 +369,8 @@ final class ConfigLoader
     {
         $from = isset($data['from']) && \is_string($data['from']) ? $data['from'] : '';
         $to = isset($data['to']) && \is_string($data['to']) ? $data['to'] : '';
-        $type = isset($data['type']) ? $data['type'] : 301;
+        $typeRaw = $data['type'] ?? null;
+        $type = \is_int($typeRaw) || \is_string($typeRaw) ? $typeRaw : 301;
         $enabled = isset($data['enabled']) ? (bool) $data['enabled'] : true;
 
         return new RedirectConfig($from, $to, $type, $enabled);

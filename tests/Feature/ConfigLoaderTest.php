@@ -3,6 +3,15 @@
 declare(strict_types=1);
 
 use App\Config\ConfigLoader;
+use App\Config\CronConfig;
+use App\Config\DaemonConfig;
+use App\Config\EnvironmentConfig;
+use App\Config\NetworkRuleConfig;
+use App\Config\ProfileConfig;
+use App\Config\ProjectConfig;
+use App\Config\QueueConfig;
+use App\Config\RedirectConfig;
+use App\Config\SslConfig;
 
 \test('config loader loads valid config', function (): void {
     $loader = new ConfigLoader('shipper.yml');
@@ -16,7 +25,7 @@ use App\Config\ConfigLoader;
 \test('config loader throws exception for missing file', function (): void {
     $loader = new ConfigLoader('nonexistent.yml');
     $loader->load();
-})->throws(\RuntimeException::class, 'Config file not found');
+})->throws(RuntimeException::class, 'Config file not found');
 
 \test('loaded project has expected properties', function (): void {
     $loader = new ConfigLoader('shipper.yml');
@@ -237,14 +246,14 @@ use App\Config\ConfigLoader;
 });
 
 \test('aliases returns empty array when value is not an array', function (): void {
-    $profile = new \App\Config\ProfileConfig('test', 'main', ['aliases' => 'not-an-array']);
+    $profile = new ProfileConfig('test', 'main', ['aliases' => 'not-an-array']);
 
     \expect($profile->aliases())->toBeArray();
     \expect($profile->aliases())->toHaveCount(0);
 });
 
 \test('aliases filters out non-string values', function (): void {
-    $profile = new \App\Config\ProfileConfig('test', 'main', ['aliases' => ['valid.example.com', 42, null, 'also-valid.example.com']]);
+    $profile = new ProfileConfig('test', 'main', ['aliases' => ['valid.example.com', 42, null, 'also-valid.example.com']]);
 
     \expect($profile->aliases())->toBeArray();
     \expect($profile->aliases())->toHaveCount(2);
@@ -319,7 +328,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('queue config uses defaults when values not provided', function (): void {
-    $queue = new \App\Config\QueueConfig;
+    $queue = new QueueConfig;
 
     \expect($queue->connection())->toBe('database');
     \expect($queue->queue())->toBe('default');
@@ -390,7 +399,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('cron config uses default user when not provided', function (): void {
-    $cron = new \App\Config\CronConfig('echo hello', '* * * * *');
+    $cron = new CronConfig('echo hello', '* * * * *');
 
     \expect($cron->command())->toBe('echo hello');
     \expect($cron->frequency())->toBe('* * * * *');
@@ -458,7 +467,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('redirect config uses default type when not provided', function (): void {
-    $redirect = new \App\Config\RedirectConfig('/old', '/new');
+    $redirect = new RedirectConfig('/old', '/new');
 
     \expect($redirect->from())->toBe('/old');
     \expect($redirect->to())->toBe('/new');
@@ -556,7 +565,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('daemon config uses defaults when values not provided', function (): void {
-    $daemon = new \App\Config\DaemonConfig('php artisan horizon');
+    $daemon = new DaemonConfig('php artisan horizon');
 
     \expect($daemon->command())->toBe('php artisan horizon');
     \expect($daemon->user())->toBe('ploi');
@@ -612,7 +621,7 @@ use App\Config\ConfigLoader;
 });
 
 \test('network rule config uses defaults when values not provided', function (): void {
-    $rule = new \App\Config\NetworkRuleConfig('Allow SSH', 22);
+    $rule = new NetworkRuleConfig('Allow SSH', 22);
 
     \expect($rule->name())->toBe('Allow SSH');
     \expect($rule->port())->toBe(22);
@@ -622,13 +631,13 @@ use App\Config\ConfigLoader;
 });
 
 \test('network rule config with from_ip set to null returns null', function (): void {
-    $rule = new \App\Config\NetworkRuleConfig('Allow HTTP', 80, 'tcp', 'allow', null);
+    $rule = new NetworkRuleConfig('Allow HTTP', 80, 'tcp', 'allow', null);
 
     \expect($rule->fromIp())->toBeNull();
 });
 
 \test('project config php version and nginx config parse correctly from inline data', function (): void {
-    $project = new \App\Config\ProjectConfig(
+    $project = new ProjectConfig(
         'test',
         'ploi',
         './examples/test',
@@ -637,8 +646,8 @@ use App\Config\ConfigLoader;
         '/public',
         '/',
         [],
-        new \App\Config\SslConfig,
-        new \App\Config\EnvironmentConfig,
+        new SslConfig,
+        new EnvironmentConfig,
         '',
         [],
         [],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Deployment\PloiProvider;
+use Ploi\Exceptions\Http\NotFound;
 use Psr\Log\LoggerInterface;
 
 final class DeleteSiteAction
@@ -36,7 +37,7 @@ final class DeleteSiteAction
             $site->delete();
 
             return true;
-        } catch (\Ploi\Exceptions\Http\NotFound $e) {
+        } catch (NotFound $e) {
             // Site already deleted - this is acceptable
             return true;
         } catch (\Exception $e) {
