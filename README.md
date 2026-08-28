@@ -62,7 +62,7 @@ provider's documentation rather than the core CLI.
 
 The release PHAR has its own dependencies and cannot discover separately
 installed provider packages. For CI, use
-`shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193`, which installs the CLI and
+`shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc`, which installs the CLI and
 providers together in an isolated Composer directory.
 
 ## Configure
@@ -141,7 +141,8 @@ implementations do not belong in the core repository.
 
 ## GitHub Actions
 
-A minimal deployment workflow validates before applying:
+A minimal deployment workflow installs Shipper and its provider packages in an
+isolated tool directory through the composite action:
 
 ```yaml
 name: Deploy
@@ -159,16 +160,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: shivammathur/setup-php@v2
+      - name: Deploy with Shipper
+        uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
         with:
-          php-version: '8.3'
-          extensions: yaml, zip
-
-      - run: composer install --no-interaction --prefer-dist
-      - run: ./shipper validate
-      - run: ./shipper apply backend --profile=production --force
+          command: apply
+          project: backend
+          profile: production
+          force: true
+          providers: |
+            shippercli/provider-cpanel:^1.0
         env:
-          PROVIDER_API_TOKEN: ${{ secrets.PROVIDER_API_TOKEN }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
 ```
 
 See [GitHub Actions](docs/GITHUB_ACTIONS.md) for production, staging, preview,

@@ -11,7 +11,7 @@ This page explains how to automate Shipper from GitHub Actions.
 ## Reusable Shipper Action
 
 ```yaml
-- uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
+- uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
   with:
     command: apply
     project: api
@@ -29,6 +29,9 @@ Supported inputs:
 - `project`
 - `profile`
 - `force`
+- `providers` (required)
+- `cli-version`
+- `php-version`
 
 Provider secrets vary by provider. Confirm the exact variable names on the provider page.
 
@@ -47,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
+      - uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
         with:
           command: apply
           project: api
@@ -73,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
+      - uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
         with:
           command: apply
           project: api
@@ -101,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
+      - uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
         with:
           command: destroy
           project: api
