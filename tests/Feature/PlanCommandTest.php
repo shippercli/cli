@@ -7,10 +7,19 @@ use Tests\TestCase;
 
 \test('plan command runs successfully', function (): void {
     /** @var TestCase $this */
-    $command = $this->artisan('plan', ['project' => 'api', '--profile' => 'production']);
-    \assert($command instanceof PendingCommand);
-    $command->expectsOutputToContain('Planning deployment')
-        ->assertExitCode(0);
+    \putenv('GITHUB_PR_NUMBER=123');
+    \putenv('PLOI_API_KEY=test-mock-key');
+
+    try {
+        $command = $this->artisan('plan', ['project' => 'api', '--profile' => 'production']);
+        \assert($command instanceof PendingCommand);
+        $command->expectsOutputToContain('Planning deployment')
+            ->assertExitCode(0);
+        unset($command);
+    } finally {
+        \putenv('GITHUB_PR_NUMBER');
+        \putenv('PLOI_API_KEY');
+    }
 });
 
 \test('plan command shows error for nonexistent project', function (): void {

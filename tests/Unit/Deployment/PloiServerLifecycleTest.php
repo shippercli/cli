@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Config\DatabaseConfig;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Config\ServerLifecycleConfig;
@@ -49,6 +50,24 @@ function makePloiProject(): ProjectConfig
 }
 
 /**
+ * @param array<string, DatabaseConfig> $databases
+ */
+function makePloiProjectWithDatabases(array $databases): ProjectConfig
+{
+    return new ProjectConfig(
+        name: 'api',
+        provider: 'ploi',
+        path: './api',
+        profiles: [],
+        repository: [
+            'provider' => 'github',
+            'name' => 'shippercli/cli',
+        ],
+        databases: $databases,
+    );
+}
+
+/**
  * @param array<string, mixed> $config
  */
 function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = null): ProfileConfig
@@ -79,6 +98,58 @@ function makePloiProfile(array $config = [], ?ServerLifecycleConfig $server = nu
     \expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.credential (or provider_id/provider) as digits');
     \expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.region');
     \expect($errors)->toContain('Ploi create server mode requires infrastructure.server.spec.plan (or size)');
+});
+
+\test('ploi validate rejects an unresolved API key placeholder', function (): void {
+    $provider = new PloiProvider([
+        'api_key' => '${PLOI_API_KEY}',
+        'server_id' => '123',
+    ]);
+
+    $errors = $provider->validate(\makePloiProject(), \makePloiProfile());
+
+    \expect($errors)->toContain('Ploi API key contains an unresolved environment variable');
+});
+
+\test('ploi database interpolation fails instead of colliding when a preview variable is missing', function (): void {
+    \putenv('GITHUB_PR_NUMBER');
+
+    $provider = new PloiProvider([
+        'api_key' => 'token',
+        'server_id' => '123',
+    ]);
+    $project = \makePloiProjectWithDatabases([
+        'preview' => new DatabaseConfig('shipper_${PROJECT_NAME}_${GITHUB_PR_NUMBER}', 'shipper_${PROJECT_NAME}_${GITHUB_PR_NUMBER}'),
+        'base' => new DatabaseConfig('shipper_${PROJECT_NAME}', 'shipper_${PROJECT_NAME}'),
+    ]);
+
+    \expect(fn (): array => $provider->plan($project, \makePloiProfile()))
+        ->toThrow(\RuntimeException::class, 'Database identifier contains unresolved environment variable(s): GITHUB_PR_NUMBER');
+});
+
+\test('ploi database interpolation resolves project profile and environment placeholders', function (): void {
+    \putenv('GITHUB_PR_NUMBER=42');
+
+    try {
+        $provider = new PloiProvider([
+            'api_key' => 'token',
+            'server_id' => '123',
+        ]);
+        $project = \makePloiProjectWithDatabases([
+            'preview' => new DatabaseConfig(
+                'shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}',
+                'shipper_${PROJECT_NAME}_${PROFILE}_${GITHUB_PR_NUMBER}',
+            ),
+        ]);
+
+        $plan = $provider->plan($project, \makePloiProfile());
+
+        \expect($plan['databases'])->toBe([
+            'preview' => ['name' => 'shipper_api_preview_42', 'user' => 'shipper_api_preview_42', 'type' => 'mysql'],
+        ]);
+    } finally {
+        \putenv('GITHUB_PR_NUMBER');
+    }
 });
 
 \test('ploi plan shows create server lifecycle actions', function (): void {

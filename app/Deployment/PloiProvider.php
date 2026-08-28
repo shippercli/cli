@@ -48,8 +48,11 @@ final class PloiProvider extends AbstractDeploymentProvider
         $errors = parent::validate($project, $profile);
 
         // Validate Ploi-specific configuration
-        if (! isset($this->config['api_key']) || $this->config['api_key'] === '') {
+        $apiKey = $this->config['api_key'] ?? null;
+        if (! \is_string($apiKey) || $apiKey === '') {
             $errors[] = 'Ploi API key is required';
+        } elseif (\preg_match('/\$\{[A-Z_][A-Z0-9_]*\}/', $apiKey) === 1) {
+            $errors[] = 'Ploi API key contains an unresolved environment variable';
         }
 
         $serverConfig = $profile->server();
@@ -786,23 +789,34 @@ final class PloiProvider extends AbstractDeploymentProvider
         $name = \str_replace('${PROJECT_NAME}', $projectName, $name);
         $name = \str_replace('${PROFILE}', $profileName, $name);
 
-        // Interpolate any remaining environment variables
+        $missingVariables = [];
+
+        // Interpolate any remaining environment variables.
         $name = \preg_replace_callback(
             '/\$\{([A-Z_][A-Z0-9_]*)\}/',
-            function (array $matches): string {
+            function (array $matches) use (&$missingVariables): string {
                 $envVar = $matches[1];
                 $envValue = \getenv($envVar);
 
-                // If env var is not set, remove the placeholder (use empty string)
-                return $envValue !== false ? $envValue : '';
+                if ($envValue === false) {
+                    $missingVariables[] = $envVar;
+
+                    return $matches[0];
+                }
+
+                return $envValue;
             },
             $name,
         ) ?? $name;
 
-        // Clean up any trailing underscores or multiple consecutive underscores
-        // that may result from missing environment variables
-        $name = \preg_replace('/_+$/', '', $name) ?? $name; // Remove trailing underscores
-        $name = \preg_replace('/_+/', '_', $name) ?? $name; // Replace multiple underscores with single
+        if ($missingVariables !== []) {
+            $variables = \implode(', ', \array_unique($missingVariables));
+
+            throw new \RuntimeException("Database identifier contains unresolved environment variable(s): {$variables}");
+        }
+
+        $name = \preg_replace('/_+$/', '', $name) ?? $name;
+        $name = \preg_replace('/_+/', '_', $name) ?? $name;
 
         return $name;
     }
