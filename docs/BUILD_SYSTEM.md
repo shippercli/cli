@@ -84,7 +84,7 @@ The `shippercli/actions/.github/actions/shipper` composite action:
 **Usage in other repositories**:
 
 ```yaml
-- uses: shippercli/actions/.github/actions/shipper@v1
+- uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
   with:
     command: apply
     project: api
@@ -232,7 +232,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shippercli/actions/.github/actions/shipper@v1
+      - uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
         with:
           command: validate
           providers: |

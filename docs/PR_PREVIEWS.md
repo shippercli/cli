@@ -234,7 +234,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Deploy Preview
-        uses: shippercli/actions/.github/actions/shipper@v1
+        uses: shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193
         with:
           command: apply
           project: ${{ matrix.project }}

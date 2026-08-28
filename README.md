@@ -62,7 +62,7 @@ provider's documentation rather than the core CLI.
 
 The release PHAR has its own dependencies and cannot discover separately
 installed provider packages. For CI, use
-`shippercli/actions/.github/actions/shipper@v1`, which installs the CLI and
+`shippercli/actions/.github/actions/shipper@f31a980b0c6d51b531735d4cd68b2268ad54d193`, which installs the CLI and
 providers together in an isolated Composer directory.
 
 ## Configure
