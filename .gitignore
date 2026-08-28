@@ -11,6 +11,7 @@ composer.phar
 .php-cs-fixer.cache
 .phpstan.cache
 /build
+/builds
 box.phar
 phpstan.phar
 pint.phar
