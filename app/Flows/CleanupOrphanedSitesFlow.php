@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Flows;
 
-use App\Actions\DeleteSiteAction;
 use App\Actions\FindOrphanedSitesAction;
-use App\Actions\GetAllSitesAction;
 use App\Actions\GetOpenPullRequestsAction;
 use App\Actions\LoadConfigurationAction;
-use App\Deployment\PloiProvider;
+use App\Deployment\ContractDeploymentProviderAdapter;
 use App\Deployment\ProviderFactory;
 
 final class CleanupOrphanedSitesFlow
@@ -22,10 +20,8 @@ final class CleanupOrphanedSitesFlow
     public function handle(string $configPath, string $githubRepo, string $githubToken, bool $dryRun = false): array
     {
         $loadAction = new LoadConfigurationAction;
-        $getAllSitesAction = new GetAllSitesAction;
         $getOpenPRsAction = new GetOpenPullRequestsAction;
         $findOrphanedAction = new FindOrphanedSitesAction;
-        $deleteSiteAction = new DeleteSiteAction;
 
         $config = $loadAction->handle($configPath);
 
@@ -42,39 +38,7 @@ final class CleanupOrphanedSitesFlow
             ];
         }
 
-        $ploiProvider = null;
-        foreach ($projects as $project) {
-            $provider = $providerFactory->create($project->provider());
-            if ($provider instanceof PloiProvider) {
-                $ploiProvider = $provider;
-                break;
-            }
-        }
-
-        if ($ploiProvider === null) {
-            return [
-                'success' => false,
-                'orphaned_sites' => [],
-                'deleted' => 0,
-                'failed' => 0,
-                'error_message' => 'No projects using Ploi provider found',
-            ];
-        }
-
-        $allSites = $getAllSitesAction->handle($ploiProvider);
-        if ($allSites === []) {
-            return [
-                'success' => true,
-                'orphaned_sites' => [],
-                'deleted' => 0,
-                'failed' => 0,
-                'error_message' => '',
-            ];
-        }
-
         $prResult = $getOpenPRsAction->handle($githubRepo, $githubToken);
-
-        // Check if GitHub API call failed
         if (! $prResult['success']) {
             return [
                 'success' => false,
@@ -85,13 +49,61 @@ final class CleanupOrphanedSitesFlow
             ];
         }
 
-        $openPRs = $prResult['prs'];
-        $orphanedSites = $findOrphanedAction->handle($allSites, $openPRs, $projects);
+        $targets = [];
+        $orphanedSites = [];
+        foreach ($projects as $project) {
+            $provider = $providerFactory->create($project->provider());
+            $capabilityProvider = $provider instanceof ContractDeploymentProviderAdapter
+                ? $provider->contractProvider()
+                : $provider;
+            if (! \method_exists($capabilityProvider, 'listSites') || ! \method_exists($capabilityProvider, 'deleteSiteWithDatabases')) {
+                continue;
+            }
 
-        if ($orphanedSites === [] || $dryRun) {
+            foreach ($project->profiles() as $profile) {
+                $sites = $capabilityProvider->listSites($project, $profile);
+                if (! \is_array($sites)) {
+                    continue;
+                }
+
+                $normalizedSites = [];
+                foreach ($sites as $site) {
+                    if (! \is_array($site)) {
+                        continue;
+                    }
+
+                    $siteId = $site['site_id'] ?? null;
+                    $domain = $site['domain'] ?? null;
+                    if (! \is_int($siteId) || ! \is_string($domain)) {
+                        continue;
+                    }
+
+                    $normalizedSites[] = ['site_id' => $siteId, 'domain' => $domain];
+                }
+
+                $orphans = $findOrphanedAction->handle($normalizedSites, $prResult['prs'], $projects);
+                foreach ($orphans as $orphan) {
+                    $key = $project->name().'|'.$profile->name().'|'.$orphan['site_id'];
+                    $targets[$key] = [$capabilityProvider, $project, $profile, $orphan['site_id']];
+                    $orphanedSites[$key] = $orphan;
+                }
+            }
+        }
+
+        if ($targets === []) {
             return [
                 'success' => true,
-                'orphaned_sites' => $orphanedSites,
+                'orphaned_sites' => [],
+                'deleted' => 0,
+                'failed' => 0,
+                'error_message' => '',
+            ];
+        }
+
+        if ($dryRun) {
+            return [
+                'success' => true,
+                'orphaned_sites' => \array_values($orphanedSites),
                 'deleted' => 0,
                 'failed' => 0,
                 'error_message' => '',
@@ -101,19 +113,21 @@ final class CleanupOrphanedSitesFlow
         $deleted = 0;
         $failed = 0;
 
-        foreach ($orphanedSites as $site) {
+        foreach ($targets as [$capabilityProvider, $project, $profile, $siteId]) {
             try {
-                if ($deleteSiteAction->handle($ploiProvider, $site['site_id'])) {
+                if ($capabilityProvider->deleteSiteWithDatabases($project, $profile, $siteId)) {
                     $deleted++;
+                } else {
+                    $failed++;
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable) {
                 $failed++;
             }
         }
 
         return [
             'success' => $failed === 0,
-            'orphaned_sites' => $orphanedSites,
+            'orphaned_sites' => \array_values($orphanedSites),
             'deleted' => $deleted,
             'failed' => $failed,
             'error_message' => '',

@@ -11,9 +11,7 @@ use ShipperCli\Contracts\ShipperPluginInterface;
 final class ProviderRegistry
 {
     /** @var array<string, string> */
-    private static array $providers = [
-        'ploi' => PloiProvider::class,
-    ];
+    private static array $providers = [];
 
     private static bool $pluginsDiscovered = false;
 
