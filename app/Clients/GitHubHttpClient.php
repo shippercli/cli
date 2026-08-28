@@ -20,6 +20,8 @@ final class GitHubHttpClient
                 'User-Agent' => 'shippercli.com',
             ],
             'http_errors' => false,
+            'timeout' => 30,
+            'verify' => true,
         ]);
     }
 

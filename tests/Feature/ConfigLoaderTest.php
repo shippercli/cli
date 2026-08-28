@@ -14,7 +14,7 @@ use App\Config\RedirectConfig;
 use App\Config\SslConfig;
 
 \test('config loader loads valid config', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
 
     \expect($config->projects())->toBeArray();
@@ -28,7 +28,7 @@ use App\Config\SslConfig;
 })->throws(RuntimeException::class, 'Config file not found');
 
 \test('loaded project has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -40,7 +40,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has profiles', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -53,7 +53,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded profile has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -66,7 +66,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has databases', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -77,7 +77,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded database has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -91,7 +91,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has ssl config', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -102,7 +102,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without ssl config defaults to disabled', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -113,7 +113,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has environment config', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -127,7 +127,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded profile has environment config', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -141,7 +141,7 @@ use App\Config\SslConfig;
 });
 
 \test('project environment merges with profile environment (profile overrides)', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -157,7 +157,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without environment config defaults to empty', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -167,7 +167,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has deploy script', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -179,7 +179,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without deploy script defaults to empty string', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -189,7 +189,7 @@ use App\Config\SslConfig;
 });
 
 \test('profile can override project deploy script', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -206,7 +206,7 @@ use App\Config\SslConfig;
 });
 
 \test('profile without deploy script returns null for deploy_script key', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -218,7 +218,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded profile has aliases', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -228,12 +228,12 @@ use App\Config\SslConfig;
     \assert($profile !== null);
     \expect($profile->aliases())->toBeArray();
     \expect($profile->aliases())->toHaveCount(2);
-    \expect($profile->aliases())->toContain('www.shipper-cli-api-production.ulties.dev');
-    \expect($profile->aliases())->toContain('api-v2.shipper-cli-api-production.ulties.dev');
+    \expect($profile->aliases())->toContain('www.shipper-cli-api-production.shippercli.com');
+    \expect($profile->aliases())->toContain('api-v2.shipper-cli-api-production.shippercli.com');
 });
 
 \test('profile without aliases returns empty array', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -262,7 +262,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has queues', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -274,7 +274,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded queue has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -291,7 +291,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded queue with custom values has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -308,7 +308,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without queues returns empty array', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -319,7 +319,7 @@ use App\Config\SslConfig;
 });
 
 \test('getQueue returns null for non-existent queue', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -339,7 +339,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has cron jobs', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -351,7 +351,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded cron job has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -365,7 +365,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded cron job with custom frequency has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -379,7 +379,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without cron returns empty array', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -390,7 +390,7 @@ use App\Config\SslConfig;
 });
 
 \test('getCron returns null for non-existent cron job', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -407,7 +407,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has redirects', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -419,7 +419,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded redirect has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -433,7 +433,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded redirect with permanent type has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -447,7 +447,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without redirects returns empty array', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -458,7 +458,7 @@ use App\Config\SslConfig;
 });
 
 \test('getRedirect returns null for non-existent redirect', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -475,7 +475,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has php version', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -485,7 +485,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without php version defaults to empty string', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -495,7 +495,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without nginx config defaults to empty string', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -505,7 +505,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has daemons', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -517,7 +517,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded daemon has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -532,7 +532,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded daemon without directory has empty directory', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -545,7 +545,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without daemons returns empty array', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -556,7 +556,7 @@ use App\Config\SslConfig;
 });
 
 \test('getDaemon returns null for non-existent daemon', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -574,7 +574,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded project has network rules', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
 
@@ -585,7 +585,7 @@ use App\Config\SslConfig;
 });
 
 \test('loaded network rule has expected properties', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);
@@ -601,7 +601,7 @@ use App\Config\SslConfig;
 });
 
 \test('project without network rules returns empty array', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('frontend');
 
@@ -612,7 +612,7 @@ use App\Config\SslConfig;
 });
 
 \test('getNetworkRule returns null for non-existent rule', function (): void {
-    $loader = new ConfigLoader('shipper.yml');
+    $loader = new ConfigLoader('shipper.yml.example');
     $config = $loader->load();
     $project = $config->getProject('api');
     \assert($project !== null);

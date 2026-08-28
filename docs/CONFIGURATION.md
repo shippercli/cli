@@ -36,7 +36,7 @@ providers:
   ploi:
     api_key: "${PLOI_API_KEY}"
     api_url: "https://ploi.io/api"
-    server_id: "105556"
+    server_id: "999999999" # Example placeholder; use your Ploi server ID
     deployment_timeout: 60
 ```
 

@@ -88,11 +88,6 @@ final class ApplyCommand extends Command
             $this->info('Executing deployment...');
             $this->line('');
 
-            $this->comment('Debug Information:');
-            $this->line('  Server ID: '.$this->getPlanValue($plan, 'server_id'));
-            $this->line('  Domain:    '.$this->getPlanValue($plan, 'domain'));
-            $this->line('');
-
             $this->comment('Triggering deployment and waiting for completion...');
             $this->line('');
 

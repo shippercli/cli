@@ -17,6 +17,8 @@ use GuzzleHttp\Client;
     \expect($config)->toHaveKey('base_uri');
     \expect($config)->toHaveKey('headers');
     \expect($config)->toHaveKey('http_errors');
+    \expect($config)->toHaveKey('timeout');
+    \expect($config)->toHaveKey('verify');
 
     // Now assert types for safe array access
     \assert(\is_array($config));
@@ -33,6 +35,8 @@ use GuzzleHttp\Client;
 
     // Verify http_errors is set to false
     \expect($config['http_errors'])->toBe(false);
+    \expect($config['timeout'])->toBe(30);
+    \expect($config['verify'])->toBe(true);
 });
 
 \test('GitHubHttpClient uses token parameter for authorization', function (): void {

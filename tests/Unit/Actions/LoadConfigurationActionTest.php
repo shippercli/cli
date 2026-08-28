@@ -7,7 +7,7 @@ use App\Config\ShipperConfig;
 
 \test('LoadConfigurationAction loads valid configuration', function (): void {
     $action = new LoadConfigurationAction;
-    $config = $action->handle('shipper.yml');
+    $config = $action->handle('shipper.yml.example');
 
     \expect($config)->toBeInstanceOf(ShipperConfig::class);
 });
