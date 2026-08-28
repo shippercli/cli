@@ -144,12 +144,16 @@ final class ForgeProvider extends AbstractDeploymentProvider
 
     public function apply(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Forge apply is not implemented';
+
+        return false;
     }
 
     public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Forge destroy is not implemented';
+
+        return false;
     }
 
     public function getServerId(): string
