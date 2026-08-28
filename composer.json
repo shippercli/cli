@@ -44,10 +44,11 @@
     },
     "scripts": {
         "test": "php vendor/bin/pest",
-        "analyse": "php phpstan.phar analyse --memory-limit=1G",
-        "format": "php pint.phar",
-        "format:check": "php pint.phar --test",
+        "analyse": "php vendor/bin/phpstan analyse --memory-limit=1G",
+        "format": "php vendor/bin/pint",
+        "format:check": "php vendor/bin/pint --test",
         "build": [
+            "composer install --no-dev --optimize-autoloader --no-interaction",
             "[ -f box.phar ] || (curl -LSso box.phar https://github.com/box-project/box/releases/latest/download/box.phar && chmod +x box.phar) || (echo 'Failed to download Box' && exit 1)",
             "php box.phar compile"
         ]
