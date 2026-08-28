@@ -74,24 +74,26 @@ chmod +x shipper
 
 ### Reusable GitHub Action
 
-The `.github/actions/shipper/action.yml` provides a reusable action that:
+The `shippercli/actions/.github/actions/shipper` composite action:
 
-1. Downloads the binary from releases
-2. Verifies it's executable and valid
-3. Runs the specified shipper command
+1. Sets up PHP and Composer for its isolated tool directory
+2. Installs the CLI and requested provider packages together
+3. Verifies plugin discovery and runs `vendor/bin/shipper`
 4. Returns the exit code
 
 **Usage in other repositories**:
 
 ```yaml
-- uses: shippercli/cli/.github/actions/shipper@main
+- uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
   with:
     command: apply
     project: api
     profile: production
     force: true
+    providers: |
+      shippercli/provider-cpanel:^1.0
   env:
-    PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+    CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
 ```
 
 ## Security
@@ -230,9 +232,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: shippercli/cli/.github/actions/shipper@main
+      - uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
         with:
           command: validate
+          providers: |
+            shippercli/provider-cpanel:^1.0
 ```
 
 ## Future Enhancements

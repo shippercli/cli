@@ -108,34 +108,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, xml, ctype, json, yaml
-          coverage: none
-      
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-dev
-      
-      - name: Validate configuration
-        run: ./shipper validate
-        env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
-          GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-      
-      - name: Plan deployment
-        run: ./shipper plan ${{ matrix.project }} --profile=preview
-        env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
-          GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
-      
       - name: Deploy preview
-        run: ./shipper apply ${{ matrix.project }} --profile=preview --force
+        uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
+        with:
+          command: apply
+          project: ${{ matrix.project }}
+          profile: preview
+          force: true
+          providers: |
+            shippercli/provider-cpanel:^1.0
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       
@@ -179,20 +163,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, xml, ctype, json, yaml
-          coverage: none
-      
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-dev
-      
       - name: Destroy preview
-        run: ./shipper destroy ${{ matrix.project }} --profile=preview --force
+        uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
+        with:
+          command: destroy
+          project: ${{ matrix.project }}
+          profile: preview
+          force: true
+          providers: |
+            shippercli/provider-cpanel:^1.0
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       
@@ -234,14 +216,16 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Deploy Preview
-        uses: shippercli/cli/.github/actions/shipper@main
+        uses: shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc
         with:
           command: apply
           project: ${{ matrix.project }}
           profile: preview
           force: true
+          providers: |
+            shippercli/provider-cpanel:^1.0
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
 ```
@@ -250,15 +234,15 @@ jobs:
 
 Required environment variables for PR previews:
 
-- `PLOI_API_KEY`: Your Ploi API key (from GitHub secrets)
+- `CPANEL_API_TOKEN`: Your cPanel API token (from GitHub secrets)
 - `GITHUB_HEAD_REF`: PR branch name (automatically available)
 - `GITHUB_PR_NUMBER`: PR number (automatically available)
 
-Set the Ploi API key in your repository secrets:
+Set the cPanel API token in your repository secrets:
 1. Go to Settings → Secrets and variables → Actions
 2. Click "New repository secret"
-3. Name: `PLOI_API_KEY`
-4. Value: Your Ploi API key
+3. Name: `CPANEL_API_TOKEN`
+4. Value: Your cPanel API token
 
 ## Preview Domain Strategy
 
@@ -356,16 +340,16 @@ Customize the PR comment in the workflow:
         owner: context.repo.owner,
         repo: context.repo.repo,
         body: `## 🚀 Preview Deployment
-        
-**URL:** https://${domain}
-**Branch:** \`${{ github.head_ref }}\`
-**Commit:** ${{ github.sha }}
 
-### Test Credentials
-- **Email:** test@example.com
-- **Password:** password
+          **URL:** https://${domain}
+          **Branch:** \`${{ github.head_ref }}\`
+          **Commit:** ${{ github.sha }}
 
-This preview will be automatically cleaned up when the PR is closed.`
+          ### Test Credentials
+          - **Email:** test@example.com
+          - **Password:** password
+
+          This preview will be automatically cleaned up when the PR is closed.`
       })
 ```
 
@@ -406,7 +390,7 @@ jobs:
 ### Issue: Preview not deploying
 
 **Check:**
-1. Verify `PLOI_API_KEY` is set in repository secrets
+1. Verify `CPANEL_API_TOKEN` is set in repository secrets
 2. Check workflow run logs in Actions tab
 3. Verify shipper.yml has preview profile configured
 4. Ensure DNS wildcard is configured
