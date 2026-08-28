@@ -121,21 +121,21 @@ jobs:
       - name: Validate configuration
         run: ./shipper validate
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       
       - name: Plan deployment
         run: ./shipper plan ${{ matrix.project }} --profile=preview
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       
       - name: Deploy preview
         run: ./shipper apply ${{ matrix.project }} --profile=preview --force
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       
@@ -192,7 +192,7 @@ jobs:
       - name: Destroy preview
         run: ./shipper destroy ${{ matrix.project }} --profile=preview --force
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
       
@@ -234,14 +234,16 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Deploy Preview
-        uses: shippercli/cli/.github/actions/shipper@main
+        uses: shippercli/actions/.github/actions/shipper@v1
         with:
           command: apply
           project: ${{ matrix.project }}
           profile: preview
           force: true
+          providers: |
+            shippercli/provider-cpanel:^1.0
         env:
-          PLOI_API_KEY: ${{ secrets.PLOI_API_KEY }}
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
 ```
@@ -250,14 +252,14 @@ jobs:
 
 Required environment variables for PR previews:
 
-- `PLOI_API_KEY`: Your Ploi API key (from GitHub secrets)
+- `CPANEL_API_TOKEN`: Your Ploi API key (from GitHub secrets)
 - `GITHUB_HEAD_REF`: PR branch name (automatically available)
 - `GITHUB_PR_NUMBER`: PR number (automatically available)
 
 Set the Ploi API key in your repository secrets:
 1. Go to Settings → Secrets and variables → Actions
 2. Click "New repository secret"
-3. Name: `PLOI_API_KEY`
+3. Name: `CPANEL_API_TOKEN`
 4. Value: Your Ploi API key
 
 ## Preview Domain Strategy
@@ -406,7 +408,7 @@ jobs:
 ### Issue: Preview not deploying
 
 **Check:**
-1. Verify `PLOI_API_KEY` is set in repository secrets
+1. Verify `CPANEL_API_TOKEN` is set in repository secrets
 2. Check workflow run logs in Actions tab
 3. Verify shipper.yml has preview profile configured
 4. Ensure DNS wildcard is configured

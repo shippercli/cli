@@ -49,15 +49,21 @@ Providers are separate Composer packages:
 | cPanel | `shippercli/provider-cpanel` |
 | EasyPanel | `shippercli/provider-easypanel` |
 
-Install the package for the target platform:
+For local global use, install the CLI and providers into the same Composer
+home, then run Composer's global `vendor/bin/shipper`:
 
 ```bash
-composer global require shippercli/provider-cpanel
+composer global require shippercli/cli shippercli/provider-cpanel
 ```
 
 Shipper discovers packages with Composer's runtime plugin metadata. Provider
 credentials, platform features, and configuration options belong to each
 provider's documentation rather than the core CLI.
+
+The release PHAR has its own dependencies and cannot discover separately
+installed provider packages. For CI, use
+`shippercli/actions/.github/actions/shipper@v1`, which installs the CLI and
+providers together in an isolated Composer directory.
 
 ## Configure
 
@@ -186,7 +192,7 @@ cleanup, and reusable-action patterns.
 - **[Sites Management](./docs/SITES.md)** - Managing site lifecycle and deployment
 - **[Database Management](./docs/DATABASES.md)** - Database configuration and operations
 - **[GitHub Actions Setup](./docs/GITHUB_ACTIONS.md)** - Automated deployments with GitHub Actions
-- **[GitHub Action Usage](./docs/GITHUB_ACTION.md)** - Using Shipper as a reusable GitHub Action
+- **[GitHub Action Usage](./docs/GITHUB_ACTIONS.md)** - Using Shipper as a reusable GitHub Action
 - **[Build System](./docs/BUILD_SYSTEM.md)** - Understanding the build and release process
 - **[Strict Standards](./docs/STRICT_STANDARDS.md)** - Code quality and type safety standards
 - **[Roadmap](./ROADMAP.md)** - Planned features and Ploi.io configurations not yet supported
