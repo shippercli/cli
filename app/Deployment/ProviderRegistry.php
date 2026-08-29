@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace App\Deployment;
 
-use App\Deployment\Providers\CloudflarePages\CloudflarePagesProvider;
-use App\Deployment\Providers\Coolify\CoolifyProvider;
-use App\Deployment\Providers\EasyPanel\EasyPanelProvider;
-use App\Deployment\Providers\Forge\ForgeProvider;
-use App\Deployment\Providers\Hostinger\HostingerProvider;
-use App\Deployment\Providers\Portainer\PortainerProvider;
-use App\Deployment\Providers\Railway\RailwayProvider;
 use Composer\InstalledVersions;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
 use ShipperCli\Contracts\ShipperPluginInterface;
@@ -20,13 +13,6 @@ final class ProviderRegistry
     /** @var array<string, string> */
     private static array $providers = [
         'ploi' => PloiProvider::class,
-        'forge' => ForgeProvider::class,
-        'railway' => RailwayProvider::class,
-        'cloudflare-pages' => CloudflarePagesProvider::class,
-        'hostinger' => HostingerProvider::class,
-        'coolify' => CoolifyProvider::class,
-        'easypanel' => EasyPanelProvider::class,
-        'portainer' => PortainerProvider::class,
     ];
 
     private static bool $pluginsDiscovered = false;

@@ -149,7 +149,9 @@ final class HostingerProvider extends AbstractDeploymentProvider
 
     public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Hostinger destroy is not implemented';
+
+        return false;
     }
 
     private function getApiToken(): string

@@ -128,7 +128,9 @@ final class CloudflarePagesProvider extends AbstractDeploymentProvider
 
     public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Cloudflare Pages destroy is not implemented';
+
+        return false;
     }
 
     private function getAccountId(): string
