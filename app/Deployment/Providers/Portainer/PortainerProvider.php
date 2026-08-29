@@ -185,7 +185,9 @@ final class PortainerProvider extends AbstractDeploymentProvider
 
     public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Portainer destroy is not implemented';
+
+        return false;
     }
 
     private function getUrl(): string

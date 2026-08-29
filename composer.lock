@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "81d961fd694120199fc24b3fa756251e",
+    "content-hash": "6320437efd2d122c8309963d23413d0a",
     "packages": [
         {
             "name": "brick/math",
@@ -2883,59 +2883,6 @@
                 }
             ],
             "time": "2026-08-24T00:54:40+00:00"
-        },
-        {
-            "name": "ploi/ploi-php-sdk",
-            "version": "1.9.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ploi/ploi-php-sdk.git",
-                "reference": "73395a908bfd771c91514bebccfef55f980aa8a3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ploi/ploi-php-sdk/zipball/73395a908bfd771c91514bebccfef55f980aa8a3",
-                "reference": "73395a908bfd771c91514bebccfef55f980aa8a3",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "guzzlehttp/guzzle": "^7.0.1",
-                "php": ">=7.3"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^9",
-                "psy/psysh": "@stable",
-                "squizlabs/php_codesniffer": "3.*",
-                "vlucas/phpdotenv": "^5.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Ploi": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Dennis Smink",
-                    "email": "info@ploi.io"
-                },
-                {
-                    "name": "Simon White",
-                    "email": "simondotwhite@gmail.com"
-                }
-            ],
-            "description": "Ploi.io for easy site deployments",
-            "support": {
-                "issues": "https://github.com/ploi/ploi-php-sdk/issues",
-                "source": "https://github.com/ploi/ploi-php-sdk/tree/1.9.5"
-            },
-            "time": "2025-05-18T05:48:27+00:00"
         },
         {
             "name": "psr/clock",
