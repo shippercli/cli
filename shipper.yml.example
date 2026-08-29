@@ -6,7 +6,7 @@ providers:
   ploi:
     api_key: "${PLOI_API_KEY}" # Set via environment variable
     api_url: "https://ploi.io/api"
-    server_id: "105556" # Default server ID for all deployments
+    server_id: "999999999" # Default server ID for all deployments
     deployment_timeout: 60 # Maximum time (in seconds) to wait for deployment to complete
 
 # Projects to deploy
@@ -122,7 +122,7 @@ projects:
     profiles:
       production:
         branch: main
-        domain: shipper-cli-api-production.ulties.dev
+        domain: shipper-cli-api-production.shippercli.com
         environment:
           variables:
             APP_ENV: "production"
@@ -133,18 +133,18 @@ projects:
           php artisan config:cache
           php artisan route:cache --force
         aliases:
-          - "www.shipper-cli-api-production.ulties.dev"
-          - "api-v2.shipper-cli-api-production.ulties.dev"
+          - "www.shipper-cli-api-production.shippercli.com"
+          - "api-v2.shipper-cli-api-production.shippercli.com"
       staging:
         branch: develop
-        domain: shipper-cli-api-staging.ulties.dev
+        domain: shipper-cli-api-staging.shippercli.com
         environment:
           variables:
             APP_ENV: "staging"
             APP_DEBUG: "true"
       preview:
         branch: "${GITHUB_HEAD_REF}" # PR branch
-        domain: "shipper-cli-api-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-cli-api-preview-${GITHUB_PR_NUMBER}.shippercli.com"
         environment:
           variables:
             APP_ENV: "preview"
@@ -164,10 +164,10 @@ projects:
     profiles:
       production:
         branch: main
-        domain: shipper-cli-production.ulties.dev
+        domain: shipper-cli-production.shippercli.com
       staging:
         branch: develop
-        domain: shipper-cli-staging.ulties.dev
+        domain: shipper-cli-staging.shippercli.com
       preview:
         branch: "${GITHUB_HEAD_REF}"
-        domain: "shipper-cli-preview-${GITHUB_PR_NUMBER}.ulties.dev"
+        domain: "shipper-cli-preview-${GITHUB_PR_NUMBER}.shippercli.com"

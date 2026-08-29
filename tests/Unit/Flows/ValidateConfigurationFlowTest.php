@@ -6,7 +6,7 @@ use App\Flows\ValidateConfigurationFlow;
 
 \test('ValidateConfigurationFlow validates valid configuration', function (): void {
     $flow = new ValidateConfigurationFlow;
-    $result = $flow->handle('shipper.yml');
+    $result = $flow->handle('shipper.yml.example');
 
     \expect($result)
         ->toHaveKey('success')

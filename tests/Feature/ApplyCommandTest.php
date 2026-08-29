@@ -41,9 +41,10 @@ use Tests\TestCase;
         providerResolver: static fn (string $name, array $config): DeploymentProviderInterface => $mockProvider,
     );
     $this->app->instance(ApplyDeploymentFlow::class, $flow); /** @phpstan-ignore property.protected */
-    $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'production', '--force' => true]);
+    $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'production', '--config' => 'shipper.yml.example', '--force' => true]);
     \assert($command instanceof PendingCommand);
     $command->expectsOutputToContain('Deploying api')
+        ->doesntExpectOutputToContain('Debug Information')
         ->assertExitCode(0);
     unset($command);
 
@@ -52,7 +53,7 @@ use Tests\TestCase;
 
 \test('apply command shows error for nonexistent project', function (): void {
     /** @var TestCase $this */
-    $command = $this->artisan('apply', ['project' => 'nonexistent', '--profile' => 'production', '--force' => true]);
+    $command = $this->artisan('apply', ['project' => 'nonexistent', '--profile' => 'production', '--config' => 'shipper.yml.example', '--force' => true]);
     \assert($command instanceof PendingCommand);
     $command->expectsOutput('Project not found: nonexistent')
         ->assertExitCode(1);
@@ -60,7 +61,7 @@ use Tests\TestCase;
 
 \test('apply command shows error for nonexistent profile', function (): void {
     /** @var TestCase $this */
-    $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'nonexistent', '--force' => true]);
+    $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'nonexistent', '--config' => 'shipper.yml.example', '--force' => true]);
     \assert($command instanceof PendingCommand);
     $command->expectsOutput('Profile not found: nonexistent')
         ->assertExitCode(1);
