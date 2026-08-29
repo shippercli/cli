@@ -1,12 +1,12 @@
 providers:
-  ploi:
-    api_key: "test-key"
-    api_url: "https://ploi.io/api"
-    server_id: "123456"
+  cpanel:
+    host: "cpanel.example.com"
+    username: "shipper"
+    api_token: "test-token"
 
 projects:
   api:
-    provider: ploi
+    provider: cpanel
     path: ./examples/api
     repository:
       provider: github
@@ -24,11 +24,6 @@ projects:
         LOG_CHANNEL: "stack"
     deploy_script: |
       composer install --no-dev
-    databases:
-      main:
-        name: "test_db"
-        user: "test_user"
-        type: mysql
     profiles:
       production:
         branch: main
@@ -38,7 +33,7 @@ projects:
         domain: test-staging.example.com
 
   frontend:
-    provider: ploi
+    provider: cpanel
     path: ./examples/frontend
     repository:
       provider: github

@@ -1,17 +1,16 @@
 # Shipper
 
-CLI deployment tool for Ploi.io with plan/apply workflow.
+Provider-driven CLI deployment tool with a plan/apply workflow.
 
 ## Project Structure
 
 ```
 shipper/
 ├── app/          # Laravel Zero CLI application (PHP 8.3+)
-├── cli/          # CLI entry points, scripts
+├── config/       # Laravel Zero application configuration
+├── database/     # Framework database scaffolding
 ├── docs/         # Technical documentation
-├── examples/     # Example project configurations
-├── specs/        # Feature specifications (Spec-Kit format)
-├── website/      # Marketing + docs website (planned)
+├── examples/     # Example applications
 ├── tests/        # Test suite (Pest/PHPUnit)
 ├── shipper.yml   # Example configuration
 └── shipper       # CLI entry point script
@@ -22,8 +21,8 @@ shipper/
 ```bash
 php shipper --help
 php shipper validate --config shipper.yml
-php shipper plan --project api --profile staging
-php shipper apply --project api --profile staging
+php shipper plan api --profile=staging
+php shipper apply api --profile=staging
 ```
 
 ## Key Commands

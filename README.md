@@ -5,7 +5,8 @@
 [![PHP](https://img.shields.io/badge/PHP-8.3%2B-777bb4)](https://www.php.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
-Declarative application deployments through provider plugins.
+Declarative application deployments through a built-in provider and Composer
+provider plugins.
 
 Shipper reads `shipper.yml`, validates the selected project and profile, shows
 the planned operations, and delegates deployment work to the installed
@@ -18,7 +19,7 @@ Install globally with Composer:
 ### Deployment Features
 - ✅ Declarative YAML configuration (`shipper.yml`)
 - ✅ Multiple projects and deployment profiles (production, staging, preview)
-- ✅ Pluggable provider system with provider packages (`shippercli/provider-ploi`, `shippercli/provider-forge`, `shippercli/provider-cpanel`, `shippercli/provider-easypanel`)
+- ✅ Composer-discovered provider plugins through `shippercli/contracts`
 - ✅ Plan/apply workflow for safe deployments
 - ✅ Configuration validation
 - ✅ GitHub Actions workflows for CI/CD
@@ -38,22 +39,25 @@ composer install
 Prebuilt PHAR binaries are published on the
 [releases page](https://github.com/shippercli/cli/releases).
 
-## Provider packages
+## Providers
 
-Providers are separate Composer packages:
+Provider availability and lifecycle support currently differ by distribution:
 
-| Provider | Package |
-| --- | --- |
-| Ploi | `shippercli/provider-ploi` |
-| Laravel Forge | `shippercli/provider-forge` |
-| cPanel | `shippercli/provider-cpanel` |
-| EasyPanel | `shippercli/provider-easypanel` |
+| Provider | Distribution | Registered | Validate / plan | Apply | Destroy | Status / logs / rollback |
+| --- | --- | --- | --- | --- | --- | --- |
+| Ploi | `shippercli/provider-ploi` Composer plugin | When installed | Yes | Yes | Yes | Status and logs; no rollback |
+| cPanel | `shippercli/provider-cpanel` Composer plugin | When installed | Yes | Yes | Yes | Yes |
+| Forge, Railway, Cloudflare Pages, Hostinger, Coolify, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
+
+Incomplete in-tree providers are deliberately not registered. Calling an
+unimplemented lifecycle operation directly returns failure with a clear
+`not implemented` error rather than reporting a successful deployment.
 
 For local global use, install the CLI and providers into the same Composer
 home, then run Composer's global `vendor/bin/shipper`:
 
 ```bash
-composer global require shippercli/cli shippercli/provider-cpanel
+composer global require shippercli/cli shippercli/provider-ploi shippercli/provider-cpanel
 ```
 
 Shipper discovers packages with Composer's runtime plugin metadata. Provider
@@ -136,8 +140,8 @@ Optional contracts add:
 - release rollback
 - server provisioning and cleanup
 
-The CLI adapts installed contract providers to its internal flows. Provider
-implementations do not belong in the core repository.
+The CLI adapts installed contract providers to its internal flows. New
+providers are Composer plugins and are discovered from their package metadata.
 
 ## GitHub Actions
 

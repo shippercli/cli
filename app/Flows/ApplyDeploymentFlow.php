@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Flows;
 
-use App\Actions\ApplyAliasAction;
-use App\Actions\ApplyDeployScriptAction;
-use App\Actions\ApplyEnvironmentAction;
-use App\Actions\ApplySslAction;
 use App\Actions\CreateDeploymentPlanAction;
 use App\Actions\ExecuteDeploymentAction;
-use App\Actions\GetDeploymentLogsAction;
 use App\Actions\LoadConfigurationAction;
 use App\Actions\ValidateProjectAction;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
+use App\Deployment\ContractDeploymentProviderAdapter;
 use App\Deployment\DeploymentProviderInterface;
-use App\Deployment\PloiProvider;
 use App\Deployment\ProviderFactory;
 
 final class ApplyDeploymentFlow
@@ -114,135 +109,40 @@ final class ApplyDeploymentFlow
         array $plan,
     ): array {
         $deployAction = new ExecuteDeploymentAction;
-        $logsAction = new GetDeploymentLogsAction;
-        $aliasAction = new ApplyAliasAction;
-        $deployScriptAction = new ApplyDeployScriptAction;
-        $environmentAction = new ApplyEnvironmentAction;
-        $sslAction = new ApplySslAction;
 
         $result = $deployAction->handle($provider, $project, $profile);
 
-        $logs = [];
-        $serverId = 0;
-        $siteId = 0;
-
-        if ($provider instanceof PloiProvider) {
-            $serverIdValue = $plan['server_id'] ?? 0;
-            \assert(\is_int($serverIdValue) || \is_string($serverIdValue) || \is_numeric($serverIdValue));
-            $serverId = \is_int($serverIdValue) ? $serverIdValue : (int) $serverIdValue;
-            $siteId = $provider->getLastSiteId();
-            $logs = $logsAction->handle($provider, $serverId, $siteId);
+        if (! $result) {
+            return ['success' => false, 'logs' => [], 'error_message' => $provider->getLastError()];
         }
 
-        if ($result && $serverId > 0 && $siteId > 0) {
-            $aliases = $profile->aliases();
-            if ($aliases !== []) {
-                $aliasResult = $aliasAction->handle(
-                    $provider->getName(),
-                    $provider instanceof PloiProvider ? $provider->getApiKey() : '',
-                    $serverId,
-                    $siteId,
-                    $project,
-                    $profile,
-                );
-                if (! $aliasResult['success']) {
-                    $errorMsg = 'Alias configuration failed';
-                    if (isset($aliasResult['message']) && \is_string($aliasResult['message'])) {
-                        $errorMsg = $aliasResult['message'];
-                    }
+        $capabilityProvider = $provider instanceof ContractDeploymentProviderAdapter
+            ? $provider->contractProvider()
+            : $provider;
 
-                    return [
-                        'success' => false,
-                        'logs' => $logs,
-                        'error_message' => $errorMsg,
-                    ];
-                }
+        if (\method_exists($capabilityProvider, 'postApply')) {
+            $postApply = $capabilityProvider->postApply($project, $profile);
+            if (! \is_array($postApply)) {
+                return ['success' => false, 'logs' => [], 'error_message' => 'Provider returned an invalid post-apply result'];
             }
 
-            $projectScript = $project->deployScript();
-            $profileScript = $profile->deployScript();
-            $hasProjectScript = $projectScript !== '';
-            $hasProfileScript = $profileScript !== null && $profileScript !== '';
+            $logs = \is_array($postApply['logs'] ?? null)
+                ? \array_values(\array_filter($postApply['logs'], '\is_string'))
+                : [];
+            $success = ($postApply['success'] ?? false) === true;
+            $message = $postApply['message'] ?? 'Provider post-apply configuration failed';
 
-            if ($hasProjectScript || $hasProfileScript) {
-                $deployScriptResult = $deployScriptAction->handle(
-                    $provider->getName(),
-                    $provider instanceof PloiProvider ? $provider->getApiKey() : '',
-                    $serverId,
-                    $siteId,
-                    $project,
-                    $profile,
-                );
-                if (! $deployScriptResult['success']) {
-                    $errorMsg = 'Deploy script configuration failed';
-                    if (isset($deployScriptResult['message']) && \is_string($deployScriptResult['message'])) {
-                        $errorMsg = $deployScriptResult['message'];
-                    }
-
-                    return [
-                        'success' => false,
-                        'logs' => $logs,
-                        'error_message' => $errorMsg,
-                    ];
-                }
-            }
-
-            $projectEnv = $project->environment();
-            $profileEnv = $profile->environment();
-            $mergedEnv = $projectEnv->mergeWith($profileEnv);
-
-            if (! $mergedEnv->isEmpty()) {
-                $envResult = $environmentAction->handle(
-                    $provider->getName(),
-                    $provider instanceof PloiProvider ? $provider->getApiKey() : '',
-                    $serverId,
-                    $siteId,
-                    $project,
-                    $profile,
-                );
-                if (! $envResult['success']) {
-                    $errorMsg = 'Environment variable configuration failed';
-                    if (isset($envResult['message']) && \is_string($envResult['message'])) {
-                        $errorMsg = $envResult['message'];
-                    }
-
-                    return [
-                        'success' => false,
-                        'logs' => $logs,
-                        'error_message' => $errorMsg,
-                    ];
-                }
-            }
-
-            $ssl = $project->ssl();
-            if ($ssl->enabled()) {
-                $sslResult = $sslAction->handle(
-                    $provider->getName(),
-                    $provider instanceof PloiProvider ? $provider->getApiKey() : '',
-                    $serverId,
-                    $siteId,
-                    $project,
-                    $profile,
-                );
-                if (! $sslResult['success']) {
-                    $errorMsg = 'SSL certificate configuration failed';
-                    if (isset($sslResult['message']) && \is_string($sslResult['message'])) {
-                        $errorMsg = $sslResult['message'];
-                    }
-
-                    return [
-                        'success' => false,
-                        'logs' => $logs,
-                        'error_message' => $errorMsg,
-                    ];
-                }
-            }
+            return [
+                'success' => $success,
+                'logs' => $logs,
+                'error_message' => $success ? '' : (\is_string($message) ? $message : 'Provider post-apply configuration failed'),
+            ];
         }
 
         return [
-            'success' => $result,
-            'logs' => $logs,
-            'error_message' => $result ? '' : $provider->getLastError(),
+            'success' => true,
+            'logs' => [],
+            'error_message' => '',
         ];
     }
 }
