@@ -12,7 +12,6 @@
         "guzzlehttp/guzzle": "^7.0",
         "laravel-zero/framework": "^12.1",
         "laravel/forge-sdk": "^3.25",
-        "ploi/ploi-php-sdk": "^1.9",
         "shippercli/contracts": "^1.0",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",
