@@ -2,7 +2,10 @@
 
 ## Cursor Cloud specific instructions
 
-Shipper is a PHP 8.3+ CLI tool built with Laravel Zero. It reads `shipper.yml` and performs plan/apply-style deployments to Ploi.io. There is no web UI, no local database, and no long-running service.
+Shipper is a PHP 8.3+ CLI tool built with Laravel Zero. It reads `shipper.yml`
+and performs provider-driven plan/apply deployments. Providers may be built in
+or loaded as Composer plugins. There is no web UI, local database, or
+long-running service.
 
 ### Running in development
 
@@ -15,9 +18,7 @@ Shipper is a PHP 8.3+ CLI tool built with Laravel Zero. It reads `shipper.yml` a
   - `composer analyse` — PHPStan level 9 static analysis
   - `composer build` — compile PHAR binary via Box
 
-### Known test failures
-
-2 feature tests (`ApplyCommandTest` and `DestroyCommandTest`) fail without a `PLOI_API_KEY` because they invoke real provider commands. These failures are pre-existing and also fail in CI on `main`. The remaining 27 tests pass without any external credentials.
+Tests mock remote provider behavior and must pass without external credentials.
 
 ### PHP and Composer
 

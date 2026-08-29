@@ -153,7 +153,9 @@ final class CoolifyProvider extends AbstractDeploymentProvider
 
     public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Coolify destroy is not implemented';
+
+        return false;
     }
 
     private function getServerUrl(): string

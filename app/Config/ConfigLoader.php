@@ -119,8 +119,11 @@ final class ConfigLoader
             foreach ($data['profiles'] as $profileName => $profileData) {
                 if (\is_string($profileName) && \is_array($profileData)) {
                     $branch = $profileData['branch'] ?? '';
-                    $environment = $this->parseEnvironment($profileData['environment'] ?? null);
-                    $server = $this->parseServerLifecycle($profileData['infrastructure']['server'] ?? null);
+                    $environmentData = $profileData['environment'] ?? null;
+                    $infrastructureData = $profileData['infrastructure'] ?? null;
+                    $serverData = \is_array($infrastructureData) ? ($infrastructureData['server'] ?? null) : null;
+                    $environment = $this->parseEnvironment(\is_array($environmentData) ? $environmentData : null);
+                    $server = $this->parseServerLifecycle(\is_array($serverData) ? $serverData : null);
                     $profiles[$profileName] = new ProfileConfig(
                         $profileName,
                         \is_string($branch) ? $branch : '',

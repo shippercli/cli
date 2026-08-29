@@ -132,7 +132,9 @@ final class RailwayProvider extends AbstractDeploymentProvider
 
     public function destroy(ProjectConfig $project, ProfileConfig $profile): bool
     {
-        return true;
+        $this->lastError = 'Railway destroy is not implemented';
+
+        return false;
     }
 
     private function getToken(): string
