@@ -17,7 +17,10 @@ final class EasyPanelApiClient
     public function __construct(
         private readonly string $baseUrl,
         private readonly string $authToken,
-    ) {}
+        ?Client $httpClient = null,
+    ) {
+        $this->httpClient = $httpClient;
+    }
 
     /**
      * @return array<string, mixed>

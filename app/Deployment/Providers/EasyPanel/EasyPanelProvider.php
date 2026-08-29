@@ -77,14 +77,6 @@ final class EasyPanelProvider extends AbstractDeploymentProvider
             "Setup domain: {$domain}",
         ];
 
-        $databases = $project->databases();
-        if (! empty($databases)) {
-            foreach ($databases as $database) {
-                $dbName = $this->interpolateDatabaseName($database->name(), $project->name(), $profile->name());
-                $actions[] = "Create database: {$dbName} ({$database->type()})";
-            }
-        }
-
         $actions[] = 'Trigger deployment';
 
         return [
@@ -103,12 +95,17 @@ final class EasyPanelProvider extends AbstractDeploymentProvider
 
     public function apply(ProjectConfig $project, ProfileConfig $profile): bool
     {
+        $this->lastError = '';
+
         try {
+            $repoUrl = $this->repositoryUrl($project->repository());
+            if ($repoUrl === null) {
+                $this->lastError = 'EasyPanel requires a usable repository URL or a supported repository provider and name';
+
+                return false;
+            }
+
             $client = $this->getApiClient();
-            /** @var array<string, mixed> $repository */
-            $repository = $project->repository();
-            /** @var string $repoUrl */
-            $repoUrl = $repository['url'] ?? '';
             $branch = $profile->branch();
             $domainValue = $profile->get('domain');
             $domain = \is_string($domainValue) ? $domainValue : '';
@@ -212,15 +209,50 @@ final class EasyPanelProvider extends AbstractDeploymentProvider
 
     private function formatGitUrl(string $gitRepo): string
     {
-        if (\str_starts_with($gitRepo, 'https://')) {
+        $gitRepo = \trim($gitRepo);
+
+        if (\preg_match('/^https?:\/\/[^\s]+$/', $gitRepo) === 1) {
             return $gitRepo;
         }
 
-        if (\str_starts_with($gitRepo, 'git@')) {
-            return \str_replace('git@', 'https://', \substr($gitRepo, 0, \strpos($gitRepo, ':') ?: 0)).'/'.(\substr($gitRepo, \strpos($gitRepo, ':') + 1) ?: '');
+        if (\preg_match('/^git@([^:]+):(.+)$/', $gitRepo, $matches) === 1) {
+            return "https://{$matches[1]}/{$matches[2]}";
         }
 
-        return $gitRepo;
+        return '';
+    }
+
+    /**
+     * @param array<string, mixed> $repository
+     */
+    private function repositoryUrl(array $repository): ?string
+    {
+        $url = $repository['url'] ?? null;
+        if (\is_string($url) && $url !== '') {
+            $formatted = $this->formatGitUrl($url);
+
+            return $formatted !== '' ? $formatted : null;
+        }
+
+        $provider = $repository['provider'] ?? null;
+        $name = $repository['name'] ?? null;
+        if (! \is_string($provider) || ! \is_string($name)) {
+            return null;
+        }
+
+        $host = match (\strtolower($provider)) {
+            'github' => 'github.com',
+            'gitlab' => 'gitlab.com',
+            'bitbucket' => 'bitbucket.org',
+            default => null,
+        };
+        $name = \trim($name, '/');
+
+        if ($host === null || \preg_match('/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)+$/', $name) !== 1) {
+            return null;
+        }
+
+        return "https://{$host}/{$name}".(\str_ends_with($name, '.git') ? '' : '.git');
     }
 
     private function getBaseUrl(): string
@@ -235,13 +267,5 @@ final class EasyPanelProvider extends AbstractDeploymentProvider
         $token = $this->config['auth_token'] ?? '';
 
         return \is_string($token) ? $token : '';
-    }
-
-    private function interpolateDatabaseName(string $name, string $projectName, string $profileName): string
-    {
-        $name = \str_replace('${PROJECT_NAME}', $projectName, $name);
-        $name = \str_replace('${PROFILE}', $profileName, $name);
-
-        return $name;
     }
 }
