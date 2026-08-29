@@ -45,7 +45,7 @@ Provider availability and lifecycle support currently differ by distribution:
 
 | Provider | Distribution | Registered | Validate / plan | Apply | Destroy | Status / logs / rollback |
 | --- | --- | --- | --- | --- | --- | --- |
-| Ploi | Built into the CLI pending package extraction | Yes | Yes | Yes | Yes | No |
+| Ploi | `shippercli/provider-ploi` Composer plugin | When installed | Yes | Yes | Yes | Status and logs; no rollback |
 | cPanel | `shippercli/provider-cpanel` Composer plugin | When installed | Yes | Yes | Yes | Yes |
 | Forge, Railway, Cloudflare Pages, Hostinger, Coolify, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
 
@@ -57,7 +57,7 @@ For local global use, install the CLI and providers into the same Composer
 home, then run Composer's global `vendor/bin/shipper`:
 
 ```bash
-composer global require shippercli/cli shippercli/provider-cpanel
+composer global require shippercli/cli shippercli/provider-ploi shippercli/provider-cpanel
 ```
 
 Shipper discovers packages with Composer's runtime plugin metadata. Provider
@@ -141,8 +141,7 @@ Optional contracts add:
 - server provisioning and cleanup
 
 The CLI adapts installed contract providers to its internal flows. New
-providers should be Composer plugins; the legacy in-tree Ploi provider remains
-until its package extraction is complete.
+providers are Composer plugins and are discovered from their package metadata.
 
 ## GitHub Actions
 
