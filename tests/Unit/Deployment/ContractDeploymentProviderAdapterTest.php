@@ -9,11 +9,24 @@ use ShipperCli\Contracts\CapabilityManifest;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
 use ShipperCli\Contracts\ProviderCapabilitiesInterface;
 
+/** @return array<string, array{state: 'partial'|'supported'|'unsupported', notes?: string, requirements?: list<string>, limitations?: list<string>}> */
+function validContractCapabilityManifest(): array
+{
+    return \array_fill_keys(CapabilityManifest::CAPABILITIES, ['state' => 'supported']);
+}
+
 \test('accepts a valid contract provider capability manifest', function (): void {
-    $manifest = \array_fill_keys(CapabilityManifest::CAPABILITIES, ['state' => 'supported']);
+    $manifest = validContractCapabilityManifest();
     $provider = new class($manifest) implements ContractProvider, ProviderCapabilitiesInterface
     {
-        public function __construct(private readonly array $manifest) {}
+        /** @var array<string, array{state: 'partial'|'supported'|'unsupported', notes?: string, requirements?: list<string>, limitations?: list<string>}> */
+        private readonly array $manifest;
+
+        /** @param array<string, array{state: 'partial'|'supported'|'unsupported', notes?: string, requirements?: list<string>, limitations?: list<string>}> $manifest */
+        public function __construct(array $manifest)
+        {
+            $this->manifest = $manifest;
+        }
 
         public function capabilities(): array
         {
@@ -55,11 +68,18 @@ use ShipperCli\Contracts\ProviderCapabilitiesInterface;
 });
 
 \test('rejects an invalid contract provider capability manifest', function (): void {
-    $manifest = \array_fill_keys(CapabilityManifest::CAPABILITIES, ['state' => 'supported']);
+    $manifest = validContractCapabilityManifest();
     unset($manifest['rollback']);
     $provider = new class($manifest) implements ContractProvider, ProviderCapabilitiesInterface
     {
-        public function __construct(private readonly array $manifest) {}
+        /** @var array<string, array{state: 'partial'|'supported'|'unsupported', notes?: string, requirements?: list<string>, limitations?: list<string>}> */
+        private readonly array $manifest;
+
+        /** @param array<string, array{state: 'partial'|'supported'|'unsupported', notes?: string, requirements?: list<string>, limitations?: list<string>}> $manifest */
+        public function __construct(array $manifest)
+        {
+            $this->manifest = $manifest;
+        }
 
         public function capabilities(): array
         {
