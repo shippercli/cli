@@ -6,13 +6,28 @@ namespace App\Deployment;
 
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
+use ShipperCli\Contracts\CapabilityManifest;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
+use ShipperCli\Contracts\ProviderCapabilitiesInterface;
 
 final readonly class ContractDeploymentProviderAdapter implements DeploymentProviderInterface
 {
     public function __construct(
         private ContractProvider $provider,
-    ) {}
+    ) {
+        if (! $provider instanceof ProviderCapabilitiesInterface) {
+            return;
+        }
+
+        try {
+            CapabilityManifest::from($provider->capabilities());
+        } catch (\InvalidArgumentException $exception) {
+            throw new \UnexpectedValueException(
+                "Provider {$provider->getName()} has an invalid capability manifest: {$exception->getMessage()}",
+                previous: $exception,
+            );
+        }
+    }
 
     public function validate(ProjectConfig $project, ProfileConfig $profile): array
     {

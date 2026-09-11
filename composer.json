@@ -12,7 +12,7 @@
         "guzzlehttp/guzzle": "^7.0",
         "laravel-zero/framework": "^12.1",
         "laravel/forge-sdk": "^3.25",
-        "shippercli/contracts": "^1.0",
+        "shippercli/contracts": "^1.2",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",
         "symfony/string": "^7.3",

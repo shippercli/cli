@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6320437efd2d122c8309963d23413d0a",
+    "content-hash": "6372df9d6d598f9b02fb3e208c586718",
     "packages": [
         {
             "name": "brick/math",
@@ -3496,20 +3496,23 @@
         },
         {
             "name": "shippercli/contracts",
-            "version": "v1.1.0",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shippercli/contracts.git",
-                "reference": "a09d516da61e74461fdce1ef57ddc4c2269b87d6"
+                "reference": "997e2d93b6b1874dccd83ad912e8a692a479e4f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shippercli/contracts/zipball/a09d516da61e74461fdce1ef57ddc4c2269b87d6",
-                "reference": "a09d516da61e74461fdce1ef57ddc4c2269b87d6",
+                "url": "https://api.github.com/repos/shippercli/contracts/zipball/997e2d93b6b1874dccd83ad912e8a692a479e4f1",
+                "reference": "997e2d93b6b1874dccd83ad912e8a692a479e4f1",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.3"
+            },
+            "require-dev": {
+                "pestphp/pest": "^3.8"
             },
             "type": "library",
             "autoload": {
@@ -3524,9 +3527,9 @@
             "description": "Contracts and interfaces for Shipper CLI providers",
             "support": {
                 "issues": "https://github.com/shippercli/contracts/issues",
-                "source": "https://github.com/shippercli/contracts/tree/v1.1.0"
+                "source": "https://github.com/shippercli/contracts/tree/v1.2.0"
             },
-            "time": "2026-08-03T12:13:29+00:00"
+            "time": "2026-09-10T10:02:43+00:00"
         },
         {
             "name": "symfony/clock",
