@@ -42,7 +42,8 @@
         }
     },
     "scripts": {
-        "test": "php vendor/bin/pest",
+        "test": "php vendor/bin/pest --no-coverage",
+        "test:coverage": "XDEBUG_MODE=coverage php vendor/bin/pest",
         "analyse": "php vendor/bin/phpstan analyse --memory-limit=1G",
         "format": "php vendor/bin/pint",
         "format:check": "php vendor/bin/pint --test",
