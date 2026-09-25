@@ -48,11 +48,10 @@ Provider availability and lifecycle support currently differ by distribution:
 | Ploi | `shippercli/provider-ploi` Composer plugin | When installed | Yes | Yes | Yes | Status and logs; no rollback |
 | cPanel | `shippercli/provider-cpanel` Composer plugin | When installed | Yes | Yes | Yes | Yes |
 | Forge | `shippercli/provider-forge` Composer plugin | When installed | Yes | Not yet | Not yet | No |
-| Railway, Cloudflare Pages, Hostinger, Coolify, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
+| EasyPanel | `shippercli/provider-easypanel` Composer plugin | Not yet ([provider-easypanel#6](https://github.com/shippercli/provider-easypanel/issues/6)) | Yes | Yes | Yes | No |
 
-Incomplete in-tree providers are deliberately not registered. Calling an
-unimplemented lifecycle operation directly returns failure with a clear
-`not implemented` error rather than reporting a successful deployment.
+Providers are loaded only from installed Composer plugins; the core
+repository ships none of its own.
 
 For local global use, install the CLI and providers into the same Composer
 home, then run Composer's global `vendor/bin/shipper`:
