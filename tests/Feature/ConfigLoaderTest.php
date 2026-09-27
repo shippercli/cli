@@ -662,3 +662,30 @@ use App\Config\SslConfig;
     \expect($project->nginxConfig())->toContain('location /api');
     \expect($project->nginxConfig())->toContain('try_files');
 });
+
+\test('project config preserves declared workload sections', function (): void {
+    $project = new ProjectConfig(
+        'test',
+        'ploi',
+        './examples/test',
+        [],
+        [],
+        '/public',
+        '/',
+        [],
+        null,
+        null,
+        '',
+        [],
+        [],
+        [],
+        [],
+        [],
+        '',
+        '',
+        ['queues' => true],
+    );
+
+    \expect($project->hasSection('queues'))->toBeTrue()
+        ->and($project->hasSection('cron'))->toBeFalse();
+});

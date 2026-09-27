@@ -215,6 +215,12 @@ final class ConfigLoader
         $nginxConfigRaw = $data['nginx_config'] ?? null;
         $phpVersion = \is_string($phpVersionRaw) ? $phpVersionRaw : '';
         $nginxConfig = \is_string($nginxConfigRaw) ? $nginxConfigRaw : '';
+        $declaredSections = [];
+        foreach (['queues', 'cron', 'daemons'] as $section) {
+            if (\array_key_exists($section, $data)) {
+                $declaredSections[$section] = true;
+            }
+        }
 
         return new ProjectConfig(
             $name,
@@ -235,6 +241,7 @@ final class ConfigLoader
             $redirects,
             $phpVersion,
             $nginxConfig,
+            $declaredSections,
         );
     }
 

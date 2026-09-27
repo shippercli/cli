@@ -15,6 +15,7 @@ final class ProjectConfig
      * @param array<string, DaemonConfig> $daemons
      * @param array<string, NetworkRuleConfig> $networkRules
      * @param array<string, RedirectConfig> $redirects
+     * @param array<string, bool> $declaredSections
      */
     public function __construct(
         private readonly string $name,
@@ -35,6 +36,7 @@ final class ProjectConfig
         private readonly array $redirects = [],
         private readonly string $phpVersion = '',
         private readonly string $nginxConfig = '',
+        private readonly array $declaredSections = [],
     ) {}
 
     public function name(): string
@@ -184,5 +186,10 @@ final class ProjectConfig
     public function nginxConfig(): string
     {
         return $this->nginxConfig;
+    }
+
+    public function hasSection(string $section): bool
+    {
+        return ($this->declaredSections[$section] ?? false) === true;
     }
 }
