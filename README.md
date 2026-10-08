@@ -47,7 +47,8 @@ Provider availability and lifecycle support currently differ by distribution:
 | --- | --- | --- | --- | --- | --- | --- |
 | Ploi | `shippercli/provider-ploi` Composer plugin | When installed | Yes | Yes | Yes | Status and logs; no rollback |
 | cPanel | `shippercli/provider-cpanel` Composer plugin | When installed | Yes | Yes | Yes | Yes |
-| Forge, Railway, Cloudflare Pages, Hostinger, Coolify, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
+| Coolify | Experimental plugin source only; not yet on Packagist | When installed | Yes | Yes | Yes | Status, logs, and rollback |
+| Forge, Railway, Cloudflare Pages, Hostinger, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
 
 Incomplete in-tree providers are deliberately not registered. Calling an
 unimplemented lifecycle operation directly returns failure with a clear

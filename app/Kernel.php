@@ -14,7 +14,9 @@ final class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('servers:cleanup-expired --config='.\escapeshellarg((string) \env('SHIPPER_CONFIG', 'shipper.yml')))
+            ->everyMinute()
+            ->withoutOverlapping();
     }
 
     /**

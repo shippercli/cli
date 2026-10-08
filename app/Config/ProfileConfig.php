@@ -50,6 +50,14 @@ final class ProfileConfig
         return $this->server;
     }
 
+    public function withServerId(string $serverId): self
+    {
+        $config = $this->config;
+        $config['server_uuid'] = $serverId;
+
+        return new self($this->name, $this->branch, $config, $this->environment, $this->server);
+    }
+
     /**
      * @return array<string>
      */

@@ -27,7 +27,8 @@
         "shippercli/provider-cpanel": "^1.0"
     },
     "suggest": {
-        "shippercli/provider-cpanel": "Deploy through cPanel accounts with domain, runtime, database, cron, SSL, and lifecycle management."
+        "shippercli/provider-cpanel": "Deploy through cPanel accounts with domain, runtime, database, cron, SSL, and lifecycle management.",
+        "shippercli/provider-coolify": "Deploy applications and multi-service stacks to Coolify (provider package not yet published to Packagist)."
     },
     "autoload": {
         "psr-4": {

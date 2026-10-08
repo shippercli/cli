@@ -61,6 +61,9 @@ projects:
 - `databases`: Use `${GITHUB_PR_NUMBER}` for PR-specific databases
 - `infrastructure.server.mode: create`: Provision preview infrastructure before site creation
 - `cleanup: destroy`: Remove managed preview infrastructure during cleanup
+- `ttl`: Expire managed preview infrastructure after the configured age; requires Shipper's scheduler to run once per minute and a provider API that can safely remove that server
+
+Coolify-linked Hetzner, DigitalOcean, and Vultr servers are not TTL-deleted: Coolify's documented API cannot delete the linked cloud instance, so Shipper skips expiry before destroying the deployment.
 
 ### Dry run preview planning
 

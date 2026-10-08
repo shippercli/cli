@@ -69,6 +69,20 @@ final class ApplyDeploymentFlow
             $provider = $providerFactory->create($project->provider());
         }
 
+        $lifecycle = ServerLifecycleRuntime::resolve($provider, $profile);
+        if ($lifecycle['error'] !== '') {
+            return [
+                'success' => false,
+                'project' => $project,
+                'profile' => $profile,
+                'plan' => [],
+                'errors' => [$lifecycle['error']],
+                'error_message' => 'Server lifecycle resolution failed',
+                'provider' => $provider,
+            ];
+        }
+        $profile = $lifecycle['profile'];
+
         $errors = $validateAction->handle($provider, $project, $profile);
         if ($errors !== []) {
             return [
@@ -109,6 +123,20 @@ final class ApplyDeploymentFlow
         array $plan,
     ): array {
         $deployAction = new ExecuteDeploymentAction;
+
+        try {
+            $lifecycle = ServerLifecycleRuntime::ensure($provider, $profile);
+        } catch (\Throwable $exception) {
+            return ['success' => false, 'logs' => [], 'error_message' => 'Managed server provisioning failed: '.$exception->getMessage()];
+        }
+        if ($lifecycle['error'] !== '') {
+            return ['success' => false, 'logs' => [], 'error_message' => $lifecycle['error']];
+        }
+        $profile = $lifecycle['profile'];
+        $errors = $provider->validate($project, $profile);
+        if ($errors !== []) {
+            return ['success' => false, 'logs' => [], 'error_message' => "Configuration validation failed:\n  - ".\implode("\n  - ", $errors)];
+        }
 
         $result = $deployAction->handle($provider, $project, $profile);
 

@@ -68,6 +68,20 @@ final class DestroyDeploymentFlow
             $provider = $providerFactory->create($project->provider());
         }
 
+        $lifecycle = ServerLifecycleRuntime::resolve($provider, $profile);
+        if ($lifecycle['error'] !== '') {
+            return [
+                'success' => false,
+                'project' => $project,
+                'profile' => $profile,
+                'plan' => [],
+                'errors' => [$lifecycle['error']],
+                'error_message' => 'Server lifecycle resolution failed',
+                'provider' => $provider,
+            ];
+        }
+        $profile = $lifecycle['profile'];
+
         $errors = $validateAction->handle($provider, $project, $profile);
         if ($errors !== []) {
             return [
@@ -106,7 +120,36 @@ final class DestroyDeploymentFlow
     ): array {
         $destroyAction = new DestroySiteAction;
 
+        $serverConfig = $profile->server();
+        $server = null;
+        if ($serverConfig !== null) {
+            $lifecycle = ServerLifecycleRuntime::resolve($provider, $profile);
+            if ($lifecycle['error'] !== '') {
+                return ['success' => false, 'error_message' => $lifecycle['error']];
+            }
+            $profile = $lifecycle['profile'];
+            $server = $lifecycle['server'];
+            if ($serverConfig->isCreate() && $server === null) {
+                return ['success' => false, 'error_message' => 'No Shipper-managed server matching the configured create-mode server was found.'];
+            }
+        }
+        if ($serverConfig !== null && $serverConfig->isCreate() && $serverConfig->cleanup() === 'destroy'
+            && ($server['server_record_only'] ?? false) === true) {
+            return ['success' => false, 'error_message' => 'Refusing to destroy the deployment because Shipper cannot prove ownership of the server resource. The application and data were left intact.'];
+        }
+
         $result = $destroyAction->handle($provider, $project, $profile);
+        if ($result && $serverConfig !== null && $serverConfig->isCreate() && $serverConfig->cleanup() === 'destroy') {
+            $lifecycleProvider = ServerLifecycleRuntime::provider($provider);
+            $serverId = ServerLifecycleRuntime::serverId($server ?? []);
+            $ownershipToken = $server['ownership_token'] ?? null;
+            if ($lifecycleProvider === null || ! \is_string($ownershipToken) || $ownershipToken === '') {
+                return ['success' => false, 'error_message' => 'Managed server cleanup requires a provider lifecycle implementation and an ownership token.'];
+            }
+            if (! $lifecycleProvider->deleteServer($serverId, $ownershipToken)) {
+                return ['success' => false, 'error_message' => $provider->getLastError() ?: 'Managed server cleanup failed.'];
+            }
+        }
 
         return [
             'success' => $result,

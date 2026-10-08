@@ -47,6 +47,33 @@ final class ServerLifecycleConfig
         return $this->ttl;
     }
 
+    public function ttlSeconds(): ?int
+    {
+        if ($this->ttl === null) {
+            return null;
+        }
+        if (\ctype_digit($this->ttl)) {
+            $seconds = \filter_var($this->ttl, FILTER_VALIDATE_INT);
+
+            return \is_int($seconds) && $seconds > 0 ? $seconds : null;
+        }
+        if (! \preg_match('/^([1-9][0-9]*)([smhd])$/i', $this->ttl, $matches)) {
+            return null;
+        }
+        $value = \filter_var($matches[1], FILTER_VALIDATE_INT);
+        if (! \is_int($value)) {
+            return null;
+        }
+        $factor = match (\strtolower($matches[2])) {
+            's' => 1,
+            'm' => 60,
+            'h' => 3600,
+            'd' => 86400,
+        };
+
+        return $value <= \intdiv(PHP_INT_MAX, $factor) ? $value * $factor : null;
+    }
+
     /**
      * @return array<string, mixed>
      */

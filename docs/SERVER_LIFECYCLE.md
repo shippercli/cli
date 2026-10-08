@@ -66,6 +66,14 @@ projects:
 - `retain`: leave it running
 - `manual`: leave it running and require explicit human cleanup
 
+## TTL expiry
+
+For a create-mode profile with `cleanup: destroy`, `ttl` sets the maximum age of the managed server. Use a positive number of seconds or a duration such as `72h`, `30m`, or `7d`. Expiry is measured from the provider-reported server creation time; providers that do not return that timestamp cannot be automatically expired.
+
+The `servers:cleanup-expired` command is scheduled every minute by Shipper. The host must run Shipper's Laravel scheduler (`schedule:run` every minute, or a persistent `schedule:work` process), and `SHIPPER_CONFIG` must identify the configuration file when it is not `shipper.yml` in the working directory. On expiry, Shipper runs the normal destroy flow and deletes the managed server only when cleanup ownership is proven.
+
+Providers whose APIs cannot safely remove a linked billable cloud instance are skipped before application resources are destroyed. Coolify can remove a Shipper-provisioned Hetzner, DigitalOcean, or Vultr instance when the matching cloud-provider token is configured in Coolify and no Coolify resources remain on the server. Existing cloud servers resolved through Coolify remain record-only and are not removed by Shipper cleanup.
+
 ## Ownership and cleanup safety
 
 For providers with limited metadata support, Shipper may prove ownership using a deterministic managed naming convention.
