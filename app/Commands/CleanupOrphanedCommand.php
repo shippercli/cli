@@ -96,6 +96,12 @@ final class CleanupOrphanedCommand extends Command
 
             $result = $flow->handle($configPath, $githubRepo, $githubToken, false);
 
+            if (! $result['success'] && $result['error_message'] !== '') {
+                $this->error($result['error_message']);
+
+                return self::FAILURE;
+            }
+
             $deleted = $result['deleted'];
             $failed = $result['failed'];
 

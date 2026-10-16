@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Clients\GitHubHttpClient;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
@@ -13,6 +14,7 @@ final class GetOpenPullRequestsAction
 {
     public function __construct(
         private readonly ?LoggerInterface $logger = null,
+        private readonly ?ClientInterface $client = null,
     ) {}
 
     /**
@@ -23,15 +25,14 @@ final class GetOpenPullRequestsAction
     public function handle(string $repo, string $token): array
     {
         try {
-            $gitHubClient = new GitHubHttpClient($token);
-            $client = $gitHubClient->getClient();
+            $client = $this->client ?? (new GitHubHttpClient($token))->getClient();
 
             $prNumbers = [];
             $page = 1;
             $perPage = 100;
 
             while (true) {
-                $response = $client->get("/repos/{$repo}/pulls", [
+                $response = $client->request('GET', "/repos/{$repo}/pulls", [
                     'query' => [
                         'state' => 'open',
                         'per_page' => $perPage,
@@ -58,16 +59,21 @@ final class GetOpenPullRequestsAction
                 }
 
                 $body = (string) $response->getBody();
-                $prs = \json_decode($body, true);
+                $prs = \json_decode($body, false);
 
-                if (! \is_array($prs) || $prs === []) {
+                if (! \is_array($prs)) {
+                    return ['success' => false, 'prs' => [], 'error' => 'GitHub API returned an invalid pull request list'];
+                }
+
+                if ($prs === []) {
                     break;
                 }
 
                 foreach ($prs as $pr) {
-                    if (\is_array($pr) && isset($pr['number']) && \is_int($pr['number'])) {
-                        $prNumbers[] = $pr['number'];
+                    if (! $pr instanceof \stdClass || ! isset($pr->number) || ! \is_int($pr->number) || $pr->number < 1) {
+                        return ['success' => false, 'prs' => [], 'error' => 'GitHub API returned an invalid pull request entry'];
                     }
+                    $prNumbers[] = $pr->number;
                 }
 
                 if (\count($prs) < $perPage) {
