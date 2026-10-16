@@ -87,6 +87,9 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
+    - name: Audit locked dependencies
+      run: composer audit --locked
+
     - name: Run Pint (code style check)
       run: composer format:check
 
