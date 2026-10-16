@@ -39,6 +39,9 @@ projects:
     provider: contract-test
     path: "."
     profiles:
+      production:
+        branch: main
+        domain: production.example.com
       preview:
         branch: main
         domain: ${GITHUB_PR_NUMBER}.preview.example.com

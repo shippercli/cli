@@ -64,6 +64,9 @@ final class CleanupOrphanedSitesFlow
             }
 
             foreach ($project->profiles() as $profile) {
+                if ($profile->name() !== 'preview') {
+                    continue;
+                }
                 $sites = $capabilityProvider->listSites($project, $profile);
                 if (! \is_array($sites)) {
                     continue;
@@ -84,9 +87,9 @@ final class CleanupOrphanedSitesFlow
                     $normalizedSites[] = ['site_id' => $siteId, 'domain' => $domain];
                 }
 
-                $orphans = $findOrphanedAction->handle($normalizedSites, $prResult['prs'], $projects);
+                $orphans = $findOrphanedAction->handle($normalizedSites, $prResult['prs'], $profile);
                 foreach ($orphans as $orphan) {
-                    $key = $project->name().'|'.$profile->name().'|'.$orphan['site_id'];
+                    $key = \json_encode([$project->name(), $profile->name(), $orphan['site_id']], JSON_THROW_ON_ERROR);
                     $targets[$key] = [$capabilityProvider, $project, $profile, $orphan['site_id']];
                     $orphanedSites[$key] = $orphan;
                 }
