@@ -11,8 +11,6 @@ use ShipperCli\Contracts\DeploymentStatusProviderInterface;
 
 final class TestContractProvider implements DeploymentLogsProviderInterface, DeploymentProviderInterface, DeploymentRollbackProviderInterface, DeploymentStatusProviderInterface
 {
-    public static int $applyCalls = 0;
-
     /** @param array<string, mixed> $config */
     public function __construct(
         private readonly array $config = [],
@@ -25,10 +23,6 @@ final class TestContractProvider implements DeploymentLogsProviderInterface, Dep
 
     public function plan(object $project, object $profile): array
     {
-        if (\array_key_exists('plan_blocked', $this->config)) {
-            return ['blocked' => $this->config['plan_blocked'], 'actions' => ['Ownership collision requires review.']];
-        }
-
         return [
             'provider' => $this->getName(),
             'token' => $this->config['token'] ?? null,
@@ -37,8 +31,6 @@ final class TestContractProvider implements DeploymentLogsProviderInterface, Dep
 
     public function apply(object $project, object $profile): bool
     {
-        self::$applyCalls++;
-
         return true;
     }
 
