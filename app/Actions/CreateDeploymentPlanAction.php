@@ -20,6 +20,20 @@ final class CreateDeploymentPlanAction
         ProjectConfig $project,
         ProfileConfig $profile,
     ): array {
-        return $provider->plan($project, $profile);
+        $plan = $provider->plan($project, $profile);
+        self::assertNotBlocked($plan);
+
+        return $plan;
+    }
+
+    /** @param array<string, mixed> $plan */
+    public static function assertNotBlocked(array $plan): void
+    {
+        if (! \array_key_exists('blocked', $plan) || $plan['blocked'] === false) {
+            return;
+        }
+        $actions = \is_array($plan['actions'] ?? null) ? $plan['actions'] : [];
+        $reasons = \array_filter($actions, '\is_string');
+        throw new \RuntimeException('Deployment plan is blocked. '.\implode(' ', $reasons));
     }
 }
