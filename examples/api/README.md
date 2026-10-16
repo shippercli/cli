@@ -10,7 +10,7 @@ This Laravel application is part of the shipper-wip repository and serves as an 
 
 ### GET /api/jokes
 
-Returns a random programming joke in JSON format.
+Returns a sample programming joke in JSON format.
 
 **Example Response:**
 ```json
@@ -63,6 +63,15 @@ php artisan key:generate
 # Start development server
 php artisan serve
 ```
+
+## Verification
+
+From `examples/api`, run `composer install`, `composer test`, `npm ci`, and
+`npm run build`. PHP 8.2 or later is supported; Composer resolves the lockfile
+against PHP 8.2 to preserve that minimum. Frontend CI covers Node 22 and 24.
+The repository's `.github/workflows/api-example.yml` runs the example tests,
+platform checks, dependency audits, and frontend builds. These checks do not
+deploy the example or verify provider connectivity.
 
 ## License
 
