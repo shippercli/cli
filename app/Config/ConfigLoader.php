@@ -127,7 +127,7 @@ final class ConfigLoader
                     $profiles[$profileName] = new ProfileConfig(
                         $profileName,
                         \is_string($branch) ? $branch : '',
-                        $this->interpolateArray($profileData),
+                        $profileData,
                         $environment,
                         $server,
                     );
