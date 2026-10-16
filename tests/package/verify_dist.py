@@ -14,6 +14,7 @@ with tempfile.TemporaryDirectory(prefix='shipper-cli-dist-') as directory:
     excluded = ['vendor/phpunit/synthetic.php', 'examples/sample/vendor/synthetic.php',
                 'node_modules/synthetic.js', 'examples/sample/node_modules/synthetic.js',
                 '.env', 'examples/sample/.env', 'auth.json', 'examples/sample/auth.json',
+                '.env.production', 'examples/sample/.env.production',
                 'builds/shipper', 'box.phar', 'tests/synthetic.php', '.github/synthetic.yml']
     for name in excluded:
         target = source / name
