@@ -11,6 +11,24 @@ use ShipperCli\Contracts\DeploymentStatusProviderInterface;
 
 final class TestContractProvider implements DeploymentLogsProviderInterface, DeploymentProviderInterface, DeploymentRollbackProviderInterface, DeploymentStatusProviderInterface
 {
+    public static int $cleanupListings = 0;
+
+    public static int $cleanupDeletions = 0;
+
+    public function listSites(object $project, object $profile): mixed
+    {
+        self::$cleanupListings++;
+
+        return $this->config['cleanup_sites'] ?? [['site_id' => 42, 'domain' => '42.preview.example.com']];
+    }
+
+    public function deleteSiteWithDatabases(object $project, object $profile, int $siteId): bool
+    {
+        self::$cleanupDeletions++;
+
+        return true;
+    }
+
     /** @param array<string, mixed> $config */
     public function __construct(
         private readonly array $config = [],
