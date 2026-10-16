@@ -12,6 +12,10 @@ use App\Deployment\ProviderFactory;
 
 final class CleanupOrphanedSitesFlow
 {
+    public function __construct(
+        private readonly GetOpenPullRequestsAction $getOpenPRsAction = new GetOpenPullRequestsAction,
+    ) {}
+
     /**
      * Cleanup orphaned preview sites.
      *
@@ -20,7 +24,6 @@ final class CleanupOrphanedSitesFlow
     public function handle(string $configPath, string $githubRepo, string $githubToken, bool $dryRun = false): array
     {
         $loadAction = new LoadConfigurationAction;
-        $getOpenPRsAction = new GetOpenPullRequestsAction;
         $findOrphanedAction = new FindOrphanedSitesAction;
 
         $config = $loadAction->handle($configPath);
@@ -38,7 +41,7 @@ final class CleanupOrphanedSitesFlow
             ];
         }
 
-        $prResult = $getOpenPRsAction->handle($githubRepo, $githubToken);
+        $prResult = $this->getOpenPRsAction->handle($githubRepo, $githubToken);
         if (! $prResult['success']) {
             return [
                 'success' => false,

@@ -53,7 +53,7 @@ final class CleanupOrphanedCommand extends Command
             $this->info('Starting cleanup of orphaned preview sites...');
             $this->line('');
 
-            $flow = new CleanupOrphanedSitesFlow;
+            $flow = \app(CleanupOrphanedSitesFlow::class);
 
             // First, run in dry-run mode to find orphaned sites
             $result = $flow->handle($configPath, $githubRepo, $githubToken, true);
