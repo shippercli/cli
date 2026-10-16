@@ -1,6 +1,11 @@
 # Database Management Guide
 
-This guide explains how Shipper manages databases for your applications.
+This guide contains historical Ploi-oriented configuration examples. Provider
+behavior depends on the installed plugin and version; this guide is not evidence
+that every lifecycle step below is supported or live-verified. Consult the
+[provider documentation](https://github.com/shippercli/provider-ploi#readme) and
+[versioned database guide](https://github.com/shippercli/docs/blob/main/v1/DATABASES.md)
+for the installed version. Audit PR behavior is not released behavior.
 
 ## Overview
 
@@ -138,10 +143,24 @@ When running `shipper apply`, for each configured database:
 
 ### 2. Updates
 
-For existing databases:
-- Database is found by name
-- No changes are made to existing databases
-- Still linked to site if not already linked
+Finding a database by name does not prove it is usable by the target site.
+Ploi's documented create operation accepts `site_id`; the audited plugin does
+not have a documented operation to attach an already-existing database to a
+site. The audited implementation in
+[provider-ploi PR #26](https://github.com/shippercli/provider-ploi/pull/26)
+requires the returned site association to match and requires matching connection
+settings in the application environment. Missing or mismatched associations
+cause refusal, not an automatic link or a successful no-op.
+
+Existing passwords are not implicitly rotated or recoverable from a database
+inventory response. Restore missing connection settings from your secret
+manager and resolve site association through supported provider operations.
+Do not delete and recreate a production database to bypass this check.
+
+[CLI issue #134](https://github.com/shippercli/cli/issues/134) remains open:
+the requested automatic attachment has not been established as a supported API
+operation. A fail-closed check prevents false success but does not satisfy that
+attachment acceptance criterion.
 
 ### 3. Destruction
 
