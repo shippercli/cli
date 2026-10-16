@@ -188,7 +188,10 @@ You can use environment variables in profile configuration:
 
 ## Database Configuration
 
-Shipper can automatically create and manage databases for your projects.
+Database lifecycle behavior depends on the installed provider and plugin version.
+Consult that provider's documentation before relying on creation, reuse,
+credential delivery, or deletion. The following configuration shape is generic;
+it does not guarantee those operations are supported by every provider.
 
 ```yaml
 databases:
@@ -206,7 +209,8 @@ databases:
 
 - `name` (required): Database name (supports variable interpolation)
 - `user` (required): Database user name (supports variable interpolation)
-- `type` (required): Database type (currently supports `mysql`)
+- `type`: Database type; accepted values depend on the provider and installed
+  version (the example uses `mysql`)
 
 **Variable Interpolation:**
 
@@ -233,10 +237,19 @@ For project "api" with profile "preview" and PR #123:
 
 **Database Management:**
 
-- Databases are automatically created if they don't exist
-- Each database gets a secure random password
-- Databases are automatically linked to their respective sites
-- When a site is destroyed, associated databases are also deleted
+- Providers may create a database when it is missing, subject to their
+  ownership and adoption rules.
+- Password generation, persistence, and delivery to the application are
+  provider-specific. Do not assume a generated password is recoverable later.
+- Existing databases may require explicit adoption and may be reusable only
+  when already associated with the target site. Shipper does not assume an
+  attach-existing operation exists.
+- Destroy removes only resources the installed provider identifies as owned
+  and safe to delete. It does not generally unlink existing databases or remove
+  shared users.
+
+For current Ploi behavior and its existing-database attachment limitation, see
+the [database management guide](./DATABASES.md) and [CLI issue #134](https://github.com/shippercli/cli/issues/134).
 
 ## Environment Variables
 
