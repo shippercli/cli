@@ -8,6 +8,13 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 
+\test('invalid repository identifiers fail before HTTP requests', function (string $repository): void {
+    $mock = new MockHandler;
+    $client = new Client(['handler' => HandlerStack::create($mock)]);
+    $result = (new GetOpenPullRequestsAction(client: $client))->handle($repository, 'token');
+    \expect($result['success'])->toBeFalse()->and($result['error'])->toContain('owner/repo');
+})->with(['owner', 'owner/repo/extra', 'https://github.com/owner/repo', 'owner/repo?state=closed', "owner/repo\n"]);
+
 \test('invalid GitHub inventory fails closed instead of implying no open PRs', function (string $body): void {
     $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200, [], $body)]))]);
     $result = (new GetOpenPullRequestsAction(client: $client))->handle('owner/repo', 'token');

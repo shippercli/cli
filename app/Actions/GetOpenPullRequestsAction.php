@@ -24,6 +24,9 @@ final class GetOpenPullRequestsAction
      */
     public function handle(string $repo, string $token): array
     {
+        if (\preg_match('/\A[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\z/', $repo) !== 1) {
+            return ['success' => false, 'prs' => [], 'error' => 'GitHub repository must use owner/repo format'];
+        }
         try {
             $client = $this->client ?? (new GitHubHttpClient($token))->getClient();
 

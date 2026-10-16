@@ -55,6 +55,9 @@ final class CleanupOrphanedSitesFlow
         $targets = [];
         $orphanedSites = [];
         foreach ($projects as $project) {
+            if (! $this->matchesRepository($project->repository(), $githubRepo)) {
+                continue;
+            }
             $provider = $providerFactory->create($project->provider());
             $capabilityProvider = $provider instanceof ContractDeploymentProviderAdapter
                 ? $provider->contractProvider()
@@ -138,5 +141,19 @@ final class CleanupOrphanedSitesFlow
             'failed' => $failed,
             'error_message' => '',
         ];
+    }
+
+    /** @param array<string, mixed> $repository */
+    private function matchesRepository(array $repository, string $githubRepo): bool
+    {
+        $name = $repository['name'] ?? null;
+        if (! \is_string($name) || ($repository['provider'] ?? null) !== 'github') {
+            return false;
+        }
+        if (\preg_match('#\A(?:https://github\.com/|git@github\.com:)([^/]+/[^/]+?)(?:\.git)?\z#i', $name, $matches) === 1) {
+            $name = $matches[1];
+        }
+
+        return \strcasecmp($name, $githubRepo) === 0;
     }
 }

@@ -215,6 +215,21 @@ composer build
 
 The codebase targets PHP 8.3+, Laravel Pint, PHPStan level 9, and Pest.
 
+## Orphan preview cleanup
+
+`cleanup-orphaned` uses `GITHUB_TOKEN` and `GITHUB_REPOSITORY` (`owner/repo`) to
+read open PRs. It considers only projects whose `repository.provider` is `github`
+and whose `repository.name` matches that repository. Names may use `owner/repo`,
+`https://github.com/owner/repo.git`, or `git@github.com:owner/repo.git`; matching
+is case insensitive. Projects with missing or different repository metadata are
+excluded, so a PR list from one repository cannot authorize another's cleanup.
+
+Only the `preview` profile is enumerated. Its domain must contain exactly one
+`${GITHUB_PR_NUMBER}` placeholder. Cleanup requires a positive PR number and
+the provider's ownership checks. Malformed or incomplete GitHub inventories stop
+cleanup; a fetch failure after confirmation also returns a failure exit status.
+Use `--dry-run` to inspect candidates before deletion.
+
 ## Release
 
 Tags build and publish the PHAR through GitHub Actions:
