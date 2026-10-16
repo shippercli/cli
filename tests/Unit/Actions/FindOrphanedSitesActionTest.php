@@ -5,6 +5,21 @@ declare(strict_types=1);
 use App\Actions\FindOrphanedSitesAction;
 use App\Config\ProfileConfig;
 
+\test('an open or unrecognized alias protects the whole site regardless of ordering', function (): void {
+    $action = new FindOrphanedSitesAction;
+    $profile = new ProfileConfig('preview', 'main', ['domain' => '${GITHUB_PR_NUMBER}.api.example.com']);
+    foreach (['42.api.example.com', 'production.example.com'] as $protectedDomain) {
+        $sites = [
+            ['site_id' => 12, 'domain' => '43.api.example.com'],
+            ['site_id' => 12, 'domain' => $protectedDomain],
+            ['site_id' => 13, 'domain' => '44.api.example.com'],
+        ];
+        $expected = [['site_id' => 13, 'domain' => '44.api.example.com', 'pr_number' => 44]];
+        \expect($action->handle($sites, [42], $profile))->toBe($expected);
+        \expect($action->handle(\array_reverse($sites), [42], $profile))->toBe($expected);
+    }
+});
+
 \test('orphan classification only matches the current preview profile', function (): void {
     $action = new FindOrphanedSitesAction;
     $profile = new ProfileConfig('preview', 'main', ['domain' => '${GITHUB_PR_NUMBER}.api.example.com']);

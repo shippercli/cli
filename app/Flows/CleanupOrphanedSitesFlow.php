@@ -72,19 +72,19 @@ final class CleanupOrphanedSitesFlow
                 }
                 $sites = $capabilityProvider->listSites($project, $profile);
                 if (! \is_array($sites)) {
-                    continue;
+                    throw new \RuntimeException('Provider returned invalid preview site inventory.');
                 }
 
                 $normalizedSites = [];
                 foreach ($sites as $site) {
                     if (! \is_array($site)) {
-                        continue;
+                        throw new \RuntimeException('Provider returned an invalid preview site inventory entry.');
                     }
 
                     $siteId = $site['site_id'] ?? null;
                     $domain = $site['domain'] ?? null;
-                    if (! \is_int($siteId) || ! \is_string($domain)) {
-                        continue;
+                    if (! \is_int($siteId) || $siteId === 0 || ! \is_string($domain) || \trim($domain) === '') {
+                        throw new \RuntimeException('Provider returned an invalid preview site identity.');
                     }
 
                     $normalizedSites[] = ['site_id' => $siteId, 'domain' => $domain];

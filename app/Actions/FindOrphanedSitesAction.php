@@ -19,13 +19,15 @@ final class FindOrphanedSitesAction
     public function handle(array $sites, array $openPRs, ProfileConfig $profile): array
     {
         $orphaned = [];
+        $protectedSites = [];
 
         foreach ($sites as $site) {
             $domain = $site['domain'];
 
             $prNumber = $this->extractPRNumber($domain, $profile);
 
-            if ($prNumber === null) {
+            if ($prNumber === null || \in_array($prNumber, $openPRs, true)) {
+                $protectedSites[$site['site_id']] = true;
                 continue;
             }
 
@@ -38,7 +40,7 @@ final class FindOrphanedSitesAction
             }
         }
 
-        return $orphaned;
+        return \array_values(\array_filter($orphaned, static fn (array $site): bool => ! isset($protectedSites[$site['site_id']])));
     }
 
     private function extractPRNumber(string $domain, ProfileConfig $profile): ?int

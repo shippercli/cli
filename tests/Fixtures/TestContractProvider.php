@@ -15,12 +15,11 @@ final class TestContractProvider implements DeploymentLogsProviderInterface, Dep
 
     public static int $cleanupDeletions = 0;
 
-    /** @return array<int, array{site_id: int, domain: string}> */
-    public function listSites(object $project, object $profile): array
+    public function listSites(object $project, object $profile): mixed
     {
         self::$cleanupListings++;
 
-        return [['site_id' => 42, 'domain' => '42.preview.example.com']];
+        return $this->config['cleanup_sites'] ?? [['site_id' => 42, 'domain' => '42.preview.example.com']];
     }
 
     public function deleteSiteWithDatabases(object $project, object $profile, int $siteId): bool

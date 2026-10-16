@@ -15,6 +15,35 @@ use Tests\Fixtures\TestContractProvider;
 use Tests\Fixtures\TestShipperPlugin;
 use Tests\TestCase;
 
+\test('invalid provider inventory aborts cleanup before any deletion', function (mixed $inventory): void {
+    ProviderRegistry::registerPlugin(new TestShipperPlugin);
+    TestContractProvider::$cleanupDeletions = 0;
+    $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200, [], '[]')]))]);
+    $flow = new CleanupOrphanedSitesFlow(new GetOpenPullRequestsAction(client: $client));
+    $config = \tempnam(\sys_get_temp_dir(), 'shipper-cleanup-invalid-');
+    \assert(\is_string($config));
+    \file_put_contents($config, \json_encode([
+        'providers' => ['contract-test' => ['cleanup_sites' => $inventory]],
+        'projects' => ['api' => [
+            'provider' => 'contract-test', 'path' => '.',
+            'repository' => ['provider' => 'github', 'name' => 'owner/repo'],
+            'profiles' => ['preview' => ['branch' => 'main', 'domain' => '${GITHUB_PR_NUMBER}.preview.example.com']],
+        ]],
+    ], JSON_THROW_ON_ERROR));
+    try {
+        \expect(fn () => $flow->handle($config, 'owner/repo', 'token'))->toThrow(RuntimeException::class, 'Provider returned');
+        \expect(TestContractProvider::$cleanupDeletions)->toBe(0);
+    } finally {
+        @\unlink($config);
+    }
+})->with([
+    'not an array' => ['invalid'],
+    'invalid entry after orphan' => [[['site_id' => 42, 'domain' => '42.preview.example.com'], 'invalid']],
+    'zero ID' => [[['site_id' => 0, 'domain' => '42.preview.example.com']]],
+    'missing domain' => [[['site_id' => 42]]],
+    'blank domain' => [[['site_id' => 42, 'domain' => ' ']]],
+]);
+
 \test('cleanup only mutates projects associated with its GitHub repository', function (array $repository, int $expected): void {
     ProviderRegistry::registerPlugin(new TestShipperPlugin);
     TestContractProvider::$cleanupListings = 0;
