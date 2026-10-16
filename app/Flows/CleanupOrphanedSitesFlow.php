@@ -83,7 +83,7 @@ final class CleanupOrphanedSitesFlow
 
                     $siteId = $site['site_id'] ?? null;
                     $domain = $site['domain'] ?? null;
-                    if (! \is_int($siteId) || $siteId === 0 || ! \is_string($domain) || \trim($domain) === '') {
+                    if (! \is_int($siteId) || $siteId <= 0 || ! \is_string($domain) || \trim($domain) === '') {
                         throw new \RuntimeException('Provider returned an invalid preview site identity.');
                     }
 

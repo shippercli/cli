@@ -40,6 +40,7 @@ use Tests\TestCase;
     'not an array' => ['invalid'],
     'invalid entry after orphan' => [[['site_id' => 42, 'domain' => '42.preview.example.com'], 'invalid']],
     'zero ID' => [[['site_id' => 0, 'domain' => '42.preview.example.com']]],
+    'negative ID' => [[['site_id' => -42, 'domain' => '42.preview.example.com']]],
     'missing domain' => [[['site_id' => 42]]],
     'blank domain' => [[['site_id' => 42, 'domain' => ' ']]],
 ]);
