@@ -69,12 +69,15 @@
             "node_modules",
             "tests",
             ".github",
-            ".env*",
             "auth.json",
             "builds",
             "box.phar",
             ".phpunit*",
-            ".phpstan*"
+            ".phpstan*",
+            ".env",
+            "**/.env",
+            "**/.env.local",
+            "**/.env.*.local"
         ]
     }
 }
