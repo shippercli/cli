@@ -41,9 +41,14 @@ For existing sites, Shipper:
 When you run `shipper destroy`, Shipper:
 
 1. **Finds site** by domain name
-2. **Deletes all linked databases**
-3. **Removes database users**
-4. **Destroys the site**
+2. **Handles configured databases** according to the provider's resource
+   ownership and deletion rules
+3. **Destroys the site**
+
+Destroy does not guarantee deletion of every database associated with a site.
+Providers should preserve resources that were adopted or cannot be proven to be
+owned by Shipper. Review the installed provider's behavior before running
+cleanup against a real account.
 
 ## Site Configuration
 
@@ -332,7 +337,9 @@ Set environment variables in Ploi dashboard:
 2. Add variables (e.g., `DB_PASSWORD`, `API_KEY`)
 3. Save and redeploy
 
-**Important:** Database credentials are automatically set by Shipper.
+Database credentials may be configured or delivered by the installed provider.
+Confirm the provider's database documentation and inspect the deployed
+environment before relying on automatic credential setup.
 
 ### Basic Authentication
 
