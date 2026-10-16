@@ -6,11 +6,10 @@ namespace App\Commands;
 
 use App\Actions\ResolveDeploymentContextAction;
 use App\Deployment\ContractDeploymentProviderAdapter;
-use Illuminate\Console\Command;
 use ShipperCli\Contracts\DeploymentRollbackProviderInterface;
 use Throwable;
 
-final class RollbackCommand extends Command
+final class RollbackCommand extends ShipperCommand
 {
     /** @var string */
     protected $signature = 'rollback

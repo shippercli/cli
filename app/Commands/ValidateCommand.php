@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Flows\ValidateConfigurationFlow;
-use Illuminate\Console\Command;
 
-final class ValidateCommand extends Command
+final class ValidateCommand extends ShipperCommand
 {
     /**
      * The name and signature of the console command.

@@ -224,6 +224,16 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+## URL credentials in command output
+
+Command lines, including provider plan fields, logs, status JSON and error
+messages, redact the user information in HTTP(S) URLs before display. For
+example, `https://user:password@example.com/repo.git` is displayed as
+`https://[redacted]@example.com/repo.git`. Provider execution receives the
+original configuration. This covers URL user information only; providers remain
+responsible for redacting tokens, query parameters, environment values and
+other secret forms from their output.
+
 ## License
 
 MIT

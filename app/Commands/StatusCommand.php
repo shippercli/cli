@@ -6,11 +6,10 @@ namespace App\Commands;
 
 use App\Actions\ResolveDeploymentContextAction;
 use App\Deployment\ContractDeploymentProviderAdapter;
-use Illuminate\Console\Command;
 use ShipperCli\Contracts\DeploymentStatusProviderInterface;
 use Throwable;
 
-final class StatusCommand extends Command
+final class StatusCommand extends ShipperCommand
 {
     /** @var string */
     protected $signature = 'status
