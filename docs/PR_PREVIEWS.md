@@ -4,7 +4,8 @@ This guide explains how to set up and use PR preview deployments with Shipper.
 
 ## Overview
 
-PR preview deployments automatically create temporary environments for each pull request, allowing you to:
+PR preview deployments can create temporary environments when a deployment and
+cleanup workflow is configured, allowing you to:
 - Test changes before merging
 - Share work-in-progress with stakeholders
 - Catch integration issues early
@@ -13,12 +14,12 @@ PR preview deployments automatically create temporary environments for each pull
 ## How It Works
 
 1. A pull request is opened against `main` or `develop` branch
-2. GitHub Actions triggers the preview deployment workflow
-3. Shipper creates a new site with a unique domain (e.g., `api-preview-123.example.com`)
-4. Shipper can optionally create a managed preview server before creating the site
-5. Shipper creates dedicated preview databases
-6. The PR is updated with deployment status and links
-7. When the PR is closed or merged, the preview environment is automatically cleaned up
+2. A configured GitHub Actions workflow can run Shipper for a preview profile
+3. The installed provider handles supported site and optional server operations
+4. Database creation, connection setup, and ownership behavior depend on that provider
+5. The workflow may publish deployment status and links
+6. A separate cleanup workflow must be configured to run on PR close; cleanup
+   only removes resources the provider can safely identify as managed
 
 ## Configuration
 
@@ -276,9 +277,10 @@ Ploi automatically provisions SSL certificates via Let's Encrypt for preview dom
 
 ## Database Management
 
-### Automatic Creation
+### Example Configuration
 
-Preview databases are automatically created with unique names:
+Use a unique name per preview if the installed provider supports database
+creation for the configured profile:
 ```yaml
 databases:
   main:
@@ -287,14 +289,14 @@ databases:
     type: mysql
 ```
 
-### Automatic Cleanup
+### Cleanup behavior
 
-When the cleanup workflow runs:
-1. The preview site is destroyed
-2. Associated databases are automatically deleted
-3. Database users are removed
-
-If the preview profile uses `infrastructure.server.mode: create`, cleanup may also delete the managed preview server after site and database cleanup.
+When the configured cleanup workflow runs, `destroy` follows the installed
+provider's ownership rules. It does not guarantee that an associated database
+or user will be deleted. Verify provider behavior and retained resources before
+depending on PR-close cleanup. If the preview profile uses
+`infrastructure.server.mode: create`, server cleanup also depends on the
+provider's ownership and cleanup support.
 
 ### Data Seeding
 
@@ -349,7 +351,7 @@ Customize the PR comment in the workflow:
           - **Email:** test@example.com
           - **Password:** password
 
-          This preview will be automatically cleaned up when the PR is closed.`
+          This preview is scheduled for cleanup by the configured workflow when the PR is closed.`
       })
 ```
 

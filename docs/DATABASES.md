@@ -1,15 +1,20 @@
 # Database Management Guide
 
-This guide explains how Shipper manages databases for your applications.
+This guide contains historical Ploi-oriented configuration examples. Provider
+behavior depends on the installed plugin and version; this guide is not evidence
+that every lifecycle step below is supported or live-verified. Consult the
+[provider documentation](https://github.com/shippercli/provider-ploi#readme) and
+[versioned database guide](https://github.com/shippercli/docs/blob/main/v1/DATABASES.md)
+for the installed version. Audit PR behavior is not released behavior.
 
 ## Overview
 
-Shipper provides automatic database lifecycle management:
-- Creating databases with secure passwords
-- Managing database users
-- Linking databases to sites
-- Variable interpolation for dynamic names
-- Automatic cleanup on site destruction
+This historical guide describes intended and legacy database behavior. Do not
+assume that every listed feature is implemented by the installed CLI and
+provider combination. In particular, database creation, existing-database
+reuse, credential delivery, and cleanup vary by provider and plugin version.
+Use the provider documentation for the installed version before relying on a
+destructive or credential-changing operation.
 
 ## Database Configuration
 
@@ -51,7 +56,8 @@ databases:
 
 - `name` (required): Database name (supports variable interpolation)
 - `user` (required): Database username (supports variable interpolation)
-- `type` (required): Database type (`mysql` currently supported)
+- `type`: Database type; accepted values depend on the provider and installed
+  version (the examples use `mysql`).
 
 ## Variable Interpolation
 
@@ -124,46 +130,51 @@ databases:
 
 ## Database Lifecycle
 
-### 1. Creation
+### Ploi behavior under audit
 
-When running `shipper apply`, for each configured database:
+The following describes the proposed provider behavior in the open
+[provider-ploi PR #26](https://github.com/shippercli/provider-ploi/pull/26); it
+is not a statement about released plugin versions or live account behavior:
 
-1. **Check if exists**: Query Ploi for database by name
-2. **Create database**: If doesn't exist, create with:
-   - Specified name (with variables resolved)
-   - Secure random password (32 characters)
-   - Specified user
-3. **Link to site**: Associate database with the site
-4. **Set environment variables**: Inject credentials into site environment
+- A newly created database is associated with the site through Ploi's documented
+  create operation.
+- An existing database is not attached by an API call. It can be reused only
+  when Ploi's returned site association already matches the target site and the
+  application environment contains matching database, user, host, and password
+  settings. Otherwise apply stops before deployment.
+- Existing passwords are not read back or rotated during reuse. New connection
+  details are written to the application environment using configured
+  `database_environment_prefixes` when required by the provider.
+- Cleanup checks resource ownership and database/site association before
+  deletion. The published API does not establish a separate unlink operation.
 
-### 2. Updates
+[CLI issue #134](https://github.com/shippercli/cli/issues/134) remains open:
+Ploi's documented API does not currently provide an operation to attach an
+already-existing database to a site. The audit's refusal behavior prevents
+false success but does not meet the issue's automatic-attachment criterion.
+Do not delete and recreate a production database to bypass this limitation.
 
-For existing databases:
-- Database is found by name
-- No changes are made to existing databases
-- Still linked to site if not already linked
+### Other providers and installed versions
 
-### 3. Destruction
-
-When running `shipper destroy`:
-
-1. **Find all databases**: Get databases linked to the site
-2. **Remove links**: Unlink databases from site
-3. **Delete databases**: Permanently delete each database
-4. **Delete users**: Remove database users
-
-**Warning:** This is permanent and cannot be undone!
+Consult the documentation shipped with the installed provider. This historical
+guide's earlier lifecycle, cleanup, and password examples are not a guarantee
+that the provider creates users separately, unlinks databases, rotates or
+recovers passwords, or injects the shown variables.
 
 ## Password Management
 
-### Automatic Password Generation
+### Historical password examples
 
-- Passwords are automatically generated (32 characters)
-- Includes uppercase, lowercase, numbers, and special characters
-- Stored securely in Ploi
-- Injected into site environment variables
+The examples below are illustrative legacy material. Password generation,
+storage, reuse, and environment delivery depend on the provider and installed
+plugin version. In particular, an existing password may not be recoverable from
+the provider's database listing; keep required connection settings in an
+appropriate secret manager.
 
 ### Accessing Passwords
+
+The following access paths are historical examples and may not be available for
+every provider or account:
 
 **Via Ploi Dashboard:**
 1. Navigate to Databases section
@@ -171,7 +182,9 @@ When running `shipper destroy`:
 3. View password
 
 **Via Environment Variables:**
-Database credentials are automatically set in site environment:
+Some provider versions use environment variables for database credentials. The
+following names are an example only; check the installed provider's guide and
+configured prefixes:
 - `DB_HOST`: Database host
 - `DB_PORT`: Database port  
 - `DB_DATABASE`: Database name
@@ -197,9 +210,10 @@ To change a database password:
 
 ## Database Types
 
-### MySQL
+### MySQL example
 
-Currently, Shipper supports MySQL databases:
+The guide's historical examples use MySQL. Check the installed provider's
+capability manifest for the database types it currently implements:
 
 ```yaml
 databases:
@@ -403,10 +417,10 @@ databases:
     type: mysql
 ```
 
-**Benefits:**
+**Intended benefits (when the workflow is configured and verified):**
 - Each PR gets its own database
 - No conflicts between PRs
-- Automatic cleanup on PR close
+- Cleanup after PR close
 
 ### Seeding Preview Data
 
@@ -427,16 +441,16 @@ fi
 
 ### Preview Database Cleanup
 
-When PR is closed, the cleanup workflow runs:
+The following command is an example cleanup step; a PR close does not by itself
+prove that a cleanup workflow is configured or that database deletion is safe:
 
 ```bash
 ./shipper destroy api --profile=preview --force
 ```
 
-This automatically:
-1. Deletes the preview site
-2. Deletes the preview database
-3. Removes database user
+When the installed provider and cleanup workflow support these operations, the
+command may remove preview resources. Review the provider's ownership checks and
+deletion behavior before running it against a real account.
 
 ## Troubleshooting
 
