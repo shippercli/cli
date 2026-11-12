@@ -19,10 +19,17 @@ final class CleanupOrphanedSitesFlow
     /**
      * Cleanup orphaned preview sites.
      *
-     * @return array{success: bool, orphaned_sites: array<int, array{site_id: int, domain: string, pr_number: int}>, deleted: int, failed: int, error_message: string}
+     * @param array<string, array{site_id: int, domain: string, pr_number: int}>|null $confirmedSites
+     *
+     * @return array{success: bool, orphaned_sites: array<string, array{site_id: int, domain: string, pr_number: int}>, deleted: int, failed: int, error_message: string}
      */
-    public function handle(string $configPath, string $githubRepo, string $githubToken, bool $dryRun = false): array
-    {
+    public function handle(
+        string $configPath,
+        string $githubRepo,
+        string $githubToken,
+        bool $dryRun = false,
+        ?array $confirmedSites = null,
+    ): array {
         $loadAction = new LoadConfigurationAction;
         $findOrphanedAction = new FindOrphanedSitesAction;
 
@@ -30,6 +37,7 @@ final class CleanupOrphanedSitesFlow
 
         $providerFactory = new ProviderFactory($config->providers());
         $projects = $config->projects();
+        $configFingerprint = \hash('sha256', \serialize($config));
 
         if ($projects === []) {
             return [
@@ -87,16 +95,31 @@ final class CleanupOrphanedSitesFlow
                         throw new \RuntimeException('Provider returned an invalid preview site identity.');
                     }
 
-                    $normalizedSites[] = ['site_id' => $siteId, 'domain' => $domain];
+                    if (isset($normalizedSites[$siteId]) && $normalizedSites[$siteId]['domain'] !== $domain) {
+                        throw new \RuntimeException('Provider returned conflicting domains for the same preview site ID.');
+                    }
+
+                    $normalizedSites[$siteId] = ['site_id' => $siteId, 'domain' => $domain];
                 }
 
-                $orphans = $findOrphanedAction->handle($normalizedSites, $prResult['prs'], $profile);
+                $orphans = $findOrphanedAction->handle(\array_values($normalizedSites), $prResult['prs'], $profile);
                 foreach ($orphans as $orphan) {
-                    $key = \json_encode([$project->name(), $profile->name(), $orphan['site_id']], JSON_THROW_ON_ERROR);
+                    $key = \json_encode([$configFingerprint, $project->name(), $profile->name(), $orphan['site_id']], JSON_THROW_ON_ERROR);
                     $targets[$key] = [$capabilityProvider, $project, $profile, $orphan['site_id']];
                     $orphanedSites[$key] = $orphan;
                 }
             }
+        }
+
+        \ksort($orphanedSites);
+        if ($confirmedSites !== null && $confirmedSites !== $orphanedSites) {
+            return [
+                'success' => false,
+                'orphaned_sites' => [],
+                'deleted' => 0,
+                'failed' => 0,
+                'error_message' => 'The orphaned preview inventory changed. Run cleanup again to review the current sites.',
+            ];
         }
 
         if ($targets === []) {
@@ -112,11 +135,23 @@ final class CleanupOrphanedSitesFlow
         if ($dryRun) {
             return [
                 'success' => true,
-                'orphaned_sites' => \array_values($orphanedSites),
+                'orphaned_sites' => $orphanedSites,
                 'deleted' => 0,
                 'failed' => 0,
                 'error_message' => '',
             ];
+        }
+
+        foreach ($orphanedSites as $site) {
+            if (! $this->getOpenPRsAction->isClosed($githubRepo, $githubToken, $site['pr_number'])) {
+                return [
+                    'success' => false,
+                    'orphaned_sites' => [],
+                    'deleted' => 0,
+                    'failed' => 0,
+                    'error_message' => 'Could not confirm that PR #'.$site['pr_number'].' is closed. No preview sites were deleted.',
+                ];
+            }
         }
 
         $deleted = 0;
@@ -136,7 +171,7 @@ final class CleanupOrphanedSitesFlow
 
         return [
             'success' => $failed === 0,
-            'orphaned_sites' => \array_values($orphanedSites),
+            'orphaned_sites' => $orphanedSites,
             'deleted' => $deleted,
             'failed' => $failed,
             'error_message' => '',

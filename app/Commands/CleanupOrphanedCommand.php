@@ -94,7 +94,7 @@ final class CleanupOrphanedCommand extends Command
             $this->line('');
             $this->info('Deleting sites...');
 
-            $result = $flow->handle($configPath, $githubRepo, $githubToken, false);
+            $result = $flow->handle($configPath, $githubRepo, $githubToken, false, $orphanedSites);
 
             if (! $result['success'] && $result['error_message'] !== '') {
                 $this->error($result['error_message']);

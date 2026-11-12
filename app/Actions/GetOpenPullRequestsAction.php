@@ -113,4 +113,24 @@ final class GetOpenPullRequestsAction
             return ['success' => false, 'prs' => [], 'error' => "Unexpected error: {$e->getMessage()}"];
         }
     }
+
+    public function isClosed(string $repo, string $token, int $number): bool
+    {
+        if (\preg_match('/\A[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\z/', $repo) !== 1 || $number < 1) {
+            return false;
+        }
+
+        try {
+            $client = $this->client ?? (new GitHubHttpClient($token))->getClient();
+            $response = $client->request('GET', "/repos/{$repo}/pulls/{$number}", ['allow_redirects' => false]);
+            $pr = \json_decode((string) $response->getBody());
+
+            return $response->getStatusCode() === 200
+                && $pr instanceof \stdClass
+                && ($pr->number ?? null) === $number
+                && ($pr->state ?? null) === 'closed';
+        } catch (\Exception) {
+            return false;
+        }
+    }
 }

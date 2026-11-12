@@ -49,7 +49,10 @@ use Tests\TestCase;
     ProviderRegistry::registerPlugin(new TestShipperPlugin);
     TestContractProvider::$cleanupListings = 0;
     TestContractProvider::$cleanupDeletions = 0;
-    $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response(200, [], '[]')]))]);
+    $client = new Client(['handler' => HandlerStack::create(new MockHandler([
+        new Response(200, [], '[]'),
+        new Response(200, [], '{"number":42,"state":"closed"}'),
+    ]))]);
     $flow = new CleanupOrphanedSitesFlow(new GetOpenPullRequestsAction(client: $client));
     $config = \tempnam(\sys_get_temp_dir(), 'shipper-cleanup-repo-');
     \assert(\is_string($config));
@@ -79,7 +82,7 @@ use Tests\TestCase;
     'ssh URL' => [['provider' => 'github', 'name' => 'git@github.com:owner/repo.git'], 1],
 ]);
 
-\test('cleanup command stops before deletion when the second inventory fetch fails', function (): void {
+\test('cleanup command stops before deletion when preview safety checks fail', function (array $responses, string $error, int $listings): void {
     /** @var TestCase $this */
     $token = \getenv('GITHUB_TOKEN');
     $repo = \getenv('GITHUB_REPOSITORY');
@@ -89,8 +92,7 @@ use Tests\TestCase;
     TestContractProvider::$cleanupListings = 0;
     TestContractProvider::$cleanupDeletions = 0;
     $client = new Client(['handler' => HandlerStack::create(new MockHandler([
-        new Response(200, [], '[]'),
-        new Response(200, [], '{"message":"invalid inventory"}'),
+        ...$responses,
     ]))]);
     \app()->instance(CleanupOrphanedSitesFlow::class, new CleanupOrphanedSitesFlow(new GetOpenPullRequestsAction(client: $client)));
     $config = \tempnam(\sys_get_temp_dir(), 'shipper-cleanup-');
@@ -116,16 +118,30 @@ YAML);
     try {
         $exit = Artisan::call('cleanup-orphaned', ['--config' => $config, '--force' => true]);
         \expect($exit)->toBe(1)
-            ->and(Artisan::output())->toContain('Failed to fetch open PRs')
+            ->and(Artisan::output())->toContain($error)
             ->and(\str_contains(Artisan::output(), 'Cleanup complete:'))->toBeFalse()
-            ->and(TestContractProvider::$cleanupListings)->toBe(1)
+            ->and(TestContractProvider::$cleanupListings)->toBe($listings)
             ->and(TestContractProvider::$cleanupDeletions)->toBe(0);
     } finally {
         @\unlink($config);
         \putenv($token === false ? 'GITHUB_TOKEN' : 'GITHUB_TOKEN='.$token);
         \putenv($repo === false ? 'GITHUB_REPOSITORY' : 'GITHUB_REPOSITORY='.$repo);
     }
-});
+})->with([
+    'invalid second list' => [[
+        new Response(200, [], '[]'),
+        new Response(200, [], '{"message":"invalid inventory"}'),
+    ], 'Failed to fetch open PRs', 1],
+    'candidate reopened before deletion' => [[
+        new Response(200, [], '[]'),
+        new Response(200, [], '[{"number":42}]'),
+    ], 'The orphaned preview inventory changed', 2],
+    'candidate reopened during pagination' => [[
+        new Response(200, [], '[]'),
+        new Response(200, [], '[]'),
+        new Response(200, [], '{"number":42,"state":"open"}'),
+    ], 'Could not confirm that PR #42 is closed', 2],
+]);
 
 \test('cleanup-orphaned command requires GITHUB_TOKEN', function (): void {
     /** @var TestCase $this */
