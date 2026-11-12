@@ -83,6 +83,7 @@ final class ApplyDeploymentFlow
         }
 
         $plan = $planAction->handle($provider, $project, $profile);
+        CreateDeploymentPlanAction::assertNotBlocked($plan);
 
         return [
             'success' => true,
@@ -108,6 +109,11 @@ final class ApplyDeploymentFlow
         ProfileConfig $profile,
         array $plan,
     ): array {
+        try {
+            CreateDeploymentPlanAction::assertNotBlocked($plan);
+        } catch (\RuntimeException $exception) {
+            return ['success' => false, 'logs' => [], 'error_message' => $exception->getMessage()];
+        }
         $deployAction = new ExecuteDeploymentAction;
 
         $result = $deployAction->handle($provider, $project, $profile);
