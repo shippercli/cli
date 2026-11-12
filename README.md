@@ -45,9 +45,10 @@ Provider availability and lifecycle support currently differ by distribution:
 
 | Provider | Distribution | Registered | Validate / plan | Apply | Destroy | Status / logs / rollback |
 | --- | --- | --- | --- | --- | --- | --- |
-| Ploi | `shippercli/provider-ploi` Composer plugin | When installed | Yes | Yes | Yes | Status and logs; no rollback |
-| cPanel | `shippercli/provider-cpanel` Composer plugin | When installed | Yes | Yes | Yes | Yes |
-| Forge, Railway, Cloudflare Pages, Hostinger, Coolify, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
+| Ploi | `shippercli/provider-ploi` from tagged GitHub releases | When installed | Yes | Yes | Yes | Status and logs; no rollback |
+| cPanel | `shippercli/provider-cpanel` on Packagist | When installed | Yes | Yes | Yes | Yes |
+| EasyPanel | `shippercli/provider-easypanel` on Packagist | When installed | Yes | Yes | Yes | None in v1.0.1 |
+| Forge, Railway, Cloudflare Pages, Hostinger, Coolify, Portainer | Source only | No by default | Experimental | Unavailable by default | Unavailable by default | See provider source |
 
 Incomplete in-tree providers are deliberately not registered. Calling an
 unimplemented lifecycle operation directly returns failure with a clear
@@ -57,7 +58,15 @@ For local global use, install the CLI and providers into the same Composer
 home, then run Composer's global `vendor/bin/shipper`:
 
 ```bash
-composer global require shippercli/cli shippercli/provider-ploi shippercli/provider-cpanel
+composer global require shippercli/cli shippercli/provider-cpanel shippercli/provider-easypanel
+```
+
+For Ploi, register its GitHub repository in the same Composer home before
+installing the tagged package:
+
+```bash
+composer global config repositories.shipper-ploi vcs https://github.com/shippercli/provider-ploi
+composer global require shippercli/cli shippercli/provider-ploi
 ```
 
 Shipper discovers packages with Composer's runtime plugin metadata. Provider
@@ -68,6 +77,8 @@ The release PHAR has its own dependencies and cannot discover separately
 installed provider packages. For CI, use
 `shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc`, which installs the CLI and
 providers together in an isolated Composer directory.
+For Ploi in CI, use the direct Composer commands above so Composer can find
+the GitHub repository.
 
 ## Configure
 
