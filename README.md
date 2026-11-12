@@ -47,7 +47,7 @@ Provider availability and lifecycle support currently differ by distribution:
 | --- | --- | --- | --- | --- | --- | --- |
 | Ploi | `shippercli/provider-ploi` from tagged GitHub releases | When installed | Yes | Yes | Yes | Status and logs; no rollback |
 | cPanel | `shippercli/provider-cpanel` on Packagist | When installed | Yes | Yes | Yes | Yes |
-| EasyPanel | `shippercli/provider-easypanel` on Packagist | When installed | Yes | Yes | Yes | None in v1.0.1 |
+| EasyPanel | `shippercli/provider-easypanel` 2.x on Packagist | When installed | Yes | Yes | Yes | Status and logs; no rollback |
 | Forge, Railway, Cloudflare Pages, Hostinger, Coolify, Portainer | Source only | No by default | Experimental | Unavailable by default | Unavailable by default | See provider source |
 
 Incomplete in-tree providers are deliberately not registered. Calling an
@@ -60,6 +60,9 @@ home, then run Composer's global `vendor/bin/shipper`:
 ```bash
 composer global require shippercli/cli shippercli/provider-cpanel shippercli/provider-easypanel
 ```
+
+Existing EasyPanel 1.x deployments require a separate cutover before adopting
+2.x. See the [EasyPanel upgrade instructions](https://github.com/shippercli/provider-easypanel/blob/v2.0.0/README.md#upgrading-from-version-1).
 
 For Ploi, register its GitHub repository in the same Composer home before
 installing the tagged package:
