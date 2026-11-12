@@ -10,6 +10,8 @@ final class TestBlockedPlanProvider implements DeploymentProviderInterface
 {
     public static int $applyCalls = 0;
 
+    public static int $destroyCalls = 0;
+
     /** @param array<string, mixed> $config */
     public function __construct(private readonly array $config = []) {}
 
@@ -34,6 +36,8 @@ final class TestBlockedPlanProvider implements DeploymentProviderInterface
 
     public function destroy(object $project, object $profile): bool
     {
+        self::$destroyCalls++;
+
         return true;
     }
 

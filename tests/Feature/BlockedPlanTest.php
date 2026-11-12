@@ -14,6 +14,7 @@ use Tests\Fixtures\TestBlockedPlanProvider;
 \test('blocked provider plans fail plan and forced apply without deployment', function (mixed $blocked): void {
     ProviderRegistry::register('blocked-test', TestBlockedPlanProvider::class);
     TestBlockedPlanProvider::$applyCalls = 0;
+    TestBlockedPlanProvider::$destroyCalls = 0;
     $config = \tempnam(\sys_get_temp_dir(), 'shipper-blocked-plan-');
     \assert(\is_string($config));
     \file_put_contents($config, \json_encode([
@@ -30,6 +31,8 @@ use Tests\Fixtures\TestBlockedPlanProvider;
                 ->and(Artisan::output())->toContain('Deployment plan is blocked.', 'Ownership collision requires review.');
         }
         \expect(TestBlockedPlanProvider::$applyCalls)->toBe(0);
+        \expect(Artisan::call('destroy', ['project' => 'api', '--config' => $config, '--force' => true]))->toBe(0)
+            ->and(TestBlockedPlanProvider::$destroyCalls)->toBe(1);
     } finally {
         @\unlink($config);
     }

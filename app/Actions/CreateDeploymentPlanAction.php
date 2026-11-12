@@ -20,10 +20,7 @@ final class CreateDeploymentPlanAction
         ProjectConfig $project,
         ProfileConfig $profile,
     ): array {
-        $plan = $provider->plan($project, $profile);
-        self::assertNotBlocked($plan);
-
-        return $plan;
+        return $provider->plan($project, $profile);
     }
 
     /** @param array<string, mixed> $plan */
