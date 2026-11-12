@@ -74,6 +74,11 @@ use App\Config\SslConfig;
     \assert($project !== null);
     \expect($project->databases())->toBeArray();
     \expect($project->databases())->toHaveKey('main');
+    \expect($project->hasSection('databases'))->toBeTrue();
+
+    $frontend = $config->getProject('frontend');
+    \assert($frontend !== null);
+    \expect($frontend->hasSection('databases'))->toBeFalse();
 });
 
 \test('loaded database has expected properties', function (): void {
