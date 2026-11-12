@@ -48,13 +48,24 @@ final class FindOrphanedSitesAction
         if ($profile->name() !== 'preview') {
             return null;
         }
+        $placeholder = '${GITHUB_PR_NUMBER}';
         $previewDomain = $profile->get('domain');
-        if (! \is_string($previewDomain) || \substr_count($previewDomain, '${GITHUB_PR_NUMBER}') !== 1) {
+        if (! \is_string($previewDomain) || \substr_count($previewDomain, $placeholder) !== 1
+            || ! \filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
             return null;
         }
-        $pattern = \preg_quote($previewDomain, '/');
-        $pattern = \str_replace(\preg_quote('${GITHUB_PR_NUMBER}', '/'), '([1-9][0-9]*)', $pattern);
-        if (\preg_match('/\\A'.$pattern.'\\z/', $domain, $matches) !== 1) {
+
+        $template = \trim($previewDomain);
+        $url = \str_contains($template, '://') ? $template : 'https://'.$template;
+        $scheme = \parse_url($url, PHP_URL_SCHEME);
+        $host = \parse_url($url, PHP_URL_HOST);
+        if (! \is_string($scheme) || ! \in_array(\strtolower($scheme), ['http', 'https'], true)
+            || ! \is_string($host) || ! \str_contains($host, $placeholder)
+            || ! \filter_var(\str_replace($placeholder, '1', $host), FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+            return null;
+        }
+        $pattern = \str_replace(\preg_quote($placeholder, '/'), '([1-9][0-9]*)', \preg_quote($host, '/'));
+        if (\preg_match('/\\A'.$pattern.'\\z/i', $domain, $matches) !== 1) {
             return null;
         }
         $number = \filter_var($matches[1], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
