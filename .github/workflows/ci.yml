@@ -63,3 +63,25 @@ jobs:
       env:
         PEST_NO_PLUGIN: "1"
       run: composer test
+
+  api-example:
+    name: API example PHP 8.2
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: examples/api
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, curl, zip, dom, sqlite3, pdo_sqlite
+          tools: composer:v2
+          coverage: none
+      - name: Validate example dependencies
+        run: composer validate --strict
+      - name: Install on the declared PHP baseline
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Run example tests
+        run: php artisan test
