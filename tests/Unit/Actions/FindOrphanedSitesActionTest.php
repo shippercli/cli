@@ -42,3 +42,19 @@ use App\Config\ProfileConfig;
     $profile = new ProfileConfig('preview', 'main', ['domain' => '${GITHUB_PR_NUMBER}.${GITHUB_PR_NUMBER}.example.com']);
     \expect((new FindOrphanedSitesAction)->handle([['site_id' => 1, 'domain' => '42.43.example.com']], [], $profile))->toBe([]);
 });
+
+\test('preview URL templates classify inventory by exact hostname regardless of case', function (): void {
+    $profile = new ProfileConfig('preview', 'main', ['domain' => 'https://PR-${GITHUB_PR_NUMBER}.API.example.com:443/status']);
+    $sites = [
+        ['site_id' => 1, 'domain' => 'pr-42.api.example.com'],
+        ['site_id' => 2, 'domain' => 'pr-43.api.example.com.evil.example'],
+    ];
+    \expect((new FindOrphanedSitesAction)->handle($sites, [], $profile))->toBe([
+        ['site_id' => 1, 'domain' => 'pr-42.api.example.com', 'pr_number' => 42],
+    ]);
+});
+
+\test('a placeholder outside the preview hostname is not cleanup evidence', function (): void {
+    $profile = new ProfileConfig('preview', 'main', ['domain' => 'https://pr-42.example.com/${GITHUB_PR_NUMBER}']);
+    \expect((new FindOrphanedSitesAction)->handle([['site_id' => 1, 'domain' => 'pr-42.example.com']], [], $profile))->toBe([]);
+});
