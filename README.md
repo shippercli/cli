@@ -48,7 +48,12 @@ Provider availability and lifecycle support currently differ by distribution:
 | Ploi | `shippercli/provider-ploi` from tagged GitHub releases | When installed | Yes | Yes | Yes | Status and logs; no rollback |
 | cPanel | `shippercli/provider-cpanel` on Packagist | When installed | Yes | Yes | Yes | Yes |
 | EasyPanel | `shippercli/provider-easypanel` 2.x on Packagist | When installed | Yes | Yes | Yes | Status and logs; no rollback |
-| Forge, Railway, Cloudflare Pages, Hostinger, Coolify, Portainer | Source only | No by default | Experimental | Unavailable by default | Unavailable by default | See provider source |
+| Forge | `shippercli/provider-forge` from tagged GitHub releases | When installed | Yes | Yes | Yes | Status and logs; no rollback |
+| Coolify | `shippercli/provider-coolify` from tagged GitHub releases | When installed | Yes | Yes | Yes | Yes |
+| Railway, Cloudflare Pages, Hostinger, Portainer | Source only | No by default | Experimental | Unavailable by default | Unavailable by default | See provider source |
+
+See the [provider capability matrix](https://github.com/shippercli/provider-gap-matrix)
+for the scope of live deployment verification.
 
 Incomplete in-tree providers are deliberately not registered. Calling an
 unimplemented lifecycle operation directly returns failure with a clear
@@ -64,12 +69,15 @@ composer global require shippercli/cli shippercli/provider-cpanel shippercli/pro
 Existing EasyPanel 1.x deployments require a separate cutover before adopting
 2.x. See the [EasyPanel upgrade instructions](https://github.com/shippercli/provider-easypanel/blob/v2.0.0/README.md#upgrading-from-version-1).
 
-For Ploi, register its GitHub repository in the same Composer home before
-installing the tagged package:
+For Forge, Ploi, and Coolify, register the GitHub repositories for the
+providers you need in the same Composer home before installing them. For
+example, to install all three:
 
 ```bash
-composer global config repositories.shipper-ploi vcs https://github.com/shippercli/provider-ploi
-composer global require shippercli/cli shippercli/provider-ploi
+composer global config repositories.shipper-forge git https://github.com/shippercli/provider-forge.git
+composer global config repositories.shipper-ploi git https://github.com/shippercli/provider-ploi.git
+composer global config repositories.shipper-coolify git https://github.com/shippercli/provider-coolify.git
+composer global require shippercli/cli shippercli/provider-forge shippercli/provider-ploi shippercli/provider-coolify
 ```
 
 Shipper discovers packages with Composer's runtime plugin metadata. Provider
@@ -80,8 +88,8 @@ The release PHAR has its own dependencies and cannot discover separately
 installed provider packages. For CI, use
 `shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc`, which installs the CLI and
 providers together in an isolated Composer directory.
-For Ploi in CI, use the direct Composer commands above so Composer can find
-the GitHub repository.
+For Forge, Ploi, or Coolify in CI, use the direct Composer commands above so
+Composer can find the GitHub repositories.
 
 ## Configure
 
