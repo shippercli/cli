@@ -10,7 +10,7 @@ This Laravel application is part of the shipper-wip repository and serves as an 
 
 ### GET /api/jokes
 
-Returns a random programming joke in JSON format.
+Returns a sample programming joke in JSON format.
 
 **Example Response:**
 ```json
