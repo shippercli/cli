@@ -127,7 +127,7 @@ final class ConfigLoader
                     $profiles[$profileName] = new ProfileConfig(
                         $profileName,
                         \is_string($branch) ? $branch : '',
-                        $this->interpolateArray($profileData),
+                        $profileData,
                         $environment,
                         $server,
                     );
@@ -216,7 +216,7 @@ final class ConfigLoader
         $phpVersion = \is_string($phpVersionRaw) ? $phpVersionRaw : '';
         $nginxConfig = \is_string($nginxConfigRaw) ? $nginxConfigRaw : '';
         $declaredSections = [];
-        foreach (['queues', 'cron', 'daemons'] as $section) {
+        foreach (['databases', 'queues', 'cron', 'daemons'] as $section) {
             if (\array_key_exists($section, $data)) {
                 $declaredSections[$section] = true;
             }
