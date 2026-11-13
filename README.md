@@ -86,7 +86,7 @@ provider's documentation rather than the core CLI.
 
 The release PHAR has its own dependencies and cannot discover separately
 installed provider packages. For CI, use
-`shippercli/actions/.github/actions/shipper@2649f5132e10d405dddd77198e42c67035cfff4c`,
+`shippercli/actions/.github/actions/shipper@92aa9fcfd445ca39548b99f07d4f096f6b07074f`,
 which installs the CLI and providers together in an isolated Composer
 directory. For Forge, Ploi, and Coolify, register the provider repositories
 in a Composer home shared with the Action. The
