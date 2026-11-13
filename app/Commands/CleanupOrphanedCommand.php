@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Commands;
 
 use App\Flows\CleanupOrphanedSitesFlow;
-use Illuminate\Console\Command;
 
-final class CleanupOrphanedCommand extends Command
+final class CleanupOrphanedCommand extends ShipperCommand
 {
     /**
      * The name and signature of the console command.

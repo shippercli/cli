@@ -6,11 +6,10 @@ namespace App\Commands;
 
 use App\Actions\ResolveDeploymentContextAction;
 use App\Deployment\ContractDeploymentProviderAdapter;
-use Illuminate\Console\Command;
 use ShipperCli\Contracts\DeploymentLogsProviderInterface;
 use Throwable;
 
-final class LogsCommand extends Command
+final class LogsCommand extends ShipperCommand
 {
     /** @var string */
     protected $signature = 'logs
