@@ -18,4 +18,12 @@ final class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_the_documented_jokes_endpoint_returns_json(): void
+    {
+        $this->getJson('/api/jokes')
+            ->assertOk()
+            ->assertJsonPath('type', 'programming')
+            ->assertJsonStructure(['joke', 'type', 'setup', 'punchline']);
+    }
 }
