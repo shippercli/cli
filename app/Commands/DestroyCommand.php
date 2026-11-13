@@ -6,9 +6,8 @@ namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
 use App\Flows\DestroyDeploymentFlow;
-use Illuminate\Console\Command;
 
-final class DestroyCommand extends Command
+final class DestroyCommand extends ShipperCommand
 {
     use FormatsDeploymentPlan;
 

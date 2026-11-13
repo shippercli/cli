@@ -6,9 +6,8 @@ namespace App\Commands;
 
 use App\Commands\Concerns\FormatsDeploymentPlan;
 use App\Flows\PlanDeploymentFlow;
-use Illuminate\Console\Command;
 
-final class PlanCommand extends Command
+final class PlanCommand extends ShipperCommand
 {
     use FormatsDeploymentPlan;
 
