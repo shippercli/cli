@@ -10,6 +10,25 @@ Shipper uses a declarative YAML configuration file (`shipper.yml`) that should b
 - Deployment profiles (production, staging, preview)
 - Site and database configurations
 
+## Boolean options
+
+Use unquoted YAML `true` or `false` for project boolean options. Strings (including
+`"false"`), numbers, null, and collections are rejected with a field-specific error.
+Environment interpolation produces strings, so `${FLAG}` cannot supply these options.
+
+| Project option | Default when omitted |
+| --- | --- |
+| `ssl.enabled` | `false` |
+| `ssl.force_https` | `false` |
+| `queues.<name>.enabled` | `false` |
+| `queues.<name>.restart_on_deploy` | `true` |
+| `cron.<name>.enabled` | `true` |
+| `daemons.<name>.enabled` | `true` |
+| `redirects.<name>.enabled` | `true` |
+
+Provider-specific profile settings retain their YAML types and are validated by the
+provider. This loader check covers the project options listed above.
+
 ## Configuration File Structure
 
 ```yaml

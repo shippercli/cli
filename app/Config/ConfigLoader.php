@@ -245,6 +245,19 @@ final class ConfigLoader
         );
     }
 
+    /** @param array<mixed, mixed> $data */
+    private function booleanOption(array $data, string $key, bool $default, string $field): bool
+    {
+        if (! \array_key_exists($key, $data)) {
+            return $default;
+        }
+        if (! \is_bool($data[$key])) {
+            throw new \RuntimeException("{$field} must be a boolean");
+        }
+
+        return $data[$key];
+    }
+
     /**
      * @param array<mixed, mixed>|null $data
      */
@@ -255,9 +268,9 @@ final class ConfigLoader
         }
 
         return new SslConfig(
-            isset($data['enabled']) ? (bool) $data['enabled'] : false,
+            $this->booleanOption($data, 'enabled', false, 'ssl.enabled'),
             isset($data['type']) && \is_string($data['type']) ? $data['type'] : 'letsencrypt',
-            isset($data['force_https']) ? (bool) $data['force_https'] : false,
+            $this->booleanOption($data, 'force_https', false, 'ssl.force_https'),
         );
     }
 
@@ -318,13 +331,13 @@ final class ConfigLoader
     private function parseQueue(array $data): QueueConfig
     {
         return new QueueConfig(
-            isset($data['enabled']) ? (bool) $data['enabled'] : false,
+            $this->booleanOption($data, 'enabled', false, 'queues.enabled'),
             isset($data['connection']) && \is_string($data['connection']) ? $data['connection'] : 'database',
             isset($data['queue']) && \is_string($data['queue']) ? $data['queue'] : 'default',
             isset($data['processes']) && \is_int($data['processes']) ? $data['processes'] : (isset($data['processes']) && \is_numeric($data['processes']) ? (int) $data['processes'] : 1),
             isset($data['max_tries']) && \is_int($data['max_tries']) ? $data['max_tries'] : (isset($data['max_tries']) && \is_numeric($data['max_tries']) ? (int) $data['max_tries'] : 1),
             isset($data['timeout']) && \is_int($data['timeout']) ? $data['timeout'] : (isset($data['timeout']) && \is_numeric($data['timeout']) ? (int) $data['timeout'] : 60),
-            isset($data['restart_on_deploy']) ? (bool) $data['restart_on_deploy'] : true,
+            $this->booleanOption($data, 'restart_on_deploy', true, 'queues.restart_on_deploy'),
             isset($data['max_seconds']) && \is_int($data['max_seconds']) ? $data['max_seconds'] : (isset($data['max_seconds']) && \is_numeric($data['max_seconds']) ? (int) $data['max_seconds'] : 60),
             isset($data['sleep']) && \is_int($data['sleep']) ? $data['sleep'] : (isset($data['sleep']) && \is_numeric($data['sleep']) ? (int) $data['sleep'] : 30),
         );
@@ -338,7 +351,7 @@ final class ConfigLoader
         $command = isset($data['command']) && \is_string($data['command']) ? $data['command'] : '';
         $frequency = isset($data['frequency']) && \is_string($data['frequency']) ? $data['frequency'] : 'daily';
         $user = isset($data['user']) && \is_string($data['user']) ? $data['user'] : 'ploi';
-        $enabled = isset($data['enabled']) ? (bool) $data['enabled'] : true;
+        $enabled = $this->booleanOption($data, 'enabled', true, 'cron.enabled');
 
         return new CronConfig($command, $frequency, $user, $enabled);
     }
@@ -352,7 +365,7 @@ final class ConfigLoader
         $user = isset($data['user']) && \is_string($data['user']) ? $data['user'] : 'ploi';
         $processes = isset($data['processes']) && \is_int($data['processes']) ? $data['processes'] : (isset($data['processes']) && \is_numeric($data['processes']) ? (int) $data['processes'] : 1);
         $directory = isset($data['directory']) && \is_string($data['directory']) ? $data['directory'] : '';
-        $enabled = isset($data['enabled']) ? (bool) $data['enabled'] : true;
+        $enabled = $this->booleanOption($data, 'enabled', true, 'daemons.enabled');
         $restartDelay = isset($data['restart_delay']) && \is_int($data['restart_delay']) ? $data['restart_delay'] : (isset($data['restart_delay']) && \is_numeric($data['restart_delay']) ? (int) $data['restart_delay'] : 10);
 
         return new DaemonConfig($command, $user, $processes, $directory, $enabled, $restartDelay);
@@ -381,7 +394,7 @@ final class ConfigLoader
         $to = isset($data['to']) && \is_string($data['to']) ? $data['to'] : '';
         $typeRaw = $data['type'] ?? null;
         $type = \is_int($typeRaw) || \is_string($typeRaw) ? $typeRaw : 301;
-        $enabled = isset($data['enabled']) ? (bool) $data['enabled'] : true;
+        $enabled = $this->booleanOption($data, 'enabled', true, 'redirects.enabled');
 
         return new RedirectConfig($from, $to, $type, $enabled);
     }
