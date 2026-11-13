@@ -66,3 +66,44 @@ use Tests\TestCase;
     $command->expectsOutput('Profile not found: nonexistent')
         ->assertExitCode(1);
 });
+
+\test('apply rejects invalid provider configuration before planning or deploying', function (): void {
+    /** @var TestCase $this */
+    /** @var DeploymentProviderInterface&MockInterface $provider */
+    $provider = Mockery::mock(DeploymentProviderInterface::class);
+    $provider->shouldReceive('validate')->once()->andReturn(['Domain is required']);
+    $provider->shouldNotReceive('plan');
+    $provider->shouldNotReceive('apply');
+
+    $flow = new ApplyDeploymentFlow(
+        providerResolver: static fn (string $name, array $config): DeploymentProviderInterface => $provider,
+    );
+    $this->app->instance(ApplyDeploymentFlow::class, $flow); /** @phpstan-ignore property.protected */
+    $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'production', '--config' => 'shipper.yml.example', '--force' => true]);
+    \assert($command instanceof PendingCommand);
+    $command->expectsOutputToContain('Configuration validation failed')
+        ->expectsOutputToContain('Domain is required')
+        ->assertExitCode(1)
+        ->run();
+});
+
+\test('apply reports a provider failure and exits nonzero', function (): void {
+    /** @var TestCase $this */
+    /** @var DeploymentProviderInterface&MockInterface $provider */
+    $provider = Mockery::mock(DeploymentProviderInterface::class);
+    $provider->shouldReceive('validate')->once()->andReturn([]);
+    $provider->shouldReceive('plan')->once()->andReturn(['provider' => 'ploi', 'branch' => 'main', 'path' => '.']);
+    $provider->shouldReceive('apply')->once()->andReturn(false);
+    $provider->shouldReceive('getLastError')->once()->andReturn('Upload failed after creating the site');
+
+    $flow = new ApplyDeploymentFlow(
+        providerResolver: static fn (string $name, array $config): DeploymentProviderInterface => $provider,
+    );
+    $this->app->instance(ApplyDeploymentFlow::class, $flow); /** @phpstan-ignore property.protected */
+    $command = $this->artisan('apply', ['project' => 'api', '--profile' => 'production', '--config' => 'shipper.yml.example', '--force' => true]);
+    \assert($command instanceof PendingCommand);
+    $command->expectsOutputToContain('Deployment failed')
+        ->expectsOutputToContain('Upload failed after creating the site')
+        ->assertExitCode(1)
+        ->run();
+});

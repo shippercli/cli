@@ -66,6 +66,7 @@ final class PlanDeploymentFlow
         }
 
         $plan = $planAction->handle($provider, $project, $profile);
+        CreateDeploymentPlanAction::assertNotBlocked($plan);
 
         return [
             'success' => true,

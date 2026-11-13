@@ -45,9 +45,15 @@ Provider availability and lifecycle support currently differ by distribution:
 
 | Provider | Distribution | Registered | Validate / plan | Apply | Destroy | Status / logs / rollback |
 | --- | --- | --- | --- | --- | --- | --- |
-| Ploi | `shippercli/provider-ploi` Composer plugin | When installed | Yes | Yes | Yes | Status and logs; no rollback |
-| cPanel | `shippercli/provider-cpanel` Composer plugin | When installed | Yes | Yes | Yes | Yes |
-| Forge, Railway, Cloudflare Pages, Hostinger, Coolify, EasyPanel, Portainer | Experimental source only | No | Experimental | Unavailable | Unavailable | No |
+| Ploi | `shippercli/provider-ploi` from tagged GitHub releases | When installed | Yes | Yes | Yes | Status and logs; no rollback |
+| cPanel | `shippercli/provider-cpanel` on Packagist | When installed | Yes | Yes | Yes | Yes |
+| EasyPanel | `shippercli/provider-easypanel` 2.x on Packagist | When installed | Yes | Yes | Yes | Status and logs; no rollback |
+| Forge | `shippercli/provider-forge` from tagged GitHub releases | When installed | Yes | Yes | Yes | Status and logs; no rollback |
+| Coolify | `shippercli/provider-coolify` from tagged GitHub releases | When installed | Yes | Yes | Yes | Yes |
+| Railway, Cloudflare Pages, Hostinger, Portainer | Source only | No by default | Experimental | Unavailable by default | Unavailable by default | See provider source |
+
+See the [provider capability matrix](https://github.com/shippercli/provider-gap-matrix)
+for the scope of live deployment verification.
 
 Incomplete in-tree providers are deliberately not registered. Calling an
 unimplemented lifecycle operation directly returns failure with a clear
@@ -57,7 +63,21 @@ For local global use, install the CLI and providers into the same Composer
 home, then run Composer's global `vendor/bin/shipper`:
 
 ```bash
-composer global require shippercli/cli shippercli/provider-ploi shippercli/provider-cpanel
+composer global require shippercli/cli shippercli/provider-cpanel shippercli/provider-easypanel
+```
+
+Existing EasyPanel 1.x deployments require a separate cutover before adopting
+2.x. See the [EasyPanel upgrade instructions](https://github.com/shippercli/provider-easypanel/blob/v2.0.0/README.md#upgrading-from-version-1).
+
+For Forge, Ploi, and Coolify, register the GitHub repositories for the
+providers you need in the same Composer home before installing them. For
+example, to install all three:
+
+```bash
+composer global config repositories.shipper-forge git https://github.com/shippercli/provider-forge.git
+composer global config repositories.shipper-ploi git https://github.com/shippercli/provider-ploi.git
+composer global config repositories.shipper-coolify git https://github.com/shippercli/provider-coolify.git
+composer global require shippercli/cli shippercli/provider-forge shippercli/provider-ploi shippercli/provider-coolify
 ```
 
 Shipper discovers packages with Composer's runtime plugin metadata. Provider
@@ -66,8 +86,12 @@ provider's documentation rather than the core CLI.
 
 The release PHAR has its own dependencies and cannot discover separately
 installed provider packages. For CI, use
-`shippercli/actions/.github/actions/shipper@c2c276e12f831ba2c3377a063d579fede5cc5ecc`, which installs the CLI and
-providers together in an isolated Composer directory.
+`shippercli/actions/.github/actions/shipper@2649f5132e10d405dddd77198e42c67035cfff4c`,
+which installs the CLI and providers together in an isolated Composer
+directory. For Forge, Ploi, and Coolify, register the provider repositories
+in a Composer home shared with the Action. The
+[GitHub Actions example](https://github.com/shippercli/actions/blob/eb6450cd437914a6169acda5a8129e458a1e5c7e/.github/workflows/ci.yml)
+shows how to install the tagged providers and validate a configuration.
 
 ## Configure
 
@@ -214,6 +238,21 @@ composer build
 ```
 
 The codebase targets PHP 8.3+, Laravel Pint, PHPStan level 9, and Pest.
+
+## Orphan preview cleanup
+
+`cleanup-orphaned` uses `GITHUB_TOKEN` and `GITHUB_REPOSITORY` (`owner/repo`) to
+read open PRs. It considers only projects whose `repository.provider` is `github`
+and whose `repository.name` matches that repository. Names may use `owner/repo`,
+`https://github.com/owner/repo.git`, or `git@github.com:owner/repo.git`; matching
+is case insensitive. Projects with missing or different repository metadata are
+excluded, so a PR list from one repository cannot authorize another's cleanup.
+
+Only the `preview` profile is enumerated. Its domain must contain exactly one
+`${GITHUB_PR_NUMBER}` placeholder. Cleanup requires a positive PR number and
+the provider's ownership checks. Malformed or incomplete GitHub inventories stop
+cleanup; a fetch failure after confirmation also returns a failure exit status.
+Use `--dry-run` to inspect candidates before deletion.
 
 ## Release
 
