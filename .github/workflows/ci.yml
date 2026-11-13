@@ -87,4 +87,6 @@ jobs:
       - name: Install on the declared PHP baseline
         run: composer install --prefer-dist --no-interaction --no-progress
       - name: Run example tests
-        run: php artisan test
+        run: |
+          cp .env.example .env
+          php artisan test --fail-on-warning
