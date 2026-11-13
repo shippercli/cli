@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Config\ProjectConfig;
+use App\Config\ProfileConfig;
 
 final class FindOrphanedSitesAction
 {
@@ -13,20 +13,21 @@ final class FindOrphanedSitesAction
      *
      * @param array<int, array{site_id: int, domain: string}> $sites
      * @param array<int> $openPRs
-     * @param array<string, ProjectConfig> $projects
      *
      * @return array<int, array{site_id: int, domain: string, pr_number: int}>
      */
-    public function handle(array $sites, array $openPRs, array $projects): array
+    public function handle(array $sites, array $openPRs, ProfileConfig $profile): array
     {
         $orphaned = [];
+        $protectedSites = [];
 
         foreach ($sites as $site) {
             $domain = $site['domain'];
 
-            $prNumber = $this->extractPRNumber($domain, $projects);
+            $prNumber = $this->extractPRNumber($domain, $profile);
 
-            if ($prNumber === null) {
+            if ($prNumber === null || \in_array($prNumber, $openPRs, true)) {
+                $protectedSites[$site['site_id']] = true;
                 continue;
             }
 
@@ -39,41 +40,36 @@ final class FindOrphanedSitesAction
             }
         }
 
-        return $orphaned;
+        return \array_values(\array_filter($orphaned, static fn (array $site): bool => ! isset($protectedSites[$site['site_id']])));
     }
 
-    /**
-     * Extract PR number from domain.
-     *
-     * @param array<string, ProjectConfig> $projects
-     */
-    private function extractPRNumber(string $domain, array $projects): ?int
+    private function extractPRNumber(string $domain, ProfileConfig $profile): ?int
     {
-        foreach ($projects as $project) {
-            $profiles = $project->profiles();
-
-            foreach ($profiles as $profile) {
-                if ($profile->name() !== 'preview') {
-                    continue;
-                }
-
-                $previewDomain = $profile->get('domain');
-                if (! \is_string($previewDomain)) {
-                    continue;
-                }
-
-                $pattern = \preg_quote($previewDomain, '/');
-                $pattern = \str_replace(\preg_quote('${GITHUB_PR_NUMBER}', '/'), '(\d+)', $pattern);
-                $pattern = '/^'.$pattern.'$/';
-
-                if (\preg_match($pattern, $domain, $matches) === 1) {
-                    if (isset($matches[1]) && \is_numeric($matches[1])) {
-                        return (int) $matches[1];
-                    }
-                }
-            }
+        if ($profile->name() !== 'preview') {
+            return null;
+        }
+        $placeholder = '${GITHUB_PR_NUMBER}';
+        $previewDomain = $profile->get('domain');
+        if (! \is_string($previewDomain) || \substr_count($previewDomain, $placeholder) !== 1
+            || ! \filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+            return null;
         }
 
-        return null;
+        $template = \trim($previewDomain);
+        $url = \str_contains($template, '://') ? $template : 'https://'.$template;
+        $scheme = \parse_url($url, PHP_URL_SCHEME);
+        $host = \parse_url($url, PHP_URL_HOST);
+        if (! \is_string($scheme) || ! \in_array(\strtolower($scheme), ['http', 'https'], true)
+            || ! \is_string($host) || ! \str_contains($host, $placeholder)
+            || ! \filter_var(\str_replace($placeholder, '1', $host), FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+            return null;
+        }
+        $pattern = \str_replace(\preg_quote($placeholder, '/'), '([1-9][0-9]*)', \preg_quote($host, '/'));
+        if (\preg_match('/\\A'.$pattern.'\\z/i', $domain, $matches) !== 1) {
+            return null;
+        }
+        $number = \filter_var($matches[1], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        return $number === false ? null : $number;
     }
 }
