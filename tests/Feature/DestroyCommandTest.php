@@ -138,5 +138,8 @@ use Tests\TestCase;
 
 function destroyCommandProvider(): DeploymentProviderInterface&MockInterface
 {
-    return Mockery::mock(DeploymentProviderInterface::class);
+    $provider = Mockery::mock(DeploymentProviderInterface::class);
+    \assert($provider instanceof DeploymentProviderInterface);
+
+    return $provider;
 }
