@@ -26,6 +26,7 @@ structure:
       Commands/ValidateCommand.php: Feature/ValidateCommandTest.php
       Config/ConfigLoader.php: Feature/ConfigLoaderTest.php
       Deployment/ContractDeploymentProviderAdapter.php: Unit/Deployment/ContractDeploymentProviderAdapterTest.php
+      Deployment/ProviderFactory.php: Unit/Deployment/ProviderFactoryTest.php
       Deployment/Providers/EasyPanel/EasyPanelProvider.php: Unit/Deployment/EasyPanelProviderTest.php
       Flows/ApplyDeploymentFlow.php: Unit/Flows/ApplyDeploymentFlowTest.php
       Flows/DestroyDeploymentFlow.php: Unit/Flows/DestroyDeploymentFlowTest.php
