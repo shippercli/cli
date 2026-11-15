@@ -10,7 +10,9 @@ use App\Flows\ApplyDeploymentFlow;
 use Mockery\MockInterface;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
 
-\afterEach(static fn () => Mockery::close());
+\afterEach(function (): void {
+    Mockery::close();
+});
 
 \test('apply flow interprets the contract provider post-apply result', function (mixed $postApply, mixed $expected): void {
     $contractProvider = new class($postApply) implements ContractProvider
