@@ -43,25 +43,25 @@ jobs:
           mkdir -p .parity
           XDEBUG_MODE=coverage vendor/bin/pest --coverage-clover=.parity/coverage.xml --colors=never
 
-      - name: Install TestParity
-        run: |
-          composer global require testparity/parity:1.4.1 --prefer-dist --no-progress --no-interaction
-          composer global config bin-dir --absolute >> "$GITHUB_PATH"
+      - name: Run TestParity
+        id: parity-report
+        uses: testparity/actions@10454fb309cc104296ec001fade186d9330abe65 # v1.1.0
+        with:
+          post-on-pr: 'false'
+          suite-coverage: .parity/coverage.xml
+          fail-on-findings: 'false'
 
-      - name: Compare associated tests with full-suite coverage
-        id: render
+      - name: Stage TestParity reports
+        id: stage-parity
+        if: ${{ !cancelled() && steps.parity-report.outputs.report-directory != '' }}
+        env:
+          REPORT_DIRECTORY: ${{ steps.parity-report.outputs.report-directory }}
         run: |
-          parity test --no-check
-          report_status=0
-          parity check --format=github --suite-coverage=.parity/coverage.xml > .parity/comment.md || report_status=$?
-          test "$(head -n 1 .parity/comment.md)" = '## TestParity coverage'
-          # TestParity exits 1 when a valid report contains coverage findings.
-          test "$report_status" -le 1
-          echo "ready=true" >> "$GITHUB_OUTPUT"
+          cp "$REPORT_DIRECTORY/report.md" .parity/comment.md
 
       - name: Upload coverage evidence
         id: report
-        if: ${{ !cancelled() && steps.render.outputs.ready == 'true' }}
+        if: ${{ !cancelled() && steps.stage-parity.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testparity-shipper-cli
@@ -78,7 +78,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: testparity/cli/.github/workflows/parity-comment.yml@18489a20181f4d012a93563481e179a6b8b23ecc # v1.4.1
+    uses: testparity/actions/.github/workflows/parity-comment.yml@10454fb309cc104296ec001fade186d9330abe65 # v1.1.0
     with:
       artifact-name: testparity-shipper-cli
       report-path: comment.md
