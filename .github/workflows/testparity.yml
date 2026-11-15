@@ -45,7 +45,7 @@ jobs:
 
       - name: Install TestParity
         run: |
-          composer global require testparity/parity:1.4.0 --prefer-dist --no-progress --no-interaction
+          composer global require testparity/parity:1.4.1 --prefer-dist --no-progress --no-interaction
           composer global config bin-dir --absolute >> "$GITHUB_PATH"
 
       - name: Compare associated tests with full-suite coverage
@@ -78,7 +78,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: testparity/cli/.github/workflows/parity-comment.yml@f35491654157ed23352e4ee49700c538a46a46c0
+    uses: testparity/cli/.github/workflows/parity-comment.yml@18489a20181f4d012a93563481e179a6b8b23ecc # v1.4.1
     with:
       artifact-name: testparity-shipper-cli
       report-path: comment.md
