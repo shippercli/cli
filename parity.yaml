@@ -19,6 +19,7 @@ structure:
       Commands/CleanupOrphanedCommand.php: Feature/CleanupOrphanedCommandTest.php
       Commands/DestroyCommand.php: Feature/DestroyCommandTest.php
       Commands/PlanCommand.php: Feature/PlanCommandTest.php
+      Commands/RollbackCommand.php: Feature/RollbackCommandTest.php
       Commands/ValidateCommand.php: Feature/ValidateCommandTest.php
       Config/ConfigLoader.php: Feature/ConfigLoaderTest.php
       Deployment/ContractDeploymentProviderAdapter.php: Unit/Deployment/ContractDeploymentProviderAdapterTest.php

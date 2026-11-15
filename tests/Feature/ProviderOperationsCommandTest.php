@@ -64,22 +64,3 @@ YAML);
         @\unlink($config);
     }
 });
-
-\test('rollback command restores provider release with force flag', function (): void {
-    /** @var TestCase $this */
-    ProviderRegistry::registerPlugin(new TestShipperPlugin);
-    $config = \providerOperationsConfig();
-
-    try {
-        $exitCode = Artisan::call('rollback', [
-            'project' => 'app',
-            '--config' => $config,
-            '--release' => 'release-20260727-001',
-            '--force' => true,
-        ]);
-        \expect($exitCode)->toBe(0)
-            ->and(Artisan::output())->toContain('Rollback completed successfully.');
-    } finally {
-        @\unlink($config);
-    }
-});
