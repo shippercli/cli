@@ -1,0 +1,16 @@
+providers:
+  cpanel:
+    host: cpanel.example.com
+    username: shipper
+    api_token: test-token
+
+projects:
+  unknown:
+    provider: not-registered
+
+  api:
+    provider: cpanel
+    path: ./examples/api
+    profiles:
+      production:
+        branch: main
