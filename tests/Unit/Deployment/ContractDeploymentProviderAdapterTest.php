@@ -8,6 +8,7 @@ use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Deployment\ContractDeploymentProviderAdapter;
 use Mockery;
+use Mockery\MockInterface;
 use ShipperCli\Contracts\CapabilityManifest;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
 use ShipperCli\Contracts\ProviderCapabilitiesInterface;
@@ -166,6 +167,7 @@ function validContractCapabilityManifest(): array
 });
 
 \test('forwards the deployment context and preserves contract provider results', function (): void {
+    /** @var ContractProvider&MockInterface $provider */
     $provider = Mockery::mock(ContractProvider::class);
     $profile = new ProfileConfig('production', 'main', []);
     $project = new ProjectConfig('api', 'test-provider', '.', ['production' => $profile]);
