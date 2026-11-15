@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Deployment;
 
+use App\Config\ProfileConfig;
+use App\Config\ProjectConfig;
 use App\Deployment\ContractDeploymentProviderAdapter;
+use Mockery;
+use Mockery\MockInterface;
 use ShipperCli\Contracts\CapabilityManifest;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
 use ShipperCli\Contracts\ProviderCapabilitiesInterface;
@@ -156,4 +160,40 @@ function validContractCapabilityManifest(): array
     };
 
     \expect(new ContractDeploymentProviderAdapter($provider))->toBeInstanceOf(ContractDeploymentProviderAdapter::class);
+});
+
+\afterEach(function (): void {
+    Mockery::close();
+});
+
+\test('forwards the deployment context and preserves contract provider results', function (): void {
+    /** @var ContractProvider&MockInterface $provider */
+    $provider = Mockery::mock(ContractProvider::class);
+    $profile = new ProfileConfig('production', 'main', []);
+    $project = new ProjectConfig('api', 'test-provider', '.', ['production' => $profile]);
+    $sameProject = Mockery::on(static fn (object $argument): bool => $argument === $project);
+    $sameProfile = Mockery::on(static fn (object $argument): bool => $argument === $profile);
+    $errors = ['Invalid profile'];
+    $plan = ['actions' => ['Publish release']];
+
+    $provider->shouldReceive('validate')->once()
+        ->with($sameProject, $sameProfile)->andReturn($errors);
+    $provider->shouldReceive('plan')->once()
+        ->with($sameProject, $sameProfile)->andReturn($plan);
+    $provider->shouldReceive('apply')->once()
+        ->with($sameProject, $sameProfile)->andReturn(false);
+    $provider->shouldReceive('destroy')->once()
+        ->with($sameProject, $sameProfile)->andReturn(true);
+    $provider->shouldReceive('getName')->once()->andReturn('test-provider');
+    $provider->shouldReceive('getLastError')->once()->andReturn('Deployment failed');
+
+    $adapter = new ContractDeploymentProviderAdapter($provider);
+
+    \expect($adapter->validate($project, $profile))->toBe($errors)
+        ->and($adapter->plan($project, $profile))->toBe($plan)
+        ->and($adapter->apply($project, $profile))->toBeFalse()
+        ->and($adapter->destroy($project, $profile))->toBeTrue()
+        ->and($adapter->getName())->toBe('test-provider')
+        ->and($adapter->getLastError())->toBe('Deployment failed')
+        ->and($adapter->contractProvider())->toBe($provider);
 });
