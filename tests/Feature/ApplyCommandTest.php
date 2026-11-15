@@ -107,3 +107,13 @@ use Tests\TestCase;
         ->assertExitCode(1)
         ->run();
 });
+
+\test('apply reports a missing configuration file and exits nonzero', function (): void {
+    /** @var TestCase $this */
+    $config = __DIR__.'/../Fixtures/missing-apply-config.yml';
+    $command = $this->artisan('apply', ['project' => 'api', '--config' => $config, '--force' => true]);
+    \assert($command instanceof PendingCommand);
+    $command->expectsOutput("Deployment failed: Config file not found: {$config}")
+        ->assertExitCode(1)
+        ->run();
+});
