@@ -12,8 +12,7 @@ use Tests\Fixtures\TestShipperPlugin;
     ProviderRegistry::register('blocked-test', TestBlockedPlanProvider::class);
 });
 
-/** @param list<string> $expected */
-\test('logs prints provider lines up to the requested limit', function (int $limit, array $expected): void {
+\test('logs prints provider lines up to the requested limit', function (int $limit, string $expected): void {
     $exitCode = Artisan::call('logs', [
         'project' => 'app',
         '--config' => __DIR__.'/../Fixtures/provider-operations-config.yml',
@@ -21,10 +20,10 @@ use Tests\Fixtures\TestShipperPlugin;
     ]);
 
     \expect($exitCode)->toBe(0)
-        ->and(\trim(Artisan::output()))->toBe(\implode("\n", $expected));
+        ->and(\trim(Artisan::output()))->toBe($expected);
 })->with([
-    [1, ['application booted']],
-    [5000, ['application booted', 'request completed']],
+    [1, 'application booted'],
+    [5000, "application booted\nrequest completed"],
 ]);
 
 \test('logs reports errors and returns a failing exit code', function (string $project, int $limit, string $message): void {
