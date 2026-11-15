@@ -18,9 +18,7 @@ use Tests\Fixtures\TestContractProvider;
 });
 
 \test('create plan action accepts plans with no block or an explicit false flag', function (array $plan): void {
-    CreateDeploymentPlanAction::assertNotBlocked($plan);
-
-    $this->expectNotToPerformAssertions();
+    \expect(fn () => CreateDeploymentPlanAction::assertNotBlocked($plan))->not->toThrow(RuntimeException::class);
 })->with([
     'no flag' => [[]],
     'false flag' => [['blocked' => false]],
