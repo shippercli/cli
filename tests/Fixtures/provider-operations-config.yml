@@ -1,0 +1,26 @@
+providers:
+  contract-test:
+    token: configured
+    rollback_release: release-20260727-001
+  blocked-test: {}
+  credential-url-test: {}
+projects:
+  app:
+    provider: contract-test
+    path: "."
+    profiles:
+      production:
+        branch: main
+        domain: app.example.com
+  unsupported:
+    provider: blocked-test
+    path: "."
+    profiles:
+      production:
+        branch: main
+  rejected:
+    provider: credential-url-test
+    path: "."
+    profiles:
+      production:
+        branch: main
