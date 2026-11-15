@@ -68,7 +68,7 @@ use Tests\TestCase;
 
 \test('destroy command prints validation errors without destroying the site', function (): void {
     /** @var TestCase $this */
-    $provider = destroyCommandProvider();
+    $provider = \destroyCommandProvider();
     $provider->expects('validate')->andReturn(['Server is required.', 'Domain is required.']);
     $provider->shouldNotReceive('plan');
     $provider->shouldNotReceive('destroy');
@@ -86,7 +86,7 @@ use Tests\TestCase;
 
 \test('destroy command leaves the site intact when confirmation is declined', function (): void {
     /** @var TestCase $this */
-    $provider = destroyCommandProvider();
+    $provider = \destroyCommandProvider();
     $provider->expects('validate')->andReturn([]);
     $provider->expects('plan')->andReturn([]);
     $provider->shouldNotReceive('destroy');
@@ -103,7 +103,7 @@ use Tests\TestCase;
 
 \test('destroy command prints details when the provider cannot destroy the site', function (): void {
     /** @var TestCase $this */
-    $provider = destroyCommandProvider();
+    $provider = \destroyCommandProvider();
     $provider->expects('validate')->andReturn([]);
     $provider->expects('plan')->andReturn([]);
     $provider->expects('destroy')->andReturn(false);
@@ -122,7 +122,7 @@ use Tests\TestCase;
 
 \test('destroy command reports a provider exception', function (): void {
     /** @var TestCase $this */
-    $provider = destroyCommandProvider();
+    $provider = \destroyCommandProvider();
     $provider->expects('validate')->andReturn([]);
     $provider->expects('plan')->andReturn([]);
     $provider->expects('destroy')->andThrow(new RuntimeException('Provider timed out.'));
