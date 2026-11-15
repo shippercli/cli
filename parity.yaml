@@ -28,5 +28,6 @@ structure:
       Deployment/ContractDeploymentProviderAdapter.php: Unit/Deployment/ContractDeploymentProviderAdapterTest.php
       Deployment/Providers/EasyPanel/EasyPanelProvider.php: Unit/Deployment/EasyPanelProviderTest.php
       Flows/ApplyDeploymentFlow.php: Unit/Flows/ApplyDeploymentFlowTest.php
+      Flows/DestroyDeploymentFlow.php: Unit/Flows/DestroyDeploymentFlowTest.php
       Flows/ValidateConfigurationFlow.php: Unit/Flows/ValidateConfigurationFlowTest.php
     rules: []
