@@ -36,15 +36,19 @@ final class TestContractProvider implements DeploymentLogsProviderInterface, Dep
 
     public function validate(object $project, object $profile): array
     {
-        return [];
+        $errors = $this->config['validation_errors'] ?? null;
+
+        return \is_array($errors) ? \array_values(\array_filter($errors, '\is_string')) : [];
     }
 
     public function plan(object $project, object $profile): array
     {
+        $fields = $this->config['plan_fields'] ?? null;
+
         return [
             'provider' => $this->getName(),
             'token' => $this->config['token'] ?? null,
-        ];
+        ] + (\is_array($fields) ? \array_filter($fields, '\is_string', ARRAY_FILTER_USE_KEY) : []);
     }
 
     public function apply(object $project, object $profile): bool
