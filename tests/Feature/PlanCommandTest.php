@@ -106,7 +106,8 @@ YAML);
                 'Configuration validation failed:',
                 '  ✗ API token is required',
                 '  ✗ Domain is required for profile production',
-            )->not->toContain('Deployment Plan:');
+            )
+            ->and(\str_contains(Artisan::output(), 'Deployment Plan:'))->toBeFalse();
     } finally {
         @\unlink($config);
     }
