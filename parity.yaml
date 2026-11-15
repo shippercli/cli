@@ -11,6 +11,7 @@ structure:
       source: app
       test: tests
     file_map:
+      Actions/CreateDeploymentPlanAction.php: Unit/Actions/CreateDeploymentPlanActionTest.php
       Actions/FindOrphanedSitesAction.php: Unit/Actions/FindOrphanedSitesActionTest.php
       Actions/GetOpenPullRequestsAction.php: Unit/Actions/GetOpenPullRequestsActionTest.php
       Actions/LoadConfigurationAction.php: Unit/Actions/LoadConfigurationActionTest.php
