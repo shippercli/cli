@@ -65,3 +65,81 @@ use Tests\TestCase;
     $command->expectsOutput('Profile not found: nonexistent')
         ->assertExitCode(1);
 });
+
+\test('destroy command prints validation errors without destroying the site', function (): void {
+    /** @var TestCase $this */
+    $provider = \destroyCommandProvider();
+    $provider->expects('validate')->andReturn(['Server is required.', 'Domain is required.']);
+    $provider->shouldNotReceive('plan');
+    $provider->shouldNotReceive('destroy');
+    \app()->instance(DestroyDeploymentFlow::class, new DestroyDeploymentFlow(
+        providerResolver: static fn (): DeploymentProviderInterface => $provider,
+    ));
+
+    $command = $this->artisan('destroy', ['project' => 'api', '--config' => 'shipper.yml.example', '--force' => true]);
+    \assert($command instanceof PendingCommand);
+    $command->expectsOutput('Configuration validation failed:')
+        ->expectsOutput('  ✗ Server is required.')
+        ->expectsOutput('  ✗ Domain is required.')
+        ->assertExitCode(1);
+});
+
+\test('destroy command leaves the site intact when confirmation is declined', function (): void {
+    /** @var TestCase $this */
+    $provider = \destroyCommandProvider();
+    $provider->expects('validate')->andReturn([]);
+    $provider->expects('plan')->andReturn([]);
+    $provider->shouldNotReceive('destroy');
+    \app()->instance(DestroyDeploymentFlow::class, new DestroyDeploymentFlow(
+        providerResolver: static fn (): DeploymentProviderInterface => $provider,
+    ));
+
+    $command = $this->artisan('destroy', ['project' => 'api', '--config' => 'shipper.yml.example']);
+    \assert($command instanceof PendingCommand);
+    $command->expectsConfirmation('Do you want to destroy this site?', 'no')
+        ->expectsOutput('Destroy cancelled.')
+        ->assertExitCode(0);
+});
+
+\test('destroy command prints details when the provider cannot destroy the site', function (): void {
+    /** @var TestCase $this */
+    $provider = \destroyCommandProvider();
+    $provider->expects('validate')->andReturn([]);
+    $provider->expects('plan')->andReturn([]);
+    $provider->expects('destroy')->andReturn(false);
+    $provider->expects('getLastError')->andReturn('Provider rejected the request.');
+    \app()->instance(DestroyDeploymentFlow::class, new DestroyDeploymentFlow(
+        providerResolver: static fn (): DeploymentProviderInterface => $provider,
+    ));
+
+    $command = $this->artisan('destroy', ['project' => 'api', '--config' => 'shipper.yml.example', '--force' => true]);
+    \assert($command instanceof PendingCommand);
+    $command->expectsOutput('✗ Destroy failed!')
+        ->expectsOutput('Error Details:')
+        ->expectsOutput('  Provider rejected the request.')
+        ->assertExitCode(1);
+});
+
+\test('destroy command reports a provider exception', function (): void {
+    /** @var TestCase $this */
+    $provider = \destroyCommandProvider();
+    $provider->expects('validate')->andReturn([]);
+    $provider->expects('plan')->andReturn([]);
+    $provider->expects('destroy')->andThrow(new RuntimeException('Provider timed out.'));
+    \app()->instance(DestroyDeploymentFlow::class, new DestroyDeploymentFlow(
+        providerResolver: static fn (): DeploymentProviderInterface => $provider,
+    ));
+
+    $command = $this->artisan('destroy', ['project' => 'api', '--config' => 'shipper.yml.example', '--force' => true]);
+    \assert($command instanceof PendingCommand);
+    $command->expectsOutput('Destroy failed: Provider timed out.')
+        ->assertExitCode(1);
+});
+
+function destroyCommandProvider(): DeploymentProviderInterface&MockInterface
+{
+    $provider = Mockery::mock(DeploymentProviderInterface::class);
+    \assert($provider instanceof DeploymentProviderInterface);
+
+    return $provider;
+}
