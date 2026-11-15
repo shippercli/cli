@@ -18,6 +18,7 @@ structure:
       Commands/ApplyCommand.php: Feature/ApplyCommandTest.php
       Commands/CleanupOrphanedCommand.php: Feature/CleanupOrphanedCommandTest.php
       Commands/DestroyCommand.php: Feature/DestroyCommandTest.php
+      Commands/LogsCommand.php: Feature/LogsCommandTest.php
       Commands/PlanCommand.php: Feature/PlanCommandTest.php
       Commands/RollbackCommand.php: Feature/RollbackCommandTest.php
       Commands/StatusCommand.php: Feature/StatusCommandTest.php
