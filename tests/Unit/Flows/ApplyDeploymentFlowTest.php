@@ -6,9 +6,11 @@ use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Deployment\ContractDeploymentProviderAdapter;
 use App\Deployment\DeploymentProviderInterface;
+use App\Deployment\ProviderRegistry;
 use App\Flows\ApplyDeploymentFlow;
 use Mockery\MockInterface;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
+use Tests\Fixtures\TestBlockedPlanProvider;
 
 \afterEach(function (): void {
     Mockery::close();
@@ -184,3 +186,30 @@ use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
     'provider failure' => [false, 'Upload failed after creating the site'],
     'provider success' => [true, ''],
 ]);
+
+\test('planning resolves the registered provider and applies its configuration by default', function (): void {
+    ProviderRegistry::register('apply-flow-test', TestBlockedPlanProvider::class);
+    $config = \tempnam(\sys_get_temp_dir(), 'shipper-apply-flow-');
+    \assert(\is_string($config));
+
+    try {
+        \file_put_contents($config, \json_encode([
+            'providers' => ['apply-flow-test' => ['plan_blocked' => false]],
+            'projects' => [
+                'api' => [
+                    'provider' => 'apply-flow-test',
+                    'path' => '.',
+                    'profiles' => ['production' => ['branch' => 'main']],
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        $result = (new ApplyDeploymentFlow)->handle($config, 'api', 'production');
+
+        \expect($result['success'])->toBeTrue()
+            ->and($result['provider'])->toBeInstanceOf(ContractDeploymentProviderAdapter::class)
+            ->and($result['plan'])->toBe(['blocked' => false, 'actions' => ['Ownership collision requires review.']]);
+    } finally {
+        \unlink($config);
+    }
+});
