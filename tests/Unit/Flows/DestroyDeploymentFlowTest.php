@@ -59,7 +59,7 @@ use Tests\Fixtures\TestShipperPlugin;
     }
     $flow = new DestroyDeploymentFlow(function (string $name, array $config) use ($provider): DeploymentProviderInterface {
         \expect($name)->toBe('contract-test')
-            ->and($config['contract-test']['token'])->toBe('configured');
+            ->and($config['contract-test'])->toMatchArray(['token' => 'configured']);
 
         return $provider;
     });
