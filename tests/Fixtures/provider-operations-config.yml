@@ -2,7 +2,8 @@ providers:
   contract-test:
     token: configured
     rollback_release: release-20260727-001
-  blocked-test: {}
+  blocked-test:
+    plan_blocked: true
   credential-url-test: {}
   invalid-context-test:
     validation_errors:
