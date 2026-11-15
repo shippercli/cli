@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Actions\GetOpenPullRequestsAction;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
 \test('invalid repository identifiers fail before HTTP requests', function (string $repository): void {
@@ -47,3 +49,37 @@ use GuzzleHttp\Psr7\Response;
     $result = (new GetOpenPullRequestsAction(client: $client))->handle('owner/repo', 'token');
     \expect($result['success'])->toBeTrue()->and($result['prs'])->toBe($numbers);
 });
+
+\test('GitHub inventory request errors preserve failure status', function (?int $status): void {
+    $failure = $status === null
+        ? new RequestException('Connection interrupted', new Request('GET', '/repos/owner/repo/pulls'))
+        : new Response($status);
+    $client = new Client(['handler' => HandlerStack::create(new MockHandler([$failure]))]);
+    $result = (new GetOpenPullRequestsAction(client: $client))->handle('owner/repo', 'token');
+
+    \expect($result['success'])->toBeFalse()
+        ->and($result['prs'])->toBe([])
+        ->and($result['error'])->toContain('status '.($status ?? 0));
+})->with([401, 403, 429, 500, [null]]);
+
+\test('a pull request is confirmed closed only when GitHub returns the exact request', function (int $status, string $body, bool $expected): void {
+    $client = new Client(['handler' => HandlerStack::create(new MockHandler([new Response($status, [], $body)]))]);
+
+    \expect((new GetOpenPullRequestsAction(client: $client))->isClosed('owner/repo', 'token', 42))->toBe($expected);
+})->with([
+    'closed' => [200, '{"number":42,"state":"closed"}', true],
+    'open' => [200, '{"number":42,"state":"open"}', false],
+    'different request' => [200, '{"number":43,"state":"closed"}', false],
+    'malformed response' => [200, 'invalid json', false],
+    'not found' => [404, '{}', false],
+    'redirect' => [302, '{"number":42,"state":"closed"}', false],
+]);
+
+\test('invalid pull request references are rejected before requesting GitHub', function (string $repository, int $number): void {
+    $mock = new MockHandler([new Response(200)]);
+    $client = new Client(['handler' => HandlerStack::create($mock)]);
+    $action = new GetOpenPullRequestsAction(client: $client);
+
+    \expect($action->isClosed($repository, 'token', $number))->toBeFalse()
+        ->and($mock->count())->toBe(1);
+})->with([['owner', 42], ['owner/repo', 0]]);
