@@ -20,6 +20,7 @@ structure:
       Commands/DestroyCommand.php: Feature/DestroyCommandTest.php
       Commands/PlanCommand.php: Feature/PlanCommandTest.php
       Commands/RollbackCommand.php: Feature/RollbackCommandTest.php
+      Commands/StatusCommand.php: Feature/StatusCommandTest.php
       Commands/ValidateCommand.php: Feature/ValidateCommandTest.php
       Config/ConfigLoader.php: Feature/ConfigLoaderTest.php
       Deployment/ContractDeploymentProviderAdapter.php: Unit/Deployment/ContractDeploymentProviderAdapterTest.php
