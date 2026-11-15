@@ -4,6 +4,10 @@ providers:
     rollback_release: release-20260727-001
   blocked-test: {}
   credential-url-test: {}
+  invalid-context-test:
+    validation_errors:
+      - Server is required.
+      - Domain is required.
 projects:
   app:
     provider: contract-test
@@ -20,6 +24,12 @@ projects:
         branch: main
   rejected:
     provider: credential-url-test
+    path: "."
+    profiles:
+      production:
+        branch: main
+  invalid:
+    provider: invalid-context-test
     path: "."
     profiles:
       production:

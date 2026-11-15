@@ -14,6 +14,7 @@ structure:
       Actions/FindOrphanedSitesAction.php: Unit/Actions/FindOrphanedSitesActionTest.php
       Actions/GetOpenPullRequestsAction.php: Unit/Actions/GetOpenPullRequestsActionTest.php
       Actions/LoadConfigurationAction.php: Unit/Actions/LoadConfigurationActionTest.php
+      Actions/ResolveDeploymentContextAction.php: Unit/Actions/ResolveDeploymentContextActionTest.php
       Clients/GitHubHttpClient.php: Unit/Clients/GitHubHttpClientTest.php
       Commands/ApplyCommand.php: Feature/ApplyCommandTest.php
       Commands/CleanupOrphanedCommand.php: Feature/CleanupOrphanedCommandTest.php
