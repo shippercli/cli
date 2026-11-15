@@ -1,0 +1,84 @@
+name: TestParity
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testparity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.report.outputs.artifact-id }}
+    timeout-minutes: 15
+
+    env:
+      PEST_NO_PLUGIN: "1"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          extensions: curl, gd, intl, mbstring, pdo_sqlite, zip
+          coverage: xdebug
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Shipper
+        run: cp .env.example .env
+
+      - name: Run the full test suite
+        run: |
+          mkdir -p .parity
+          XDEBUG_MODE=coverage vendor/bin/pest --coverage-clover=.parity/coverage.xml --colors=never
+
+      - name: Install TestParity
+        run: |
+          composer global require testparity/parity:1.4.0 --prefer-dist --no-progress --no-interaction
+          composer global config bin-dir --absolute >> "$GITHUB_PATH"
+
+      - name: Compare associated tests with full-suite coverage
+        id: render
+        run: |
+          parity test --no-check
+          report_status=0
+          parity check --format=github --suite-coverage=.parity/coverage.xml > .parity/comment.md || report_status=$?
+          test "$(head -n 1 .parity/comment.md)" = '## TestParity coverage'
+          # TestParity exits 1 when a valid report contains coverage findings.
+          test "$report_status" -le 1
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload coverage evidence
+        id: report
+        if: ${{ !cancelled() && steps.render.outputs.ready == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: testparity-shipper-cli
+          path: .parity/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  comment:
+    needs: coverage
+    if: >-
+      ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository &&
+          needs.coverage.outputs.artifact-id != '' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: testparity/cli/.github/workflows/parity-comment.yml@f35491654157ed23352e4ee49700c538a46a46c0
+    with:
+      artifact-name: testparity-shipper-cli
+      report-path: comment.md

@@ -1,0 +1,28 @@
+coverage_xml: .parity/per-test
+
+test:
+  command: "XDEBUG_MODE=coverage vendor/bin/pest {test_abs} --coverage-clover={coverage} --colors=never"
+  coverage: ".parity/tmp/{slug}.xml"
+  reports: ".parity/per-test"
+
+structure:
+  - name: Shipper CLI
+    paths:
+      source: app
+      test: tests
+    file_map:
+      Actions/FindOrphanedSitesAction.php: Unit/Actions/FindOrphanedSitesActionTest.php
+      Actions/GetOpenPullRequestsAction.php: Unit/Actions/GetOpenPullRequestsActionTest.php
+      Actions/LoadConfigurationAction.php: Unit/Actions/LoadConfigurationActionTest.php
+      Clients/GitHubHttpClient.php: Unit/Clients/GitHubHttpClientTest.php
+      Commands/ApplyCommand.php: Feature/ApplyCommandTest.php
+      Commands/CleanupOrphanedCommand.php: Feature/CleanupOrphanedCommandTest.php
+      Commands/DestroyCommand.php: Feature/DestroyCommandTest.php
+      Commands/PlanCommand.php: Feature/PlanCommandTest.php
+      Commands/ValidateCommand.php: Feature/ValidateCommandTest.php
+      Config/ConfigLoader.php: Feature/ConfigLoaderTest.php
+      Deployment/ContractDeploymentProviderAdapter.php: Unit/Deployment/ContractDeploymentProviderAdapterTest.php
+      Deployment/Providers/EasyPanel/EasyPanelProvider.php: Unit/Deployment/EasyPanelProviderTest.php
+      Flows/ApplyDeploymentFlow.php: Unit/Flows/ApplyDeploymentFlowTest.php
+      Flows/ValidateConfigurationFlow.php: Unit/Flows/ValidateConfigurationFlowTest.php
+    rules: []
