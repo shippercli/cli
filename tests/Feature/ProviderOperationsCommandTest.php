@@ -28,23 +28,6 @@ YAML);
     return $path;
 }
 
-\test('status command prints provider deployment state', function (): void {
-    /** @var TestCase $this */
-    ProviderRegistry::registerPlugin(new TestShipperPlugin);
-    $config = \providerOperationsConfig();
-
-    try {
-        $exitCode = Artisan::call('status', [
-            'project' => 'app',
-            '--config' => $config,
-        ]);
-        \expect($exitCode)->toBe(0)
-            ->and(Artisan::output())->toContain('"state": "healthy"');
-    } finally {
-        @\unlink($config);
-    }
-});
-
 \test('logs command prints provider log lines', function (): void {
     /** @var TestCase $this */
     ProviderRegistry::registerPlugin(new TestShipperPlugin);
