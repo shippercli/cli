@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Actions\GetOpenPullRequestsAction;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
 \test('invalid repository identifiers fail before HTTP requests', function (string $repository): void {
@@ -50,7 +52,7 @@ use GuzzleHttp\Psr7\Response;
 
 \test('GitHub inventory request errors preserve failure status', function (?int $status): void {
     $failure = $status === null
-        ? new \GuzzleHttp\Exception\RequestException('Connection interrupted', new \GuzzleHttp\Psr7\Request('GET', '/repos/owner/repo/pulls'))
+        ? new RequestException('Connection interrupted', new Request('GET', '/repos/owner/repo/pulls'))
         : new Response($status);
     $client = new Client(['handler' => HandlerStack::create(new MockHandler([$failure]))]);
     $result = (new GetOpenPullRequestsAction(client: $client))->handle('owner/repo', 'token');
