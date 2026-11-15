@@ -29,6 +29,7 @@ use Tests\Fixtures\TestShipperPlugin;
     {
         public function providers(): array
         {
+            // @phpstan-ignore return.type (Exercise runtime validation of a plugin that violates its contract.)
             return ['registry-invalid-test' => stdClass::class];
         }
     };
