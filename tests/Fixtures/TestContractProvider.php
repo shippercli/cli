@@ -89,6 +89,6 @@ final class TestContractProvider implements DeploymentLogsProviderInterface, Dep
 
     public function rollback(object $project, object $profile, ?string $release = null): bool
     {
-        return !\array_key_exists('rollback_release', $this->config) || $release === $this->config['rollback_release'];
+        return ! \array_key_exists('rollback_release', $this->config) || $release === $this->config['rollback_release'];
     }
 }
