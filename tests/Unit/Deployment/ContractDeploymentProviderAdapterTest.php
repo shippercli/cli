@@ -7,7 +7,7 @@ namespace Tests\Unit\Deployment;
 use App\Config\ProfileConfig;
 use App\Config\ProjectConfig;
 use App\Deployment\ContractDeploymentProviderAdapter;
-use PHPUnit\Framework\TestCase;
+use Mockery;
 use ShipperCli\Contracts\CapabilityManifest;
 use ShipperCli\Contracts\DeploymentProviderInterface as ContractProvider;
 use ShipperCli\Contracts\ProviderCapabilitiesInterface;
@@ -161,24 +161,29 @@ function validContractCapabilityManifest(): array
     \expect(new ContractDeploymentProviderAdapter($provider))->toBeInstanceOf(ContractDeploymentProviderAdapter::class);
 });
 
+\afterEach(function (): void {
+    Mockery::close();
+});
+
 \test('forwards the deployment context and preserves contract provider results', function (): void {
-    /** @var TestCase $this */
-    $provider = $this->createMock(ContractProvider::class);
+    $provider = Mockery::mock(ContractProvider::class);
     $profile = new ProfileConfig('production', 'main', []);
     $project = new ProjectConfig('api', 'test-provider', '.', ['production' => $profile]);
+    $sameProject = Mockery::on(static fn (object $argument): bool => $argument === $project);
+    $sameProfile = Mockery::on(static fn (object $argument): bool => $argument === $profile);
     $errors = ['Invalid profile'];
     $plan = ['actions' => ['Publish release']];
 
-    $provider->expects($this->once())->method('validate')
-        ->with($this->identicalTo($project), $this->identicalTo($profile))->willReturn($errors);
-    $provider->expects($this->once())->method('plan')
-        ->with($this->identicalTo($project), $this->identicalTo($profile))->willReturn($plan);
-    $provider->expects($this->once())->method('apply')
-        ->with($this->identicalTo($project), $this->identicalTo($profile))->willReturn(false);
-    $provider->expects($this->once())->method('destroy')
-        ->with($this->identicalTo($project), $this->identicalTo($profile))->willReturn(true);
-    $provider->expects($this->once())->method('getName')->willReturn('test-provider');
-    $provider->expects($this->once())->method('getLastError')->willReturn('Deployment failed');
+    $provider->shouldReceive('validate')->once()
+        ->with($sameProject, $sameProfile)->andReturn($errors);
+    $provider->shouldReceive('plan')->once()
+        ->with($sameProject, $sameProfile)->andReturn($plan);
+    $provider->shouldReceive('apply')->once()
+        ->with($sameProject, $sameProfile)->andReturn(false);
+    $provider->shouldReceive('destroy')->once()
+        ->with($sameProject, $sameProfile)->andReturn(true);
+    $provider->shouldReceive('getName')->once()->andReturn('test-provider');
+    $provider->shouldReceive('getLastError')->once()->andReturn('Deployment failed');
 
     $adapter = new ContractDeploymentProviderAdapter($provider);
 
