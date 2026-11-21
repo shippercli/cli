@@ -276,3 +276,5 @@ other secret forms from their output.
 ## License
 
 MIT
+
+[![advertisement](https://ads.servead.net/i/17516fe5-11a9-4fd7-8018-23662b58e59b.svg)](https://ads.servead.net/c/17516fe5-11a9-4fd7-8018-23662b58e59b)
